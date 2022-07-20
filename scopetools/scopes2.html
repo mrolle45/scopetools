@@ -1,0 +1,629 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice 4.1.12  (Win32)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Michael Rolle">
+	<META NAME="CHANGED" CONTENT="20220720;15212997">
+	<STYLE TYPE="text/css">
+	<!--
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Lucida Sans" }
+		PRE.cjk { font-family: "NSimSun", monospace }
+		H3.cjk { font-family: "SimSun" }
+		H3.ctl { font-family: "Lucida Sans" }
+		CODE.cjk { font-family: "NSimSun", monospace }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P>&iuml;&raquo;&iquest;</P>
+<H1><A NAME="all-about-scopes"></A>All About Scopes</H1>
+<P>Michael Rolle, 2022</P>
+<H1><A NAME="introduction"></A>Introduction</H1>
+<P>I've been trying to pin down the definition of scopes. Here's my
+latest attempt. IMO the official <A HREF="https://docs.python.org/3/reference/executionmodel.html#naming-and-binding">Naming
+and binding </A>section in the Language Reference does not do a good
+job specifying this.</P>
+<H1><A NAME="definitions"></A>Definitions</H1>
+<H2 CLASS="western"><A NAME="syntax-tree"></A>Syntax Tree</H2>
+<P>A <STRONG>Syntax Tree</STRONG> is a representation of the program
+text of a module, which is produced by the <CODE CLASS="western">ast.parse()</CODE>
+method. Refer to <A HREF="https://docs.python.org/3.10/library/ast.html#module-ast">ast
+documentation</A> for complete details.</P>
+<P>The tree for a Python module is comprised of <STRONG>nodes</STRONG>
+which are subclasses of <CODE CLASS="western">ast.AST</CODE>. Each
+node represents a single contiguous section of the text. Elements of
+a node, including other nodes, represent subsets of that section of
+text.</P>
+<P>A Python module is considered to be the same as an <CODE CLASS="western">ast.Module</CODE>
+tree. In this document, the program will be described in terms of
+nodesin the syntax tree.</P>
+<P>The code in this <CODE CLASS="western">scopetools</CODE> package
+does not require that there be an actual syntax tree, or a module
+file which would be parsed into one. An application is only required
+to build a Scope tree as though there is an actual syntax tree. There
+are examples of programs which build a scope tree without an actual
+syntax tree.</P>
+<H2 CLASS="western"><A NAME="scope"></A>Scope</H2>
+<P>A Scope is a portion of the program text which corresponds to one
+of a few specific node classes. They are represented in the
+<CODE CLASS="western">scopetools.scopes</CODE> module by
+corresponding subclasses of <CODE CLASS="western">Scope</CODE></P>
+<P>These are:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">GlobalScope</CODE></STRONG>,
+	for <CODE CLASS="western">ast.Module</CODE>. This is the entire
+	program text. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">ClassScope</CODE></STRONG>,
+	for <CODE CLASS="western">ast.ClassDef</CODE>. This is a <CODE CLASS="western">class</CODE>
+	statement including decorators. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">FunctionScope</CODE></STRONG>,
+	for <CODE CLASS="western">ast.FunctionDef</CODE>. This is a <CODE CLASS="western">def</CODE>
+	statement including decorators. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">LambdaScope</CODE></STRONG>,
+	for <CODE CLASS="western">ast.Lambda</CODE>. This is a <CODE CLASS="western">lambda</CODE>
+	expression. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">ComprehensionScope</CODE></STRONG>,
+	for one of:</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in"><CODE CLASS="western">ast.ListComp</CODE>.
+		This is an <CODE CLASS="western">[expr for var in iter ...]</CODE>
+		expression. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in"><CODE CLASS="western">ast.SetComp</CODE>.
+		This is an <CODE CLASS="western">{expr for var in iter ...}</CODE>
+		expression. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in"><CODE CLASS="western">ast.DictComp</CODE>.
+		This is a <CODE CLASS="western">{key : expr for var in iter ...]</CODE>
+		expression. 
+		</P>
+		<LI><P><CODE CLASS="western">ast.GeneratorExp</CODE>. This is an
+		<CODE CLASS="western">(expr for var in iter ...)</CODE> expression.
+				</P>
+	</UL>
+</UL>
+<P>The class <STRONG>RootScope</STRONG> represents the entire
+environment of a running program. That is, it is a collection of
+modules, represented by GlobalScope objects. It is the top of a Scope
+tree.<BR>The main purpose of thie class is to be analogous to a
+RootNamespace in a namespace tree. The RootNamespace resolves
+builtins names, which are visible identically to all running modules.</P>
+<H2 CLASS="western"><A NAME="scope-kind"></A>Scope Kind</H2>
+<P>This is an enumeration in the <CODE CLASS="western">Basic</CODE>
+class (a base class of <CODE CLASS="western">Scope</CODE>). The
+members are also class attributes of <CODE CLASS="western">Scope</CODE>
+They correspond to the actual class of the scope:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>ROOT</STRONG>: <CODE CLASS="western">RootScope</CODE>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>GLOB</STRONG>: <CODE CLASS="western">GlobalScope</CODE>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>CLASS</STRONG>: <CODE CLASS="western">CkassScope</CODE>
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>FUNC</STRONG>:
+	<CODE CLASS="western">FunctionScope</CODE> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>LAMB</STRONG>: <CODE CLASS="western">LambdaScope</CODE>
+		</P>
+	<LI><P><STRONG>COMP</STRONG>: <CODE CLASS="western">ComprehensionScope</CODE>
+		</P>
+</UL>
+<H2 CLASS="western"><A NAME="variable"></A>Variable</H2>
+<P>A <STRONG>variable</STRONG> is almost any occurrence of a Python
+identifier in a program text. The grammar determines whether an
+identifier is a variable or not.</P>
+<P>The exceptions are:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Attributes, as in
+	<CODE CLASS="western">(expression).attribute</CODE>, or an
+	<CODE CLASS="western">ast.Attribute</CODE> node. 
+	</P>
+	<LI><P>Some identifiers in an import statement. It is simpler to
+	specify which identifier <STRONG>is</STRONG> a variable which is
+	bound according to <A HREF="https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement">the
+	document for Import statement</A></P>
+	<PRE CLASS="western"><CODE CLASS="western">  </CODE><CODE CLASS="western">import module as variable</CODE>
+<CODE CLASS="western">  </CODE><CODE CLASS="western">import variable(.name)*     # Note, only the top level name is bound</CODE>
+<CODE CLASS="western">  </CODE><CODE CLASS="western">from module import identifier</CODE>
+<CODE CLASS="western">  </CODE><CODE CLASS="western">from module import name as variable</CODE></PRE>
+	<LI><P>A keyword in a function call, as in
+	<CODE CLASS="western">function(keyword=expression)</CODE> 
+	</P>
+</UL>
+<P>This document is concerned only with variables.</P>
+<H3 CLASS="western"><A NAME="binding-and-non-binding-references"></A>Binding
+and Non-binding References</H3>
+<P>Each occurrence of a variable in the program text is called a
+<STRONG>reference</STRONG>.</P>
+<P>A <STRONG>binding reference</STRONG> implies that the variable is
+Local in the home scope. Refer to the <A HREF="https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names">documentation</A>.
+The possibilities are:</P>
+<UL>
+	<LI><P>An <CODE CLASS="western">ast.Name</CODE> node, where the
+	context attribute is either <CODE CLASS="western">ast.Store()</CODE>
+	or <CODE CLASS="western">ast.Del()</CODE>. Yes, a <CODE CLASS="western">del
+	variable</CODE> statement is considered binding.</P>
+	<P>This includes a target name in:</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in">an assignment statement. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">an augmented assignment
+		statement. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">an annotated assignment statement
+		(even if there is no value). 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">an assignment expression. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">a 'for' stateemnt target 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">a 'for' clause in a comprehension
+				</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0in">The name in a function or class
+	definition. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">A parameter name in a function
+	definition. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">An imported name (module name or
+	module member) or alias in an <CODE CLASS="western">as variable</CODE>
+	clause. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">After <CODE CLASS="western">as</CODE>
+	in a with statement, except clause or in the as-pattern in
+	structural pattern matching, 
+	</P>
+	<LI><P>In a capture pattern in structural pattern matching 
+	</P>
+</UL>
+<P>A <STRONG>non-binding reference</STRONG> is simply the use of the
+current value of the variable, and does not affect the variable's
+<A HREF="#context">context</A> (defined below) in the home scope
+(other than changing from Free to Seen). This is any <CODE CLASS="western">ast.Name</CODE>
+node in which the context attribute is <CODE CLASS="western">ast.Load()</CODE>.</P>
+<P>Examples:</P>
+<PRE CLASS="western"><CODE CLASS="western">foo = bar  # 'foo' is binding and 'bar' is non-binding.</CODE>
+<CODE CLASS="western">foo.append(1)  # 'foo' is a non-binding reference; 'append' is an attribute</CODE>
+<CODE CLASS="western">import foo  # 'foo' is a binding reference</CODE>
+<CODE CLASS="western">import foo.bar  # 'foo' is a binding reference;</CODE>
+<CODE CLASS="western">                </CODE><CODE CLASS="western"># 'bar' is part of the module name and not used in the scope.</CODE></PRE><H2 CLASS="western">
+<A NAME="enclosing-or-enclosed-scope"></A>Enclosing or Enclosed Scope</H2>
+<P>For any two scopes, either they are unrelated (that is, they cover
+disjoint segments of the program code), or else one covers a subset
+of the other.</P>
+<P>In the latter case, the larger scope <STRONG>encloses</STRONG>, or
+it is an <STRONG>enclosing scope</STRONG> of, the smaller scope.
+Likewise, the smaller scope <STRONG>is enclosed by</STRONG>. or it is
+an <STRONG>enclosed scope</STRONG> of, the larger scope.</P>
+<P>In this document, it may also be expressed succinctly as <STRONG>outer
+&gt; inner</STRONG> (or <STRONG>inner &lt; outer</STRONG>).</P>
+<H2 CLASS="western"><A NAME="parent-or-child-scope"></A>Parent or
+Child Scope</H2>
+<P>An outer scope is the <STRONG>parent</STRONG> of an inner scope,
+or the inner scope is a <STRONG>child</STRONG> of the outer scope,
+when</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">parent &gt; child, and 
+	</P>
+	<LI><P>There is no other scope such that parent &gt; scope &gt;
+	child. 
+	</P>
+</UL>
+<P>In a scope tree, every scope other than the RootScope has a
+parent, and every scope can be reached from the root by a series of
+children.</P>
+<H3 CLASS="western"><A NAME="owned-comprehension-scope"></A>Owned
+Comprehension Scope</H3>
+<P>For the purpose of explaining the behavior of assignment
+expressions in a comprehension...<BR>For two scopes 'owner' and
+'owned', <CODE CLASS="western">owned</CODE> is an <STRONG>owned
+comprehension</STRONG> of <CODE CLASS="western">owner</CODE> if:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><CODE CLASS="western">owner</CODE>
+	&gt; <CODE CLASS="western">owned</CODE> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><CODE CLASS="western">owned</CODE>
+	is a comprehension 
+	</P>
+	<LI><P>for any <CODE CLASS="western">other</CODE> scope, where <CODE CLASS="western">owner</CODE>
+	&gt; <CODE CLASS="western">other</CODE> &gt; <CODE CLASS="western">owned</CODE>,
+	<CODE CLASS="western">other</CODE> is also a comprehension. 
+	</P>
+</UL>
+<P>It is also said that a comprehension is an owned comprehension of
+itself.</P>
+<P>That is to say, every scope in the parent chain, starting from
+<CODE CLASS="western">owned</CODE> up to, but not including, <CODE CLASS="western">owner</CODE>,
+is a comprehension. 
+</P>
+<P>In addition, if <CODE CLASS="western">owner</CODE> is not a
+comprehension, then <CODE CLASS="western">owner</CODE> is <STRONG>the
+owner of</STRONG> <CODE CLASS="western">owned</CODE>. Any
+comprehension has exactly one owner. Example:</P>
+<PRE CLASS="western"><CODE CLASS="western">def f():                        # owner</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">[x for x in                    # owned by owner</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">{ y for y in                   # also owned by owner</CODE>
+<CODE CLASS="western">            </CODE><CODE CLASS="western">(lambda n:                      # NOT owned</CODE>
+<CODE CLASS="western">                </CODE><CODE CLASS="western">[ z for z in [1, 2, 3] ]       # NOT owned</CODE>
+<CODE CLASS="western">            </CODE><CODE CLASS="western">)(2)</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">}</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">]</CODE></PRE><H2 CLASS="western">
+<A NAME="home-scope"></A>Home Scope</H2>
+<P>This is a property of each variable reference in the program text.
+It is the scope associated with that reference.</P>
+<P>Most of the time, the <STRONG>home scope</STRONG> is the smallest
+scope whose area includes the reference.</P>
+<P>However, certain variable references are not part of that scope
+and are part of the parent scope. These exceptions are references
+which are, or which occur in:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Class and function names. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Class and function decorators. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Arguments in class definitions
+	(base classes and metaclass keyword arguments). 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Function and lambda argument
+	default values. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Function argument annotations
+	(unless they are turned into forward references by <CODE CLASS="western">from
+	__future__ import annotations</CODE>). 
+	</P>
+	<LI><P>The leftmost iterable expression in any comprehension. 
+	</P>
+</UL>
+<H3 CLASS="western"><A NAME="walrus-considerations"></A>Walrus
+considerations</H3>
+<P>Also, for an assigment expression within any comprehension, the
+home scope of the target variable reference is the owner
+non-comprehension scope. That is, it skips over enclosing
+comprehensions. The comprehension is owned by the home scope.</P>
+<P>For example, at the top level, the home scope of the variable in 
+</P>
+<P><CODE CLASS="western">[x for x in [(variable := y) for y in
+iterable]]</CODE></P>
+<P>is the global scope, not the <CODE CLASS="western">[x for ...]</CODE>
+comprehension.</P>
+<P>In addition, the following conditions are errors:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">The variable is a target in the
+	'for' clause of a comprehension and also a walrus target in any
+	comprehension owned by it (defined above). 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">A walrus occurs in an iterable
+	clause in any comprehension (even if as part of a lambda or another
+	comprehension). 
+	</P>
+	<LI><P>The owner scope is a class definition. 
+	</P>
+</UL>
+<P>(For the walrus-related rules, see <A HREF="https://www.python.org/dev/peps/pep-0572/#scope-of-the-target">PEP
+572</A>.)</P>
+<H2 CLASS="western"><A NAME="xxx"></A><A NAME="context-of-a-variable"></A>
+Context of a variable</H2>
+<P>This describes how a variable is used in a scope.<BR>During the
+build of the scope, it may change.<BR>It can be one of:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Local</STRONG>. The
+	variable appears in a binding reference in the scope, or in <CODE CLASS="western">variable
+	:= value</CODE> in any owned comprehension. Also, in a GlobalScope,
+	if its context is Global in any enclosed scope. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Nonlocal</STRONG>. The
+	scope contains a <CODE CLASS="western">nonlocal variable</CODE>
+	statement. It is a syntax error if this occurs after any other
+	reference, or in the global scope. After building the scope, this 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Global</STRONG>. The scope
+	contains a <CODE CLASS="western">global variable</CODE> statement.
+	It is a syntax error if this occurs after any other reference.<BR>This
+	does not apply in the global scope itself, in which it is redundant
+	and ignored. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Seen</STRONG>. The
+	variable appears in, and only in, a non-binding context. It will be
+	changed to Free at the end of the scope text. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Walrus</STRONG>. Only used
+	in comprehensions. The variable appears as a walrus target in any
+	owned comprehension of this scope (defined above). 
+	</P>
+	<LI><P><STRONG>Unused</STRONG>. None of the above. 
+	</P>
+</UL>
+<P>After the entire scope tree is built, it can be changed by the
+<CODE CLASS="western">cleanup()</CODE> method. It will be one of
+these, based on <CODE CLASS="western">scope.binding_scope(var)</CODE>:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Local</STRONG>. Unchanged.
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Global</STRONG>. Unchanged
+	from before, or if <CODE CLASS="western">scope.binding_scope(var)</CODE>
+	is the global scope, <EM>and</EM> <CODE CLASS="western">scope</CODE>
+	<EM>is not</EM> the global scope 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG>Nonlocal</STRONG>.
+	Unchanged. 
+	</P>
+	<LI><P><STRONG>Closure</STRONG>. Any other context is changed to
+	Closure if <CODE CLASS="western">scope.binding_scope(var)</CODE> is
+	not the global scope. 
+	</P>
+</UL>
+<P>Each occurrence of an identifier has exactly one context. Context
+is determined purely by the grammar.</P>
+<P>The method <CODE CLASS="western">scope.context(var: str)</CODE>
+returns a <CODE CLASS="western">VarCtx</CODE> object for the context.
+This may change before the entire scope's text has been built.</P>
+<H2 CLASS="western"><A NAME="closed-and-open-scopes"></A>Closed and
+open scopes</H2>
+<P>Function, lambda and comprehension scopes are <STRONG>closed
+scopes</STRONG>. At runtime, the known variable names cannot be
+extended dynamically (e.g. by monkey-patching).</P>
+<P>All other scopes are <STRONG>open scopes</STRONG>. At runtime,
+additional variables can be associated with the scope.</P>
+<H2 CLASS="western"><A NAME="binding-scope-of-a-variable"></A>Binding
+scope of a variable</H2>
+<P>This is determined at compile time for any scope and variable
+name. It is the home scope, or some scope which encloses it. It is
+denoted by the method call</P>
+<P><CODE CLASS="western">scope.binding_scope(var: str)</CODE></P>
+<P>The algorithm for this is contained below.</P>
+<P>The variable is always <EM>Local</EM> in its binding scope.</P>
+<P>A fundamental idea here is that a variable is considered to be <STRONG>the
+identical variable</STRONG> in both the home scope and the binding
+scope. At runtime, any changes to the variable are seen in both
+scopes.</P>
+<P>At runtime, any binding operation is always performed in the
+binding scope. However, the current value of a variable is not always
+its value in the binding scope. This is discussed in the <A HREF="namespaces.md">namespaces</A>
+document.</P>
+<P>Note: this cannot be computed until the <EM>entire</EM> module
+text has been processed and <CODE CLASS="western">outer._cleanup()</CODE>
+has been called for every <CODE CLASS="western">outer</CODE> which
+encloses <CODE CLASS="western">scope</CODE>.</P>
+<H2 CLASS="western"><A NAME="closure-scope-of-a-variable"></A>Closure
+scope of a variable</H2>
+<P>This concept is related to the determination of the binding scope.
+It is denoted by the method call</P>
+<P><CODE CLASS="western">scope._closure_scope(var: str) -&gt; Scope |
+None</CODE></P>
+<P>The algorithm for this is detailed below.</P>
+<P>The closure for a closed scope where <CODE CLASS="western">var</CODE>
+has Local context, is itself. The closure for a closed scope where
+<CODE CLASS="western">var</CODE> has Global context, is None. The
+closure for the global scope is None. Otherwise, the closure is the
+closure of its parent.</P>
+<P>Note: this cannot be computed until the <EM>entire</EM> module
+text has been processed and <CODE CLASS="western">outer._cleanup()</CODE>
+has been called for every <CODE CLASS="western">outer</CODE> which
+encloses <CODE CLASS="western">scope</CODE>.</P>
+<H2 CLASS="western"><A NAME="scope-for-eval-and-exec-"></A>Scope for
+eval() and exec()</H2>
+<P>These functions do not have the same effect as their code strings
+would have if located in the same place directly in the scope. The
+difference is in the value of a variable which is captured from an
+enclosing scope. If there is a nonlocal declaration in the scope,
+then the results are the same. Otherwise, the value in the global
+scope is used (or a NameError is raised).</P>
+<P>The <STRONG>eval scope</STRONG> of a variable is the scope in
+which <CODE CLASS="western">eval()</CODE> will find the value. It
+uses the <CODE CLASS="western">globals()</CODE> and <CODE CLASS="western">locals()</CODE>
+values at the point where <CODE CLASS="western">eval()</CODE> is
+called.</P>
+<P>The <STRONG>local scope</STRONG> of a variable is the same, if it
+is found in <CODE CLASS="western">locals()</CODE>, otherwise it is a
+NameError. It is in <CODE CLASS="western">locals()</CODE> if its
+context is either Local or Nonlocal, but not if it is Capture or
+Global.</P>
+<P>These are implemented by the methods <CODE CLASS="western">scope.eval_scope(var)</CODE>
+and <CODE CLASS="western">scope.locals_scope(var)</CODE>, <EM>resp.</EM>,
+which are detailed below.</P>
+<H1><A NAME="scope-building"></A>Scope Building</H1>
+<P>A Scope is built by first constructing it, and then calling
+primitive methods in the same order as corresponding items in the
+syntax tree. This will create and build all the nested scopes.</P>
+<P>The top of the Scopes tree is a RootScope, which contains a
+GlobalScope for each module. There are two ways to build the tree:</P>
+<OL>
+	<LI><P STYLE="margin-bottom: 0in">Construct a RootScope()
+	directly,<BR>Build each GlobalScope using<BR><CODE CLASS="western">with
+	root.nest(root.GLOB, module name (optional)) as glob:</CODE> 
+	</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in">primitive methods on glob and any
+		nested scopes. 
+		</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0in">Construct a <CODE CLASS="western">GlobalScope(name
+	(optional))</CODE> directly. This creates a RootScope as its parent.
+	The name, if provided, is bound in the RootScope.<BR><CODE CLASS="western">with
+	glob.build():</CODE> 
+	</P>
+	<UL>
+		<LI><P>primitive methods on glob and any nested scopes. 
+		</P>
+	</UL>
+</OL>
+<P>After any GlobalScope has been built, then any post-build methods
+may be called on any scope in its scope tree.</P>
+<H2 CLASS="western"><A NAME="primitive-methods"></A>Primitive Methods</H2>
+<P>A scope is specified by calling various primitive methods while
+scanning the scope's text.</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">with
+	scope.build(): ...</CODE></STRONG><BR>All other primitives are
+	called in this context.<BR>Afterwards,</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in">the name of a Class or Function
+		scope is bound in the parent scope 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">the name of a Global scope, if
+		given, is bound in the Root scope, 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">for a Global scope,
+		<CODE CLASS="western">scope._cleanup()</CODE> is called. 
+		</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">with
+	scope.nest(kind, name = '') -&gt; Scope: ...</CODE></STRONG><BR>Creates,
+	and yields, a new scope enclosed in the current scope. Includes new
+	scope.build(), so all other primitives for the new scope are called
+	within this context. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">scope.use(var:
+	str)</CODE></STRONG> Variable in a non-binding reference. 
+	</P>
+	<LI><P><STRONG>`scope.bind(var: str, </STRONG>kwds)`** Variable in a
+	binding reference.<BR>Keywords are used to indicate if it is
+	annotated, a function argument, or a nested scope.<BR>The semantics
+	are affected by these context managers:</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">with
+		scope.use_walrus(): ...</CODE></STRONG><BR>Any <CODE CLASS="western">bind()</CODE>
+		call is for the target in a <CODE CLASS="western">target := value</CODE>
+		expression. 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">with
+		scope.no_walrus(): ...</CODE></STRONG><BR>Any <CODE CLASS="western">with
+		use_walrus():</CODE> raises a SyntaxError. This is done while
+		processing the iterable expression in a <CODE CLASS="western">for x
+		in iterable</CODE> which is part of a comprehension. 
+		</P>
+	</UL>
+	<LI><P><STRONG><CODE CLASS="western">scope.nonlocal_statement(var:
+	str)</CODE></STRONG> In <CODE CLASS="western">nonlocal variable</CODE>.</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">scope.global_statement(var:
+	str)</CODE></STRONG> In <CODE CLASS="western">global variable</CODE>.
+		</P>
+	<LI><P STYLE="margin-bottom: 0in"><STRONG><CODE CLASS="western">scope._cleanup()</CODE></STRONG><BR>Called
+	implicitly at the end of <CODE CLASS="western">glob.build()</CODE>
+	for any GlobalScope <CODE CLASS="western">glob</CODE>.<BR>Then
+	called recursively for all nested scopes in the tree. 
+	</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in">Any variable with a Free, Seen or
+		Nonlocal context is resolved to either Nonlocal or Global, using
+		the <CODE CLASS="western">scope.binding_scope(variable)</CODE>
+		method (detailed below). In the case of Nonlocal, it may raise a
+		SyntaxError. 
+		</P>
+		<LI><P>Call <CODE CLASS="western">child._cleanup()</CODE>
+		recursively for each child scope.</P>
+		<H2 CLASS="western"><A NAME="post-build-methods"></A>Post-build
+		Methods</H2>
+		<P STYLE="margin-bottom: 0in">These may be called after
+		<CODE CLASS="western">outer._cleanup()</CODE> has been called for
+		all <CODE CLASS="western">outer</CODE> scopes that enclose <CODE CLASS="western">scope</CODE>.
+				</P>
+	</UL>
+	<LI><P><STRONG><CODE CLASS="western">scope.binding_scope(var: str)
+	-&gt; Scope</CODE></STRONG><BR>Returns the binding scope for <CODE CLASS="western">var</CODE>
+	(defined above and detailed below).</P>
+	<LI><P><STRONG><CODE CLASS="western">scope._closure_scope(var: str)
+	-&gt; Scope | None</CODE></STRONG><BR>This is a helper function for
+	<CODE CLASS="western">binding_scope(var)</CODE> Returns the binding
+	scope for <CODE CLASS="western">var</CODE>, if any (defined above
+	and detailed below).</P>
+</UL>
+<H1><A NAME="algorithms"></A>Algorithms</H1>
+<H2 CLASS="western"><A NAME="context"></A>Context</H2>
+<P>The context of a variable is determined by a state machine which
+responds to certain events, which correspond to some <CODE CLASS="western">ast</CODE>
+nodes in the program. These are applied in the program order.</P>
+<P>Initial context = Free.</P>
+<P>Any non-binding reference to <CODE CLASS="western">var</CODE>:</P>
+<PRE CLASS="western" STYLE="margin-bottom: 0.2in"><CODE CLASS="western">Free -&gt; Seen</CODE></PRE><P>
+Reference to <CODE CLASS="western">var</CODE> as a walrus target in a
+comprehension or any <A HREF="#owned-comprehension-scope">owned
+<EM><SPAN STYLE="font-style: normal">comprehension</SPAN></EM></A><SPAN STYLE="font-style: normal">:</SPAN></P>
+<PRE CLASS="western"><CODE CLASS="western">Free | Seen -&gt; Walrus</CODE>
+<CODE CLASS="western">Local -&gt; syntax error</CODE>
+<CODE CLASS="western">other contexts are not possible here.</CODE></PRE><P>
+Any other binding reference to <CODE CLASS="western">var</CODE> :</P>
+<PRE CLASS="western"><CODE CLASS="western">Free | Seen -&gt; Local</CODE>
+<CODE CLASS="western">Nonlocal | Global | Walrus -&gt; syntax error</CODE></PRE><P>
+A <CODE CLASS="western">nonlocal var</CODE> statement:</P>
+<PRE CLASS="western"><CODE CLASS="western">Free -&gt; Nonlocal</CODE>
+<CODE CLASS="western">Seen | Local | Global -&gt; syntax error</CODE></PRE><P>
+A <CODE CLASS="western">global var</CODE> statement:</P>
+<PRE CLASS="western"><CODE CLASS="western">Free -&gt; Global</CODE>
+<CODE CLASS="western">Seen | Local | Nonlocal -&gt; syntax error</CODE></PRE><P>
+`cleanup():</P>
+<PRE CLASS="western" STYLE="margin-bottom: 0.2in"><CODE CLASS="western">Seen | Free | Walrus -&gt; Nonlocal | Global or syntax error.</CODE></PRE><H2 CLASS="western">
+<A NAME="closure-scope"></A>Closure scope</H2>
+<P>The method <CODE CLASS="western">scope._closure_scope(var)</CODE>
+works by searching from the scope along the parent chain, looking for
+a <EM>closed</EM> scope in which the var is Local. The search fails
+if it reaches a scope in which the var is Global, or if it reaches
+the global scope.</P>
+<PRE CLASS="western"><CODE CLASS="western">def _closure_scope(self, var):</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if self is global scope: return None</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if self.context(var) is Global: return None</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if self is closed and self.context(var) is Local: return self</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">else: return self.parent._closure_scope(var)</CODE></PRE><H2 CLASS="western">
+<A NAME="binding-scope"></A>Binding scope</H2>
+<P>The method <CODE CLASS="western">scope.binding_scope(var)</CODE>
+varies by the context of <CODE CLASS="western">var</CODE>.</P>
+<PRE CLASS="western"><CODE CLASS="western">def binding_scope(self, var):</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">context = self.context(var)</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if context is Global: return global scope</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if context is Local: return self</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">if context is Nonlocal:</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">if self._closure_scope(var): return self._closure_scope(var)</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">else: raise SyntaxError</CODE>
+<CODE CLASS="western">    </CODE><CODE CLASS="western">else:</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">closure = self._closure_scope(var)</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">if closure: return closure</CODE>
+<CODE CLASS="western">        </CODE><CODE CLASS="western">else:</CODE>
+<CODE CLASS="western">            </CODE><CODE CLASS="western">if context is Nonlocal: raise SyntaxError</CODE>
+<CODE CLASS="western">            </CODE><CODE CLASS="western">else: return global scope</CODE></PRE><H1>
+<A NAME="acknowledgments"></A>Acknowledgments</H1>
+<P>This document started with an <A HREF="https://github.com/gvanrossum/gvanrossum.github.io/blob/main/formal/scopes.md">essay</A>
+written by Guido van Rossum. I removed the Toplevel scope. I moved
+all the runtime discussion to a new document <A HREF="namespaces.md">namespaces.md</A>.</P>
+<P>Otherwise, I simplified some definitions and revised the search
+algorithms.</P>
+<H1><A NAME="sample-markdown"></A>Sample Markdown</H1>
+<P>This is some basic, sample markdown.</P>
+<H2 CLASS="western"><A NAME="second-heading"></A>Second Heading</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Unordered lists, and:</P>
+	<OL>
+		<LI><P STYLE="margin-bottom: 0in">One 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">Two 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">Three 
+		</P>
+	</OL>
+	<LI><P>More 
+	</P>
+</UL>
+<BLOCKQUOTE>Blockquote</BLOCKQUOTE>
+<P>And <STRONG>bold</STRONG>, <EM>italics</EM>, and even <EM>italics
+and later </EM><EM><STRONG>bold</STRONG></EM>. Even strikethrough. <A HREF="https://markdowntohtml.com/">A
+link</A> to somewhere.</P>
+<P>And code highlighting:</P>
+<PRE CLASS="western"><CODE CLASS="western">var foo = 'bar';</CODE>
+
+<CODE CLASS="western">function baz(s) {</CODE>
+<CODE CLASS="western">   </CODE><CODE CLASS="western">return foo + ':' + s;</CODE>
+<CODE CLASS="western">}</CODE></PRE><P>
+Or inline code like <CODE CLASS="western">var foo = 'bar';</CODE>.</P>
+<P>Or an image of bears</P>
+<P><IMG SRC="http://placebear.com/200/200" NAME="graphics1" ALIGN=BOTTOM WIDTH=75 HEIGHT=38 BORDER=0></P>
+<P>The end ...</P>
+</BODY>
+</HTML>
