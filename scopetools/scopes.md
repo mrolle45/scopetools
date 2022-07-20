@@ -29,19 +29,26 @@ These are:
 - **`FunctionScope`**, for `ast.FunctionDef`.  This is a `def` statement including decorators.
 - **`LambdaScope`**, for `ast.Lambda`.  This is a `lambda` expression.
 - **`ComprehensionScope`**, for one of:
-    - `ast.ListComp`.  This is a `[expr for var in iter ...]` expression.
-    - `ast.SetComp`.  This is a `{expr for var in iter ...}` expression.
+    - `ast.ListComp`.  This is an `[expr for var in iter ...]` expression.
+    - `ast.SetComp`.  This is an `{expr for var in iter ...}` expression.
     - `ast.DictComp`.  This is a `{key : expr for var in iter ...]` expression.
-    - `ast.GeneratorExp`.  This is a `(expr for var in iter ...)` expression.
-- 
+    - `ast.GeneratorExp`.  This is an `(expr for var in iter ...)` expression.
+ 
+## Scope Kind
 
+This is an enumeration in the `Basic` class (a base class of `Scope`).  The members are also class attributes of `Scope`  They correspond to the actual class of the scope:
+- **GLOB**: `GlobalScope`
+- **CLASS**: `CkassScope`
+- **FUNC**: `FunctionScope`
+- **LAMB**: `LambdaScope`
+- **COMP**: `ComprehensionScope`
 
 ## Variable
 
 A **variable** is almost any occurrence of a Python identifier in a program text.  The grammar determines whether an identifier is a variable or not.
 
 The exceptions are:
-- Attributes, as in `(expression).attribute`.
+- Attributes, as in `(expression).attribute`, or an `ast.Attribute` node.
 - Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
     ```py
     import module as variable
@@ -90,7 +97,7 @@ Scopes form a tree structure based on the relationship of **enclosing**.  Any tw
 
 The **parent** of any scope (other than the GlobalScope) is its smallest enclosing scope.
 
-### Enclosed Comprehension Scope {#encl}
+### Enclosed Comprehension Scope
 
 For any scopes `outer` and `inner`, `inner` is an **enclosed comprehension** of `outer` if:
 - `inner` is a comprehension,
@@ -138,18 +145,25 @@ In addition, the following conditions are errors:
 
 ## Context of a variable
 
-This describes how a variable is used in a scope.  It can be one of:
+This describes how a variable is used in a scope.  
+During the build of the scope, It can be one of:
 
 - **Local**.  The variable appears somewhere in the scope where it is bound to some value, annotated without a value, or deleted.
-- **Nonlocal**.  The scope contains a `nonlocal variable` statement.  It is a syntax error if this occurs after any other reference, or in the global scope.
+- **Nonlocal**.  The scope contains a `nonlocal variable` statement.  It is a syntax error if this occurs after any other reference, or in the global scope.  After building the scope, this 
 - **Global**.  The scope contains a `global variable` statement.  It is a syntax error if this occurs after any other reference.  This does not apply in the global scope itself.  The variable is considered to be Local in the global scope as well.
 - **Seen**.  The variable appears in, and only in, a non-binding context.  It will be changed to Free at the end of the scope text.
 - **Walrus**.  Only used in comprehensions.  The variable appears as a walrus target in this scope or any *enclosed comprehension* (defined above).
 - **Free**.  None of the above.  The variable appears only in a non-binding context or it might not appear at all in the scope.
 
+After the scope is built, it can be one of these, based on `scope.binding_scope(var)`:
+- **Local**.  `scope.binding_scope(var)` is `scope`.
+- **Global**.  `scope.binding_scope(var)` is the global scope, if `scope` *is not* the global scope
+- **Nonlocal**.  `scope.binding_scope(var)` is neither `scope` nor the global scope.
+
 Each occurrence of an identifier has exactly one context.
 Context is determined purely by the grammar.
 
+The method `scope.context(var: str)` returns a `VarCtx` object for the context.  This may change before the entire scope's text has been built.
 
 ## Closed and open scopes
 
@@ -158,7 +172,6 @@ At runtime, the known variable names cannot be extended dynamically
 (e.g. by monkey-patching).
 
 All other scopes are **open scopes**.  At runtime, additional variables can be associated with the scope.
-
 
 ## Binding scope of a variable
 
@@ -174,19 +187,76 @@ A fundamental idea here is that a variable is considered to be **the identical v
 
 At runtime, any binding operation is always performed in the binding scope.  However, the current value of a variable is not always its value in the binding scope.  This is discussed in the [namespaces](namespaces.md) document.
 
-Note: this cannot be computed until the *entire* program text has been processed.
-
+Note: this cannot be computed until the *entire* module text has been processed and `outer._cleanup()` has been called for every `outer` which encloses `scope`.
 
 ## Closure scope of a variable
 
-This concept is related to the determination of the binding scope.  It is the scope, if any, where the variable would be found if it were in a Nonlocal context. 
-  It is denoted by the method call
+This concept is related to the determination of the binding scope.
+It is denoted by the method call
 
-`scope.closure_scope(var: str) -> Scope | None`
+`scope._closure_scope(var: str) -> Scope | None`
 
 The algorithm for this is detailed below.
 
-Note: this cannot be computed until the *entire* program text has been processed.
+The closure for a closed scope where `var` has Local context, is itself.
+The closure for a closed scope where `var` has Global context, is None.
+The closure for the global scope is None.
+Otherwise, the closure is the closure of its parent.
+
+Note: this cannot be computed until the *entire* module text has been processed and `outer._cleanup()` has been called for every `outer` which encloses `scope`.
+
+# Scope Building
+
+A Scope is built by first constructing it, and then calling primitive methods in the same order as corresponding items in the syntax tree.
+This will create and build all the nested scopes.
+
+The top of the Scopes tree is a RootScope, which contains a GlobalScope for each module.  There are two ways to build the tree:
+1. Construct a RootScope() directly,  
+    Build each GlobalScope using  
+    `with root.nest(root.GLOB, module name (optional)) as glob:`  
+    - primitive methods on glob and any nested scopes.
+2. Construct a `GlobalScope(name (optional))` directly.  This creates a RootScope as its parent.  The name, if provided, is bound in the RootScope.  
+    `with glob.build():`  
+    - primitive methods on glob and any nested scopes.
+
+After any GlobalScope has been built, then any post-build methods may be called on any scope in its scope tree.
+
+## Primitive Methods
+
+A scope is specified by calling various primitive methods while scanning the scope's text.
+
+- **`with scope.build(): ...`**  
+    All other primitives are called in this context.  
+    Afterwards,
+    - the name of a Class or Function scope is bound in the parent scope
+    - the name of a Global scope, if given, is bound in the Root scope,  
+    - for a Global scope, `scope._cleanup()` is called.
+- **`with scope.nest(kind, name = '') -> Scope: ...`**  
+    Creates, and yields, a new scope enclosed in the current scope.  Includes new scope.build(), so all other primitives for the new scope are called within this context.
+- **`scope.use(var: str)`**  Variable in a non-binding reference.
+- **`scope.bind(var: str, **kwds)`**  Variable in a binding reference.  
+    Keywords are used to indicate if it is annotated, a function argument, or a nested scope.  
+    The semantics are affected by these context managers:
+    - **`with scope.use_walrus(): ...`**  
+    Any `bind()` call is for the target in a `target := value` expression.
+    - **`with scope.no_walrus(): ...`**  
+    Any `with use_walrus():` raises a SyntaxError.  This is done while processing the iterable expression in a `for x in iterable` which is part of a comprehension.
+
+- **`scope.nonlocal_statement(var: str)`**  In `nonlocal variable`.
+- **`scope.global_statement(var: str)`**  In `global variable`.
+- **`scope._cleanup()`**  
+    Called implicitly at the end of `glob.build()` for any GlobalScope `glob`.  
+    Then called recursively for all nested scopes in the tree.  
+    1. Any variable with a Free, Seen or Nonlocal context is resolved to either Nonlocal or Global, using the `scope.binding_scope(variable)` method (detailed below).  In the case of Nonlocal, it may raise a SyntaxError.
+    2. Call `child._cleanup()` recursively for each child scope.
+## Post-build Methods
+These may be called after `outer._cleanup()` has been called for all `outer` scopes that enclose `scope`.
+- **`scope.binding_scope(var: str) -> Scope`**  
+Returns the binding scope for `var` (defined above and detailed below).
+
+- **`scope._closure_scope(var: str) -> Scope | None`**  
+This is a helper function for `binding_scope(var)`
+Returns the binding scope for `var`, if any (defined above and detailed below).
 
 # Algorithms
 
@@ -196,16 +266,16 @@ The context of a variable is determined by a state machine which responds to cer
 
 Initial context = Free.
 
-Any reference to `var` in a non-binding situation:
+Any non-binding reference to `var`:
 
     Free -> Seen
-Reference to `var` as a walrus target in a comprehension or any [enclosed comprehension](#encl)
+Reference to `var` as a walrus target in a comprehension or any *enclosed comprehension* (defined above).
 
     Free | Seen -> Walrus
     Local -> syntax error
     other contexts are not possible here.
 
-Any other reference to `var` in a binding situation:
+Any other binding reference to `var` :
 
     Free | Seen -> Local
     Nonlocal | Global | Walrus -> syntax error
@@ -220,21 +290,20 @@ A `global var` statement:
     Free -> Global
     Seen | Local | Nonlocal -> syntax error
 
-End of scope:
+`cleanup():
 
-    Seen -> Free
+    Seen | Free | Walrus -> Nonlocal | Global or syntax error.
 
 ## Closure scope
 
-The method `scope.closure_scope(var)` works by searching from the scope along the parent chain, looking for a *closed* scope in which the var is Local.  The search fails if it reaches a scope in which the var is Global, or if it reaches the global scope.
+The method `scope._closure_scope(var)` works by searching from the scope along the parent chain, looking for a *closed* scope in which the var is Local.  The search fails if it reaches a scope in which the var is Global, or if it reaches the global scope.
 
 ```py
-def closure_scope(self, var):
+def _closure_scope(self, var):
     if self is global scope: return None
     if self.context(var) is Global: return None
-    if self is open: return self.parent.closure_scope(var)
-    if self.context(var) is Local: return self
-    else: return self.parent.closure_scope(var)
+    if self is closed and self.context(var) is Local: return self
+    else: return self.parent._closure_scope(var)
 ```
 
 ## Binding scope
@@ -247,12 +316,14 @@ def binding_scope(self, var):
     if context is Global: return global scope
     if context is Local: return self
     if context is Nonlocal:
-        if self.closure_scope(var): return self.closure_scope(var)
+        if self._closure_scope(var): return self._closure_scope(var)
         else: raise SyntaxError
-    if context is Free:
-        closure = self.closure_scope(var)
+    else:
+        closure = self._closure_scope(var)
         if closure: return closure
-        else: return global scope
+        else:
+            if context is Nonlocal: raise SyntaxError
+            else: return global scope
 ```
 
 
