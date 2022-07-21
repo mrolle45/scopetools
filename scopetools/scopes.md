@@ -2,47 +2,48 @@
 
 Michael Rolle, 2022
 
-# Introduction
-
-I've been trying to pin down the definition of scopes.
-Here's my latest attempt.
-IMO the official
-[Naming and binding
-](https://docs.python.org/3/reference/executionmodel.html#naming-and-binding)
-section in the Language Reference does not do a good job specifying this.
-
 # Definitions
 
 ## Syntax Tree
 
-A **Syntax Tree** is a representation of the program text of a module, which is produced by the `ast.parse()` method.  Refer to [ast documentation](https://docs.python.org/3.10/library/ast.html#module-ast) for complete details.
+A **syntax tree** is a representation of the program text of a module, which is produced by the `ast.parse()` method.  Refer to [ast documentation](https://docs.python.org/3.10/library/ast.html#module-ast) for complete details.
 
-The tree for a Python module is comprised of **nodes** which are subclasses of `ast.AST`.  Each node represents a single contiguous section of the text.  Elements of a node, including other nodes, represent subsets of that section of text.
+A **node** is an object which is a subclass of `ast.AST`.  It contains **items**, which can be:
+- an element of a list which is a field of the node.
+- an optional field of the node with a value other than None.
+- a required single-valued field of the node.
+
+A **syntax item** is an object which appears in the syntax tree.  This can be:
+- A node.
+- An item of a node which is not another node.  For example, `ast.FunctionDef.name`, which is a str.  
+
+Each item represents a single contiguous section of the text.  Items of a node represent subsets of that section of text.
+
+A Python module is considered to be the same as an `ast.Module` tree.  In this document, the program will be described in terms of nodes in the syntax tree.
+
+The code in this `scopetools` package does not require that there be an actual syntax tree, or a module file which would be parsed into one.  An application is only required to build a Scope tree as though there is an actual syntax tree.  There are examples of programs which build a scope tree without an actual syntax tree.
 
 ## Scope
 
-A Scope is a portion of the program text which corresponds to one of a few specific node classes.  They are represented in the `scopetools.scopes` module by corresponding subclasses of `Scope`
+A **scope** is a syntax item of one of a few specific node classes.  They are represented in the `scopetools.scopes` module by corresponding subclasses of `Scope`
 
-These are:
-- **`GlobalScope`**, for `ast.Module`.  This is the entire program text.
-- **`ClassScope`**, for `ast.ClassDef`.  This is a `class` statement including decorators.
-- **`FunctionScope`**, for `ast.FunctionDef`.  This is a `def` statement including decorators.
-- **`LambdaScope`**, for `ast.Lambda`.  This is a `lambda` expression.
-- **`ComprehensionScope`**, for one of:
-    - `ast.ListComp`.  This is an `[expr for var in iter ...]` expression.
-    - `ast.SetComp`.  This is an `{expr for var in iter ...}` expression.
-    - `ast.DictComp`.  This is a `{key : expr for var in iter ...]` expression.
-    - `ast.GeneratorExp`.  This is an `(expr for var in iter ...)` expression.
+A **scope kind** is an enumeration in the `Basic` class (a base class of `Scope`).  The members are also class attributes of `Scope`.
+
+| class   |      kind      |  node | Python |
+|:----------|:-------------|:------|:--
+| RootScope |ROOT | (see below) |
+| GlobalScope|GLOB|   ast.Module | entire module
+| ClassScope|CLASS|   ast.ClassDef | `class` statement with decorators
+| FunctionScope|FUNC|   ast.FunctionDef |`def` statement with decorators
+| LambdaScope|LAMB|   ast.Lambda |`lambda` expression
+| ComprehensionScope|COMP|   ast.ListComp |`[expr for var in iter ...]`
+| ...|...|   ast.SetComp |`{expr for var in iter ...}`
+| ...|...|   ast.DictComp |`{key : expr for var in iter ...]`
+| ...|...|   ast.GeneratorExp |`(expr for var in iter ...)`
+
+
+The class **RootScope** represents the entire environment of a running program.  That is, it is a collection of modules, represented by GlobalScope objects.  It is the top of a Scope tree.  
  
-## Scope Kind
-
-This is an enumeration in the `Basic` class (a base class of `Scope`).  The members are also class attributes of `Scope`  They correspond to the actual class of the scope:
-- **GLOB**: `GlobalScope`
-- **CLASS**: `CkassScope`
-- **FUNC**: `FunctionScope`
-- **LAMB**: `LambdaScope`
-- **COMP**: `ComprehensionScope`
-
 ## Variable
 
 A **variable** is almost any occurrence of a Python identifier in a program text.  The grammar determines whether an identifier is a variable or not.
@@ -59,26 +60,29 @@ The exceptions are:
 
 This document is concerned only with variables.
 
-### Binding and Non-binding References
+### References
 
-Each occurrence of a variable in the program text is called a **reference**.
+Each occurrence of a variable in the syntax tree is called a **reference**.  The reference is a syntax item.
 
-A **binding reference** implies that the variable is Local in the home scope.  Refer to the [documentation](https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names). The possibilities are:
+#### binding reference
+This implies that the variable is Local in the home scope.  Refer to the [documentation](https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names) for name binding. The possibilities are:
 - An `ast.Name` node, where the context attribute is either `ast.Store()` or `ast.Del()`.  Yes, a `del variable` statement is considered binding.
 
   This includes a target name in:
     - an assignment statement.
     - an augmented assignment statement.
     - an annotated assignment statement (even if there is no value).
-    - an assignment expression.
-    - a 'for' stateemnt target
-    - a 'for' clause in a comprehension
-- The name in a function or class definition.
+    - an assignment expression.  In a comprehension, the home scope is the owner scope.
+    - a 'for' statement target.
+    - a 'for' clause in a comprehension.
+- The name in a function or class definition.  The home scope is the parent.
 - A parameter name in a function definition.
 - An imported name (module name or module member) or alias in an `as variable` clause.
-- After `as` in a with statement, except clause or in the as-pattern in structural pattern matching,
-- In a capture pattern in structural pattern matching
-A **non-binding reference** is simply the use of the current value of the variable, and does not affect the variable's context (defined below) in the home scope (other than changing from Free to Seen).
+- After `as` in a with statement or except clause, or in the as-pattern in structural pattern matching.
+- In a capture pattern in structural pattern matching.
+
+#### non-binding reference
+ is simply the use of the current value of the variable, and does not affect the variable's context (defined below) in the home scope (other than changing from Free to Seen).
     This is any `ast.Name` node in which the context attribute is `ast.Load()`.
 
 Examples:
@@ -91,26 +95,49 @@ import foo.bar  # 'foo' is a binding reference;
                 # 'bar' is part of the module name and not used in the scope.
 ```
 
-## Parent or Enclosing Scope
+## Enclosing or Enclosed Scope
 
-Scopes form a tree structure based on the relationship of **enclosing**.  Any two scopes in the program are either disjoint, or one is completely contained in the other.  In latter case, we say that the larger scope *encloses* the smaller scope.
+For any two scopes, either they are unrelated (that is, they cover disjoint segments of the program code), or else one covers a subset of the other.
 
-The **parent** of any scope (other than the GlobalScope) is its smallest enclosing scope.
+In the latter case, the larger scope **encloses**, or it is an **enclosing scope** of, the smaller scope.  Likewise, the smaller scope **is enclosed by**. or it is an **enclosed scope** of, the larger scope.
 
-### Enclosed Comprehension Scope
+In this document, it may also be expressed succinctly as **outer > inner** (or **inner < outer**).
+## Parent or Child Scope
 
-For any scopes `outer` and `inner`, `inner` is an **enclosed comprehension** of `outer` if:
-- `inner` is a comprehension,
-- `outer` is an enclosing scope of `inner`,
-- recursively, either
-    - 'outer' is the parent of 'inner',
-    - or `inner.parent` is an enclosed comprehension of `outer`.
+An outer scope is the **parent** of an inner scope, or the inner scope is a **child** of the outer scope, when
+- parent > child, and
+- There is no other scope such that parent > scope > child.
 
-That is to say, every scope in the parent chain, starting from `inner` up to, but not including, `outer`, is a comprehension. 
+In a scope tree, every scope other than the RootScope has a parent, and every scope can be reached from the root by a series of children.
+
+### Owned Comprehension Scope
+
+For the purpose of explaining the behavior of assignment expressions in a comprehension...  
+For two scopes `owner` and `owned`, `owned` is an **owned comprehension** of `owner` if:
+- `owner` >= `owned`
+- `owned` is a comprehension
+- for any `other` scope, where `owner` > `other` > `owned`, `other` is also a comprehension.
+
+Note that a comprehension is an owned comprehension of itself.
+
+That is to say, every scope in the parent chain, starting from `owned` up to, but not including, `owner`, is a comprehension. 
+
+In addition, if `owner` is not a comprehension, then `owner` is **the owner of** `owned`.  Any comprehension has exactly one owner.
+Example:
+``` py
+def f():                        # owner
+    [x for x in                    # owned by owner
+        { y for y in                   # also owned by owner
+            (lambda n:                      # NOT owned
+                [ z for z in [1, 2, 3] ]       # NOT owned
+            )(2)
+        }
+    ]
+```
 
 ## Home Scope
 
-This is a property of each variable reference in the program text.  It is the scope associated with that reference.
+This is a property of each variable reference in the syntax tree.  It is the scope associated with that reference.
 
 Most of the time, the **home scope** is the smallest scope whose area includes the reference.
 
@@ -125,7 +152,7 @@ However, certain variable references are not part of that scope and are part of 
 
 ### Walrus considerations
 
-Also, for an assigment expression within any comprehension, the home scope of the target variable is the nearest enclosing non-comprehension scope.  That is, it skips over enclosing comprehensions.  The comprehension is an *enclosed comprehension* (defined above) of the home scope.
+Also, for an assigment expression within any comprehension, the home scope of the target variable reference is the owner non-comprehension scope.  That is, it skips over enclosing comprehensions.  The comprehension is owned by the home scope.
 
 For example, at the top level, the home scope of the variable in 
 
@@ -135,30 +162,30 @@ is the global scope, not the `[x for ...]` comprehension.
 
 In addition, the following conditions are errors:
 
-- The variable is a target in the 'for' clause of a comprehension and also a walrus target in that comprehension or any *enclosed comprehension* (defined above).
+- The variable is a target in the 'for' clause of a comprehension and also a walrus target in any comprehension owned by it (defined above).
 - A walrus occurs in an iterable clause in any comprehension
   (even if as part of a lambda or another comprehension).
-- The home scope is a class definition.
+- The owner scope is a class definition.
 
 (For the walrus-related rules, see
 [PEP 572](https://www.python.org/dev/peps/pep-0572/#scope-of-the-target).)
 
 ## Context of a variable
 
-This describes how a variable is used in a scope.  
-During the build of the scope, It can be one of:
+This is an enumeration `Scope.VarCtx` in the `Basic` class (a base class of `Scope`).  It describes how a variable is used in a scope.  It is returned by [scope.context(var: str)](#scope.context).
+During the build of the scope, it may change.  
+It can be one of:
 
-- **Local**.  The variable appears somewhere in the scope where it is bound to some value, annotated without a value, or deleted.
-- **Nonlocal**.  The scope contains a `nonlocal variable` statement.  It is a syntax error if this occurs after any other reference, or in the global scope.  After building the scope, this 
-- **Global**.  The scope contains a `global variable` statement.  It is a syntax error if this occurs after any other reference.  This does not apply in the global scope itself.  The variable is considered to be Local in the global scope as well.
-- **Seen**.  The variable appears in, and only in, a non-binding context.  It will be changed to Free at the end of the scope text.
-- **Walrus**.  Only used in comprehensions.  The variable appears as a walrus target in this scope or any *enclosed comprehension* (defined above).
-- **Free**.  None of the above.  The variable appears only in a non-binding context or it might not appear at all in the scope.
+- **Local**.  The variable appears in a binding reference in the scope, or in `variable := value` in any [owned comprehension](#owned-comprehension-scope).  Also, in a GlobalScope, if its context is Global in any enclosed scope.
+- **Nonlocal**.  The scope contains a `nonlocal variable` statement.
+- **Global**.  The scope contains a `global variable` statement.
+This does not apply in the global scope itself, in which it is redundant and ignored.
+- **Seen**.  The variable appears (so far) in, and only in, a non-binding context.
+- **Walrus**.  Only used in comprehensions.  The variable appears as a walrus target in any [owned comprehension](#owned-comprehension-scope).
+- **Unused**.  None of the above.  The initial state.
 
-After the scope is built, it can be one of these, based on `scope.binding_scope(var)`:
-- **Local**.  `scope.binding_scope(var)` is `scope`.
-- **Global**.  `scope.binding_scope(var)` is the global scope, if `scope` *is not* the global scope
-- **Nonlocal**.  `scope.binding_scope(var)` is neither `scope` nor the global scope.
+The Scope object records the contexts of all variables with other than Unused context.
+At the beginning of the scope, the context of any variable is Unused.  This will change to one of the other contexts the first time the variable is used.  After that, the only allowed change is from Seen to Local.  Any other occurrence of the variable raises a SyntaxError.
 
 Each occurrence of an identifier has exactly one context.
 Context is determined purely by the grammar.
@@ -204,6 +231,16 @@ The closure for the global scope is None.
 Otherwise, the closure is the closure of its parent.
 
 Note: this cannot be computed until the *entire* module text has been processed and `outer._cleanup()` has been called for every `outer` which encloses `scope`.
+
+## Scope for eval() and exec()
+
+These functions do not have the same effect as their code strings would have if located in the same place directly in the scope.  The difference is in the value of a variable which is captured from an enclosing scope.  If there is a nonlocal declaration in the scope, then the results are the same.  Otherwise, the value in the global scope is used (or a NameError is raised).
+
+The **eval scope** of a variable is the scope in which `eval()` will find the value.  It uses the `globals()` and `locals()` values at the point where `eval()` is called.
+
+The **local scope** of a variable is the same, if it is found in `locals()`, otherwise it is a NameError.  It is in `locals()` if its context is either Local or Nonlocal, but not if it is Capture or Global.
+
+These are implemented by the methods `scope.eval_scope(var)` and `scope.locals_scope(var)`, *resp.*, which are detailed below.
 
 # Scope Building
 
@@ -260,70 +297,64 @@ Returns the binding scope for `var`, if any (defined above and detailed below).
 
 # Algorithms
 
-## Context
+## Scope.context
+Scope.context(self, var: str) -> VarCtx
 
 The context of a variable is determined by a state machine which responds to certain events, which correspond to some `ast` nodes in the program.  These are applied in the program order.
 
-Initial context = Free.
+Initial context = Unused.
 
 Any non-binding reference to `var`:
 
     Free -> Seen
-Reference to `var` as a walrus target in a comprehension or any *enclosed comprehension* (defined above).
+Reference to `var` as a walrus target in an [owned comprehension](#owned-comprehension-scope) of a comprehension.
 
-    Free | Seen -> Walrus
+    Unused | Seen -> Walrus
     Local -> syntax error
     other contexts are not possible here.
 
 Any other binding reference to `var` :
 
-    Free | Seen -> Local
+    Unused | Seen -> Local
     Nonlocal | Global | Walrus -> syntax error
 
 A `nonlocal var` statement:
 
-    Free -> Nonlocal
+    Unused -> Nonlocal
     Seen | Local | Global -> syntax error
 
 A `global var` statement:
 
-    Free -> Global
+    Unused -> Global
     Seen | Local | Nonlocal -> syntax error
 
-`cleanup():
-
-    Seen | Free | Walrus -> Nonlocal | Global or syntax error.
-
-## Closure scope
+## Scope._closure_scope
 
 The method `scope._closure_scope(var)` works by searching from the scope along the parent chain, looking for a *closed* scope in which the var is Local.  The search fails if it reaches a scope in which the var is Global, or if it reaches the global scope.
 
 ```py
-def _closure_scope(self, var):
+def _closure_scope(self, var: str):
     if self is global scope: return None
     if self.context(var) is Global: return None
     if self is closed and self.context(var) is Local: return self
     else: return self.parent._closure_scope(var)
 ```
 
-## Binding scope
+## Scope.binding_scope
 
 The method `scope.binding_scope(var)` varies by the context of `var`.
 
 ```py
-def binding_scope(self, var):
+def binding_scope(self, var: str):
     context = self.context(var)
     if context is Global: return global scope
     if context is Local: return self
-    if context is Nonlocal:
-        if self._closure_scope(var): return self._closure_scope(var)
-        else: raise SyntaxError
-    else:
-        closure = self._closure_scope(var)
+    closure = self._closure_scope(var)
         if closure: return closure
+        if context is Nonlocal:
+            raise SyntaxError
         else:
-            if context is Nonlocal: raise SyntaxError
-            else: return global scope
+            return global scope
 ```
 
 
