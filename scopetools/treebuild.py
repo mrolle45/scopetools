@@ -17,6 +17,8 @@ import ast
 from abc import *
 from typing import *
 
+from scope_common import *
+
 from scopes import *
 #from assignable import Assignor
 
@@ -75,7 +77,6 @@ built using the Scope Builder and the same Traverser.
 
 """
 
-TreeT = TypeVar('TreeT')
 SrcT = TypeVar('SrcT')
 ValT = TypeVar('ValT')
 TravT: TypeAlias = 'Traverser[TreeT, SrcT]'
@@ -90,9 +91,9 @@ class Traverser(Generic[TreeT, SrcT]):
 	def __init__(self):
 		pass
 
-	def build(self, build: BldT, src: SrcT) -> TreeT:
+	def build(self, build: BldT) -> TreeT:
 		self.builder = build
-		self.visit(src)
+		self.visit(build.curr.src)
 
 	#def visit(self, src: SrcT) -> None:
 	#	super().visit(src)
@@ -103,41 +104,37 @@ class Traverser(Generic[TreeT, SrcT]):
 		try: return getattr(self.builder, attr)
 		except AttributeError: return self.__getattribute__(attr)
 
-class Builder(Generic[SrcT, TreeT]):
+class Builder(TreeRef, Generic[SrcT, TreeT]):
 	""" Creates and builds a Tree starting with a given root.
 	"""
 	trav: TravT
 	curr: TreeT				# The tree currently working on.
-	par: TreeT | None		# Parent of curr, if known and with_parent() is allowed.
-	assignor: Assignor
 
 	def __init__(self, root: TreeT, trav: TravT = None):
 		if trav:
 			self.trav = trav
 
-		self.curr = root
-		self.par = None
-		#self.assignor = Assignor(self)
+		super().__init__(root)
 
-	def build(self, src: SrcT) -> None:
+	def build(self) -> None:
 		with self.curr.build():
-			if hasattr(self, 'trav'): self.trav.build(self, src)
+			if hasattr(self, 'trav'): self.trav.build(self)
 
 	@contextmanager
 	def use_parent(self) -> None:
-		assert self.par, f'Cannot escape to parent of {self.curr!r}.'
-		save, self.curr, self.par = self.curr, self.par, None
+		save, self.curr = self.curr, self.curr.parent
+		assert self.curr, f'Cannot escape to parent of {save!r}.'
 		yield
-		self.curr, self.par = save, self.curr
+		self.curr = save
 
-	@contextmanager
-	def nest(self, kind: ScopeKind, name: str = '', **kwargs) -> Generator:
-		""" Create and push context to a nested tree.
-		"""
-		newtree: TreeT = self._make_nested(kind, name, **kwargs)
-		with newtree.build() as n:
-			with self.nest_tree(newtree) as n2:
-				yield n2
+	#@contextmanager
+	#def nest(self, kind: ScopeKind, *args, **kwargs) -> Generator:
+	#	""" Create and push context to a nested tree.
+	#	"""
+	#	newtree: TreeT = self._make_nested(kind, *args, **kwargs)
+	#	with newtree.build() as n:
+	#		with self.nest_tree(newtree) as n2:
+	#			yield n2
 
 	@contextmanager
 	def nest_tree(self, newtree: TreeT) -> Generator:
@@ -148,15 +145,9 @@ class Builder(Generic[SrcT, TreeT]):
 		yield self.curr
 		self.par, self.curr = save, self.par
 
-	def nest_Module(self, name: str = '', **kwds) -> GlobalScope:
-		return self.nest(self.GLOB, name, **kwds)
-	def nest_Function(self, name: str, **kwds) -> FunctionScope:
-		return self.nest(self.FUNC, name, **kwds)
-	def nest_Class(self, name: str, **kwds) -> ClassScope:
-		return self.nest(self.CLASS, name, **kwds)
 
 	@abstractmethod
-	def _make_nested(self, kind: ScopeKind, name: str = '', **kwargs) -> TreeT:
+	def _make_nested(self, kind: ScopeKind, src: SrcT, name: str = '', **kwargs) -> TreeT:
 		...
 
 	def scope_builder(self) -> ScopeBuilder:
@@ -186,9 +177,9 @@ class ScopeBuilder(Builder):
 	#	"""
 	#	return self.curr.build()
 
-	def _make_nested(self, kind: ScopeKind, name: str = '', **kwargs) -> TreeT:
+	def _make_nested(self, *args, **kwargs) -> TreeT:
 		""" Create a nested Scope from self.curr. """
-		return self.curr.nest(kind, name, **kwargs)
+		return self.curr.nest(*args, **kwargs)
 
 class NamespaceBuilder(Builder):
 	""" Specialized builder for Namespace trees. """
@@ -196,14 +187,14 @@ class NamespaceBuilder(Builder):
 		super().__init__(*args, **kwargs)
 		self.indexed = indexed
 
-	def build(self, src: SrcT):
+	def build(self):
 		# Build the root scope if necessary.
 		if not self.curr.scope.is_built:
 			sc_bldr = self.scope_builder()
-			sc_bldr.build(src)
+			sc_bldr.build()
 			self.curr.update_vars()
 		self.nested_iter = iter(self.curr.scope.nested)
-		self.trav.build(self, src)
+		self.trav.build(self)
 
 	def has_bind(self, var: str) -> bool:
 		return self.curr.has_bind(var)
@@ -231,8 +222,8 @@ class NamespaceBuilder(Builder):
 		The kind and name are redundant.
 		"""
 		scope = next(self.nested_iter)
-		assert kind is scope.kind and name == scope.scope_name
-		return self.curr.nest(scope, key=name if self.indexed else None, **kwargs)
+		assert kind is scope.kind and name == scope.name
+		return self.curr.nest(**kwargs)
 
 """ Specialized Traverser for tree of ast.Node objects. """
 
@@ -260,27 +251,27 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 	def visit_FunctionDef(self, src: ast.FunctionDef):
 		returns = self.anno_str(src.returns)
 
-		with self.nest(self.FUNC, src.name, returns=returns, type_comment=src.type_comment):
+		with self.nest(self.FUNC, src, src.name, returns=returns, type_comment=src.type_comment):
 			for name, node in ast.iter_fields(src):
 				if name != 'returns':
 					self.visit(node)
 
 	def visit_ClassDef(self, src: ast.ClassDef):
-		with self.nest(self.CLASS, src.name):
+		with self.nest(self.CLASS, src, src.name):
 			self.generic_visit(src)
 
 	def visit_Lambda(self, src: ast.Lambda):
-		with self.nest(self.LAMB):
+		with self.nest(self.LAMB, src):
 			self.generic_visit(src)
 
 	def visit_GeneratorExp(self, src: ast.GeneratorExp):
-		self.visit_comp(src.generators, src.elt)
+		self.visit_comp(src, src.elt)
 
 	visit_ListComp = visit_GeneratorExp
 	visit_SetComp = visit_GeneratorExp
 
 	def visit_DictComp(self, src: ast.DictComp):
-		self.visit_comp(src.generators, src.key, src.value)
+		self.visit_comp(src, src.key, src.value)
 
 	# Simple name binding operations, with name(s) as strings in the ast node...
 
@@ -294,11 +285,11 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 
 	def visit_Nonlocal(self, src: ast.Nonlocal):
 		for name in src.names:
-			self.nonlocal_stmt(name)
+			self.decl_nonlocal(name)
 
 	def visit_Global(self, src: ast.Global):
 		for name in src.names:
-			self.global_stmt(name)
+			self.decl_global(name)
 
 	def visit_Import(self, src: ast.Import):
 		for alias in src.names:
@@ -347,7 +338,7 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		# The order of operations is:
 		#	Evaluate the context_expr.
 		#	Call its __enter__() method
-		#	Assign the result to the optional_vars, if present.  This is an Target.
+		#	Assign the result to the optional_vars, if present.  This is a Target.
 		self.visit(src.context_expr)
 		target = src.optional_vars
 		if target:
@@ -402,16 +393,17 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 			return ast.unparse(anno)
 
 
-	def visit_comp(self, comp: list[ast.comprehension], *elements: ast.AST) -> None:
+	def visit_comp(self, src: ast.AST, *elements: ast.AST) -> None:
 		""" Common to all comprehension nodes.
+		element(s) is either src.elt or src.key and src.value.
 		The element(s) are evaluated, in order, after every iteration of the
 		innermost "for" or "if" clause.
 		Everything is evaluated in a new COMP scope,
 			except the iterable in the first "in" clause.
 		"""
-		with self.nest(self.COMP):
+		with self.nest(self.COMP, src):
 			gen: ast.comprehension
-			for i, gen in enumerate(comp):
+			for i, gen in enumerate(src.generators):
 				# gen consists of a target (Target), an iterable, and some "if" expressions.
 				# target is assigned from each element of the iterable, not the iterable itself.
 				if i:

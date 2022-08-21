@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6b2a341c-ed71-4dfb-b8de-12f360c3ddda}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>scopetools\scopes.py</StartupFile>
+    <StartupFile>scopetools\scopestest.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="scopetools\target.py" />
-    <Compile Include="scopetools\basic.py">
+    <Compile Include="scopetools\scope_common.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scopetools\namespaces.py" />
@@ -38,7 +38,9 @@
     <InterpreterReference Include="Global|PythonCore|3.9" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="scopetools\scopescommon.md" />
     <Content Include="scopetools\scopes.md" />
+    <Content Include="scopetools\typing.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

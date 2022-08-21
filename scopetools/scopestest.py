@@ -10,6 +10,7 @@ from typing import NamedTuple, Iterable, Iterator
 from enum import *
 import attrs
 import argparse
+import functools
 
 from scopes import(
 	Scope,
@@ -49,7 +50,7 @@ class VarMode(Enum):
 							# used as a mode for a nested scope, nested.mode = Local and nested.nocapt = True.
 
 	@classmethod
-	def nocapt_modes(cls, nocapt: bool = True) -> Iterable[VarMode]:
+	def nocapt_modes(cls, nocapt: bool = True) -> Iterator[VarMode]:
 		""" Gives all the possible modes, based on whether "no captures" is in effect,
 		which defaults to True.
 		"""
@@ -98,11 +99,8 @@ class ScopeParams:
 				kind=kind,
 				)
 
+	@property
 	def nested_params(self) -> Iterable[ScopeParams]:
-		""" Characterizes all of the set of nested scopes to generate.
-		Tuple of (is class, var type).
-		At the bottom nesting level, the iterator is empty.
-		"""
 		if self.depth:
 			for kind in Scope.CLASS, Scope.FUNC:
 				for mode in self.mode.nocapt_modes(self.nocapt):
@@ -121,74 +119,78 @@ class GenTraverse(Traverser):
 	Note, the builders have some added methods and method keywords.
 	"""
 
-	def visit(self, ref: ScopeParams, name: str = ''):
+	def visit(self, src: SrcT):
 		""" Builder commands for a single tree, and recursively called for
 		nested trees.
 		Note, commands applied to the current tree will be interrupted by commands for
 		nested trees.
 		"""
+		with self.use_scope_srcs():
+			name = self.curr.name
 
-		var = 'x'
-		rvalue = self.make_rvalue(var)
+			var = 'x'
+			rvalue = self.make_rvalue(var)
 
-		# 1. Prologue.  This is the initial declarations or settings of name.
-		mode = ref.mode
+			# 1. Prologue.  This is the initial declarations or settings of name.
+			mode = src.mode
 
-		if mode is mode.Nonlocal:
-			try: self.nonlocal_stmt(var)
-			except SyntaxError: return
-		elif mode is mode.Global:
-			self.global_stmt(var)
-		elif mode is mode.Anno:
-			self.anno(var, 'str')
+			if mode is mode.Nonlocal:
+				try: self.decl_nonlocal(var)
+				except SyntaxError: return
+			elif mode is mode.Global:
+				self.decl_global(var)
+			elif mode is mode.Anno:
+				self.anno(var, 'str')
 
-		if mode is not mode.Unused:
-			self.maketest(var)
-
-		# 2. Nested classes and functions, with var in the original state.
-		def do_nested(sfx: str = ''):
-			for sub_ref in ref.nested_params():
-				sub_name = sub_ref.makename(sfx)
-				if name: sub_name = name + '_' + sub_name
-				with self.nest(sub_ref.kind, sub_name, ref=sub_ref):
-					self.visit(sub_ref, sub_name)
-		do_nested()
-
-		if mode.modifies:
-
-			# 3. Modifications to var.
-			orig_bound = isinstance(self.curr, Namespace) and self.has_bind(var)
-			# Make unbound.
-			if orig_bound:
-				self.delete(var)
+			if mode is not mode.Unused:
 				self.maketest(var)
 
-			# Make bound using nested scope.
-			if sys.version_info < (3, 8) or self.curr.kind.is_class:
-				nest_kind = self.FUNC; n = f'{name}_setfunc'
-			else:
-				nest_kind = self.COMP; n = ''
-			with self.nest(nest_kind, n): self.store_nested(var, rvalue, mode)
-			self.maketest(var)
+			# 2. Nested classes and functions, with var in the original state.
+			def do_nested(sfx: str = ''):
+				for sub_ref in src.nested_params:
+					sub_name = sub_ref.makename(sfx)
+					if name: sub_name = name + '_' + sub_name
+					with self.nest(sub_ref.kind, sub_ref, sub_name):
+						self.visit(sub_ref)
+			do_nested()
 
-			# Make unbound using nested scope.
-			nest_kind = self.FUNC
-			with self.nest(nest_kind, name + '_' + 'delfunc'): self.delete_nested(var, mode)
-			self.maketest(var)
+			if mode.modifies:
 
-			# Make the opposite state from originally.
-			if not orig_bound:
-				self.store(var, rvalue)
+				# 3. Modifications to var.
+				orig_bound = isinstance(self.curr, Namespace) and self.has_bind(var)
+				# Make unbound.
+				if orig_bound:
+					self.delete(var)
+					self.maketest(var)
+
+				# Make bound using nested scope.
+				if sys.version_info < (3, 8) or self.curr.kind.is_class:
+					nest_kind = self.FUNC; n = f'{name}_setfunc'
+				else:
+					nest_kind = self.COMP; n = f'{name}_setcomp'
+				with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n):
+				   self.store_nested(var, rvalue, mode)
 				self.maketest(var)
 
-			# 4. Similar nested classes and functions, with var in the opposite state.
-			do_nested('2')
+				# Make unbound using nested scope.
+				nest_kind = self.FUNC
+				n = name + '_' + 'delfunc'
+				with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n):
+				   self.delete_nested(var, mode)
+				self.maketest(var)
 
-			# 5. Epilogue.  Restore var to its original state.
-			if orig_bound: self.store(var, rvalue)
-			else: self.delete(var)
-			self.maketest(var)
+				# Make the opposite state from originally.
+				if not orig_bound:
+					self.store(var, rvalue)
+					self.maketest(var)
 
+				# 4. Similar nested classes and functions, with var in the opposite state.
+				do_nested('2')
+
+				# 5. Epilogue.  Restore var to its original state.
+				if orig_bound: self.store(var, rvalue)
+				else: self.delete(var)
+				self.maketest(var)
 
 class GenScopes(ScopeBuilder):
 	""" Builder subclass to create the Scopes tree. """
@@ -200,30 +202,31 @@ class GenScopes(ScopeBuilder):
 	# Special methods used by the traverser...
 
 	@contextmanager
-	def nest(self, *args, ref: ScopeParams = None, **kwds) -> Generator:
+	def nest(self, kind: Scope.Kind, src: ScopeParams, *args, **kwds) -> Iterator[Scope]:
 		""" Preserve and update whether the scope has a closure scope for 'x'.
-		This is possible because the scope.ref.mode indicates how closure is
+		This is possible because the scope.src.mode indicates how closure is
 		propagated to nested classes.
 		"""
 		save = self.has_closure
 
 		# push into nested scope.
-		with super().nest(*args, **kwds):
+		with super().nest(kind, src, *args, **kwds):
 			# Update has_closure based on new scope.
 			kind = self.curr.kind
 			# In a Class scope, nested scopes bypass the Class to find closures.
 			# So has_closure will be the same.
 			if kind.is_class:
 				pass
-			elif ref:
-				mode = ref.mode
+			elif src:
+				mode = src.mode
 				if mode in (mode.Local, mode.Anno):
 					self.has_closure = True
-
+				if mode is mode.Global:
+					self.has_closure = False
 			yield
 		self.has_closure = save
 
-	def maketest(self, name: str): pass
+	def maketest(self, name: str): self.use(name)
 
 	def make_rvalue(self, name: str) -> str:
 		""" Make str value to store in variable {name}. """
@@ -247,9 +250,9 @@ class GenScopes(ScopeBuilder):
 				pass
 			else:
 				if parent_mode is parent_mode.Global or scope.parent.kind.is_global:
-					self.global_stmt(name)
+					self.decl_global(name)
 				else:
-					self.nonlocal_stmt(name)
+					self.decl_nonlocal(name)
 
 	def delete(self, name: str) -> None:
 		self.bind(name)
@@ -264,20 +267,20 @@ class GenScopes(ScopeBuilder):
 			pass
 		else:
 			if parent_mode is parent_mode.Global or scope.parent.kind.is_global:
-				self.global_stmt(name)
+				self.decl_global(name)
 			else:
-				self.curr.nonlocal_stmt(name)
+				self.curr.decl_nonlocal(name)
 
-	def build_scope(self, ref: ScopeParams):
+	def build_scope(self, src: ScopeParams):
 		""" Define the static properties of the scope and create and build the nested scopes.
 		"""
-		self.trav.build(self, ref)
+		self.trav.build(self, src)
 
-	def nonlocal_stmt(self, name):
+	def decl_nonlocal(self, name):
 		""" Check if the name is resolvable. """
 		if not self.has_closure:
 			raise SyntaxError()
-		self.curr.nonlocal_stmt(name)
+		self.curr.decl_nonlocal(name)
 
 class GenNamespaces(NamespaceBuilder):
 	""" Builder subclass to create the Namespaces tree, and write python test code. """
@@ -286,37 +289,38 @@ class GenNamespaces(NamespaceBuilder):
 		""" A Builder to build the current scope, called if scope is not yet built. """
 		return GenScopes(self.curr.scope, self.trav)
 
-	def build_all(self, ref: ScopeParams, out: TextIO = StringIO(), prolog: list[str] = []):
+	def build_all(self, out: TextIO = StringIO(), prolog: list[str] = []):
 		self.num_tests: int = 0
 		self.out = out
 		self.level: int = 0
-		self.lineno = len(prolog) + 1
+		self.lineno = 1
+		#self.lineno = len(prolog) + 1
 		self.write('')
-		self.build(ref)
+		self.build()
 
 	@contextmanager
-	def nest_tree(self, space: Namespace) -> Generator:
+	def nest(self, kind: _Kind, *args, **kwds) -> Iterable[TreeT]:
 		""" Moves to new nested Namespace, also saves and restores some things.
 		Writes the definition of the scope and a call to it if it is a function.
 		"""
-		kind = space.kind
-		objname = space.scope.scope_name
-		if kind.is_class:
-			self.write(f'class {objname}:')
-		elif kind.is_function:
-			self.write(f'def {objname}():')
-		self.level += 1
-		l = self.lineno
-		with super().nest_tree(space):
-			yield space
-		if l == self.lineno:
-			self.write('pass')
-		self.level -= 1
-		if kind.is_function:
-			self.write(f'{objname}()')
+		newspace: Namespace
+		with super().nest(kind, *args, **kwds) as newspace:
+			objname = newspace.name
+			if kind.is_class:
+				self.write(f'class {objname}:')
+			elif kind.is_function:
+				self.write(f'def {objname}():')
+			self.level += 1
+			l = self.lineno
+			yield newspace
+			if l == self.lineno:
+				self.write('pass')
+			self.level -= 1
+			if kind.is_function:
+				self.write(f'{objname}()')
 
 	@contextmanager
-	def use_parent(self) -> Generator:
+	def use_parent(self) -> Iterator[Namespace]:
 		""" Adjusts the indent level during the context, as well as switching the current tree. """
 		self.level -= 1
 		with super().use_parent() as parent:
@@ -331,7 +335,7 @@ class GenNamespaces(NamespaceBuilder):
 		self.write(f'try: test({name}, {value!r}, {self.lineno})')
 		self.write(f'except NameError: test(None, {value!r}, {self.lineno})')
 
-	def nonlocal_stmt(self, name):
+	def decl_nonlocal(self, name):
 		binding = self.scope.binding(name)
 		scope = binding and binding.scope
 		if not (scope and scope.kind.is_closed):
@@ -346,13 +350,13 @@ class GenNamespaces(NamespaceBuilder):
 			raise SyntaxError
 		self.write(f'nonlocal {name}')
 
-	def global_stmt(self, name):
+	def decl_global(self, name):
 		self.write(f'global {name}')
 
 	def make_rvalue(self, name: str) -> str:
 		""" Make str value to store in variable {name}. """
 		scope = self.curr.scope
-		try: rvalue: str = scope.binding_scope(name).scope_name + '.' + name
+		try: rvalue: str = scope.binding_scope(name).name + '.' + name
 		except SyntaxError: rvalue = name
 		if rvalue.startswith('.'): rvalue = name
 		return rvalue
@@ -373,8 +377,6 @@ class GenNamespaces(NamespaceBuilder):
 			with self.use_parent(): self.write(f'[{name} := _ for _ in ["{rvalue}"]]')
 			self.store_walrus(name, rvalue)
 		else:
-			status = scope.parent.status(name)
-
 			if scope.parent.kind.is_class and parent_mode.is_loc:
 				# For a class, it is necessary to find its stack frame and store in its locals.
 				self.write(f'inspect.stack()[1].frame.f_locals["{name}"] = "{rvalue}"')
@@ -394,14 +396,14 @@ class GenNamespaces(NamespaceBuilder):
 		""" Write code to delete value in parent.  There are no nested scopes.
 		"""
 		scope = self.scope
-		status = scope.parent.status(name)
+		context = scope.parent.context(name)
 
-		if scope.parent.kind.is_class and status.is_local:
+		if scope.parent.kind.is_class and context.is_local:
 			# For a class with a Local variable, it is necessary to find its stack frame
 			#	and remove from its locals.
 			self.write(f'del inspect.stack()[1].frame.f_locals["{name}"]')
 		else:
-			if status.is_global or self.parent.kind.is_global:
+			if context.is_global or self.parent.kind.is_global:
 				self.write(f'global {name}; del {name}')
 			else:
 				self.write(f'nonlocal {name}; del {name}')
@@ -428,15 +430,15 @@ def gen(args, out: TextIO, prolog: list[str]) -> Tuple[int, Namespace]:
 	""" Main function to write most of the output. """
 
 	top_ref = ScopeParams(0, args.d, VarMode.Local)
-	scope = GlobalScope(cache_resolved=False, ref=top_ref)
+	scope = Scope(kind=Scope.GLOB, cache_resolved=False, src=top_ref)
 	# TODO: Let the namespace builder build the scope.
 	trav = GenTraverse()
 	#scope_bldr = GenScopes(scope, trav)
 	#with scope_bldr.build():
 	#	scope_bldr.build_scope(top_ref)
-	ns = GlobalNamespace(scope, key=43)
+	ns = GlobalNamespace(top_ref, None, key=43)
 	ns_bldr = GenNamespaces(ns, trav, indexed=True)
-	try: ns_bldr.build_all(top_ref, out, prolog)
+	try: ns_bldr.build_all(out, prolog)
 	finally:
 		print(f'{ns_bldr.num_tests} tests')
 		if args.s:
@@ -492,47 +494,50 @@ print('Running tests. ')
 		print()
 		msg, lineno = exc.args
 		lines = out.getvalue().splitlines()
-		lineno -= len(prolog.splitlines())
+		#lineno -= len(prolog.splitlines())
 		print(*lines[max(lineno - 11, 0):lineno], sep='\n')
 		print('---- ' + msg)
 		print(*lines[lineno: lineno + 10], sep='\n')
 	else:
+		if num_tests % 1000: print('\r' f'{num_tests}', end='')
 		print(' done')
 		print(f'All {num_tests} tests passed.')
 
 	# Regression test.  Generate trees from the output code.
 	import treebuild, ast
-	root = GlobalNamespace()
+	src = ast.parse(out.getvalue())
+	root = GlobalNamespace(src=src)
 	trav = treebuild.ASTTraverser()
 	build = treebuild.NamespaceBuilder(root, trav, indexed=True)
-	build.build(ast.parse(out.getvalue()))
+	build.build()
 	x = 0
 	from itertools import zip_longest
 	# Compare the scopes trees.
 	def compare(scope1, scope2) -> bool:
-		if scope1.scope_name != scope2.scope_name:
-			if scope2.kind is not ScopeKind.COMP:
+		if scope1.name != scope2.name:
+			if scope2.kind is not scope2.kind.COMP:
 				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
 		b1, b2 = scope1.vars.get('x'), scope2.vars.get('x')
 		if (b1 is None) != (b2 is None):
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
+			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1}, {b2}")
 		if b1 and (b1.scope is None) != (b2.scope is None):
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
-		if b1 and b1.scope and b1.scope.scope_name != b2.scope.scope_name:
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
-		for n1, n2 in zip_longest(scope1.nested, scope2.nested):
+			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope!r}, {b2.scope!r}")
+		if b1 and b1.scope and b1.scope.name != b2.scope.name:
+			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope.name}, {b2.scope.name}")
+		for n1, n2 in zip_longest(scope1.nested.values(), scope2.nested.values()):
 			if n1 is None or n2 is None:
 				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
 			compare(n1, n2)
 	compare(root_ns.scope, root.scope)
 	# Compare the namespace trees.
 	def compare(ns1, ns2) -> bool:
-		if ns1.scope.scope_name != ns2.scope.scope_name:
+		if ns1.name != ns2.name and ns1.kind is not ns1.COMP:
 			raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
-		names = sorted(set(ns1.nested))
-		if names != sorted(set(ns2.nested)):
+		nest1 = ns1.nested
+		nest2 = ns2.nested
+		if len(nest1) != len(nest1):
 			raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
-		for name in names:
-			compare(ns1.nested[name], ns2.nested[name])
+		for ns1, ns2 in zip(nest1, nest2):
+			compare(ns1, ns2)
 	compare(root_ns, root)
 			

@@ -21,7 +21,7 @@ from abc import *
 from functools import cached_property
 import ast
 
-from basic import *
+from scope_common import *
 
 import scopes
 from scopes import *
@@ -29,12 +29,12 @@ from treebuild import SrcT
 
 NsT = TypeVar('NsT', bound='Namespace')
 ValT = TypeVar('ValT')
-BuildT = Callable[[NsT, scopes.ScopeT, scopes.RefT, Iterator[scopes.ScopeT]], None]
+BuildT = Callable[[NsT, scopes.ScopeT, scopes.SrcT, Iterator[scopes.ScopeT]], None]
 _noarg: Final = object()				# Use as some argument default values.
 
-def null_builder(space: NsT, scope: ScopeT, ref: RefT, nested: Iterator[ScopeT]): pass
+def null_builder(space: NsT, scope: ScopeT, src: SrcT, nested: Iterator[ScopeT]): pass
 
-class Namespace(Basic, Generic[scopes.RefT, ValT]):
+class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	""" Abstract base class.
 	Able to get the value (if any) of, bind, rebind, or unbind identifiers.
 	Associated with a Scope object.
@@ -167,38 +167,42 @@ class Namespace(Basic, Generic[scopes.RefT, ValT]):
 	scope: Scope
 	parent: Namespace | None
 	vars: Mapping[str, Binding[ValT]]
-	ref: RefT | None = None
+	src: SrcT | None = None
 
-	# Optional place where client can find nested namespaces by name or some other key.
-	nested: Mapping[object, Namespace]
+	# Nested namespaces created during build.
+	nested: List[Namespace]
 	scope_class: ClassVar[Type[Scope]]
 	global_ns: GlobalNamespace | None
 
-	def __init__(self, scope: Scope, parent: Namespace | None, *,
-				 key: object = None, ref: RefT = None, **kwds):
-		super().__init__()
-		assert scope.kind is self.kind
-		self.scope = scope
-		if ref: self.ref = ref
-		self.parent = parent
+	def __init__(self, src: SrcT = None, parent: Namespace = None, name: str = None, *,
+				 key: object = None, **kwds):
+		super().__init__(src, parent, **kwds)
+		#if src: self.src = src
+		#self.parent = parent
 		if parent:
-			assert scope.parent is parent.scope
-			if key is not None:
-				parent.nested[key] = self
+			assert self.scope.parent is parent.scope
 			self.global_ns = parent.global_ns
 		else:
-			assert scope.parent is None
 			self.global_ns = None
 
 		# Create bindings for local names in the scope.
 		self.vars = VarTable()
 		self.update_vars()
-		self.nested = {}
+		self.nested = []
 
 	def update_vars(self):
 		for var in self.scope.vars:
 			if var not in self.vars:
 				self.vars[var] = Binding()
+
+	@contextmanager
+	def build(self) -> Generator[Self]:
+		if self.is_built:
+			raise ValueError(f'Object {self!r} is already built')
+		yield self			# perform building primitives in this context.
+		if self.kind in (self.CLASS, self.FUNC):
+			self.parent.store(self.name, self)
+		del self.is_built
 
 	# Methods called by the builder...
 
@@ -253,26 +257,6 @@ class Namespace(Basic, Generic[scopes.RefT, ValT]):
 		# This will raise the appropriate exception.
 		self.load(var)
 
-	def add_nonlocal(self, var: str) -> None:
-		pass
-
-	def add_global(self, var: str) -> None:
-		pass
-
-	def nest(self, nested: ScopeT | Iterator[ScopeT], **kwds) -> NsT:
-		""" Create a nested Namespace using a nested Scope. """
-		if not isinstance(nested, Scope):
-			nested = next(nested)
-		newspace = self._nest_scope(nested, **kwds)
-		return newspace
-
-	def nest_ns(self, space: NsT) -> NsT:
-		""" Add and build a given Namespace. """
-		scope = space.scope
-		assert scope.parent is space.parent.scope
-		space.builder(space, scope, scope.ref, iter(scope.nested))
-		return space
-
 	# Helper methods...
 
 	def _binding_namespace(self, var: str) -> Namespace | None:
@@ -301,19 +285,21 @@ class Namespace(Basic, Generic[scopes.RefT, ValT]):
 	def _nest_scope(self, scope: ScopeT, **kwds) -> NsT:
 		""" Create a nested Namespace for given Scope. """
 		cls: Type[NsT] = ns_classes[scope.kind]
+		with self.nest(scope.kind, scope.src) as new:
+			x = 0
 		return cls(scope, self, **kwds)
 
-	def __repr__(self) -> str:
-		return f"{self.__class__.__qualname__}({self.scope.scope_name!r})"
 
-class RootNamespace(Namespace):
+class RootNamespace(Namespace, kind=Scope.ROOT):
 	""" The environment for a program and its modules.
 	Includes bindings for the builtins module.
 	"""
-	kind: ClassVar[Scope.Kind] = Scope.ROOT
+	def __new__(cls, *args):
+		return super().__new__(cls, kind=Scope.ROOT)
 
 	def __init__(self, scope: RootScope = None):
-		super().__init__(scope or RootScope(), None)
+		self.scope = scope or RootScope()
+		super().__init__(None, None)
 
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
@@ -321,17 +307,22 @@ class RootNamespace(Namespace):
 		"""
 		return self.vars[var]
 
-	def add_module(self, name: str = '', key: object = None) -> GlobalNamespace:
+	def add_module(self, src: SrcT, name: str = '', key: object = None) -> GlobalNamespace:
 		""" Create a nested GlobalNamespace, using a new GlobalScope. """
-		return self._nest_scope(GlobalScope(name, parent=self.scope), key=key)
+		scope: GlobalScope
+		with self.scope.nest(self.GLOB, src, name) as scope:
+			with self.nest(scope.kind, scope.src) as new:
+				return new
 
-class GlobalNamespace(Namespace):
-	kind: ClassVar[Scope.Kind] = Scope.GLOB
+class GlobalNamespace(Namespace, kind=Scope.GLOB):
 
-	def __init__(self, scope: GlobalScope = None, parent: RootNamespace = None, **kwds):
-		if not scope:
-			scope = GlobalScope()
-		super().__init__(scope, parent or RootNamespace(scope.parent), **kwds)
+	def __init__(self, src: SrcT, parent: RootNamespace = None, name: str = '', **kwds):
+		if not parent:
+			parent = RootNamespace()
+			with parent.scope.nestGLOB(src, name) as scope:
+				src = scope.src
+			scope.is_built = False
+		super().__init__(src, parent, name, **kwds)
 		self.global_ns = self
 
 	def store(self, var: str, value: ValT) -> None:
@@ -354,8 +345,7 @@ class GlobalNamespace(Namespace):
 		""" Use given globals dictionary instead of separate VarTable(). """
 		self.vars = GlobalVarTable(glob)
 
-class ClassNamespace(Namespace):
-	kind: ClassVar[Scope.Kind] = Scope.CLASS
+class ClassNamespace(Namespace, kind=Scope.CLASS):
 
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of var.
@@ -365,28 +355,19 @@ class ClassNamespace(Namespace):
 		# Else try the global namespace.
 		return self.global_ns._load_binding(var)
 
-class FunctionNamespace(Namespace):
-	kind: ClassVar[Scope.Kind] = Scope.FUNC
+class FunctionNamespace(Namespace, kind=Scope.FUNC):
 
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of var.
 		"""
 		return self.vars[var]
 
-class LambdaNamespace(FunctionNamespace):
-	kind: ClassVar[Scope.Kind] = Scope.LAMB
+class LambdaNamespace(FunctionNamespace, kind=Scope.LAMB):
+	pass
 
-class ComprehensionNamespace(FunctionNamespace):
-	kind: ClassVar[Scope.Kind] = Scope.COMP
+class ComprehensionNamespace(FunctionNamespace, kind=Scope.COMP):
 	def __init__(self, *args, **kwds):
 		super().__init__(*args, **kwds)
-
-# Various Namespace subclasses, indexed by kind.
-# For example, {ROOT: RootNamespace}.
-ns_classes: dict[Scope.Kind, Type[Scope]] = dict()
-
-for kind in Scope.Kind:
-	ns_classes[kind] = eval(kind.make_name('%sNamespace'))
 
 class Binding(Generic[ValT]):
 	""" The current value (if any) of a Var in a Namespace.
@@ -538,17 +519,17 @@ expr = ast.parse('(x := y + 2)', mode='eval').body
 
 e = ASTPyObjectEval(expr)
 x = RootNamespace()
-y = x.add_module('foo', key=42)
+y = x.add_module(None, 'foo', key=42)
 y.store('y', 42)
 y.store('x', None)
 
 e(y)
-print(y.load('x'), y.load('y'))
+#print(y.load('x'), y.load('y'))
 
 expr = ast.parse('[1, 2, 3]', mode='eval').body
 
-print(ASTPyObjectEval(expr)(y))
+#print(ASTPyObjectEval(expr)(y))
 
-z = GlobalNamespace(GlobalScope('bar'), key=43)
+z = GlobalNamespace(None, None, 'bar', key=43)
 
 x

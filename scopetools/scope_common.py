@@ -85,7 +85,7 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	""" Common base class for Scopes, Namespaces, or other similar objects.
 	Defines the building primitive methods, and some enumeration constants.
 	"""
-	is_scope: ClassVar[boo] = False
+	is_scope: ClassVar[bool] = False
 
 	# Has the build completed?  Set False as an instance variable from the constructor
 	# until the end of the build() context manager.  It prevents resolving vars.
@@ -96,6 +96,7 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	Kind = _Kind
 	# Constants for above Kind members, copied into class variables
 	locals().update(Kind.__members__)
+
 
 	def __new__(cls, *args, kind: Kind = None, **kwds):
 		""" Factory for all tree objects.

@@ -312,7 +312,7 @@ The context of a variable is determined by a state machine which responds to cer
 The current context of any `var` which is not Unused is kept in the `Scope` object.  The absence of a current context means that the context is Unused.
 
 | Event | Unused | Seen | Local | Closure | Global | Walrus
----|---|---|---|---| 
+|---|---|---|---|---| 
 | Initial context | Unused | -- | -- | -- | -- | -- 
 | Any non-binding reference to `var` | Seen
 | [Walrus reference](#binding-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
