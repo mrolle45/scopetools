@@ -313,14 +313,14 @@ The current context of any `var` which is not Unused is kept in the `Scope` obje
 
 | Event | Unused | Seen | Local | Closure | Global | Walrus
 ---|---|---|---|---| 
-Initial context | Unused | -- | -- | -- | -- | -- 
-Any non-binding reference to `var` | Seen
-[Walrus reference](#binding-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
-Any other binding reference to `var` | Local | Local | | error | error | n/a [^impossible]
-A `nonlocal var` statement | Closure | error | error | | error | n/a [^impossible]
-A `global var` statement | Global | error | error | error | | n/a [^impossible]
-cleanup() with closure scope | | Closure 
-cleanup() with no closure scope | | Global | | error 
+| Initial context | Unused | -- | -- | -- | -- | -- 
+| Any non-binding reference to `var` | Seen
+| [Walrus reference](#binding-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
+| Any other binding reference to `var` | Local | Local | | error | error | n/a [^impossible]
+| A `nonlocal var` statement | Closure | error | error | | error | n/a [^impossible]
+| A `global var` statement | Global | error | error | error | | n/a [^impossible]
+| cleanup() with closure scope | | Closure 
+| cleanup() with no closure scope | | Global | | error 
 
 [^impossible]: Not possible because a COMP does not contain any statements (*i.e.* `nonlocal` or `global`), nor any binding reference other than a walrus reference.
 
