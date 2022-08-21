@@ -136,24 +136,34 @@ Otherwise, it is determined by the constructor from other parameters.
 ## Tree Constructor
 
 All trees are created by  
-`T(src: SrcT, parent: TreeT = None, *args, **kwds)`
+`T(src: SrcT, parent: TreeT = None, kind: Kind = None, *args, **kwds)`
 - `T` is some subclass of `TreeT`
 - `src` is the source object.  For any given `parent`, all `src` objects must be distinct objects.
 - `parent` is the parent tree, except for a ROOT.  
+- `kind` is the kind of the result, or `T.kind` if this is defined.
+For a Scope tree (`TreeT` is `Scope`):
 
-For a Scope tree (`TreeT` is `Scope`) additional arguments are
-- `name` is optional name, but required for CLASS and FUNC.
-- `kind` is optional.  If `T`.kind is defined, then this is used, otherwise `kind` is required.
++ additional arguments are:
+    + `name` is optional name, but required for CLASS and FUNC.
 
-For other `TreeT` types, a Scope is found by searching the child sources of `parent.scope` for one identical to `src`.  The new `tree.scope` is set to the corresponding child of `parent.scope`.  The attributes `tree.kind` and `tree.name` are copied from the Scope.
+  `tree.scope` = tree  
+  `tree.nested` = an empty mapping.  It becomes populated later as subtrees are created.
+
+For other tree types:
+
++ Find `scope` which is a child of `parent.scope` that matches `src`.    
++ `tree.scope, tree.name, tree.src = scope, scope.name, scope.src`.
++ `tree.nested` = a mapping `{id(src): `[`NestInfo`](#nestinfo-class)(src)` for src in scope.nested}.  That is, there is a slot for each possible source for a subtree.
+
 
 The tree might be an instance of some subclass of `TreeT` ...
 
-- If there is a subclass `K` corresponding to `kind` as mentioned above, the tree is an instance of `K`, with class attribute `K.kind` == `kind`.  
-- Otherwise the tree is an instance of `TreeT`, with instance attribute `tree.kind` == `kind`.
+- If there is a subclass `K` corresponding to `tree.kind` as mentioned above, the tree is an instance of `K`, with class attribute `K.kind` == `kind`.  
+- Otherwise the tree is an instance of `TreeT`, with instance attribute `tree.kind`.
 
 In all cases, `tree.kind` is `kind`
-## Scope of a Tree
+
+## Tree Scope
 
 Every tree has a corresponding `Scope` object, stored as `tree.scope`.  When `TreeT` is `Scope`, then `tree.scope` is `tree` itself.  For other `TreeT` types, tree.scope is a separate `Scope` object; the constructor finds the scope object from the `parent` and `src` parameters.
 
@@ -169,28 +179,20 @@ The parent chains of `tree` and `tree.scope` are exactly parallel.  `tree.parent
 - `src`: `SrcT`, used to populate the tree.
 - `nested: Mapping[int, `[`NestInfo`](#nestinfo-class)]`]`, nested sub-trees, corresponding (in order) to children of `src`.  Indexed by the id() of the child source.
 
-## Tree Methods
+## Tree State Methods
 
-There are many methods defined by `ScopeTree`.  Some of these methods are implemented only by some tree types; in other tree types, they are ignored and return None.
+There are many methods defined by `ScopeTree`.  **Setters** alter some aspect of the state of a tree, corresponding to something in the `tree.ast` (known as setters), and **getters** make inquiries about the current state.
 
-- **Static properties**.  These only apply to Scope trees.  Static properties are aspects of a Scope which are determined at compile time, such as how to interpret a variable name.  [foo](typing.md#annotations)
-# Creating and Building a Tree
+  Some of these methods are implemented only by some tree types; in other tree types, they are ignored and return None.
 
-A tree object is created simply by calling its class constructor.  The `ScopeTree()` constructor is called with the same parameters as the above attributes of `ScopeTree`, except for `src` and `nested`.  The constructor will use `scope.src` for `self.src` and create an empty list for `self.nested`.
+The tree state is arranged in a number of categories.
+- **Nesting info**.  These apply to all tree types.  They are used to create subtrees or inspect the tree structure.  Refer to [Nesting Methods](#nesting-methods) for details.
+- **Static info**.  These only apply to Scope trees.  Static properties are aspects of a Scope which are determined at compile time, such as how to interpret a variable name.  Refer to [scopes.md](scopes.md) for listing.  Non-Scope trees will delegate the getters to the `tree.scope` object.  
+- **Dynamic info**.  These only mainly to Namespace trees and ignored by Scope trees.  Dynamic properties are aspects of the object which change at runtime, such as the value of a variable, or child trees.  Refer to [namespaces.md](namespaces.md) for listing.
+- **Typing info**.  These only mainly to Typing trees and ignored by Scope trees.  This records static typing information associated with names.  A type checker might make several passes over a module, or a set of modules, and accumulate information.  Refer to [typing.md](typing.md) for listing.
 
-The tree is **built** by the following:  
-    `with `**tree.build()**`:`  
-In this context, call tree-building methods of `tree`.  
-After this context, any `TreeT` dependent cleanup is performed.
-    
-## Tree Building Methods
-
-### Creating a Subtree
-
-`with tree.nest(kind, scope) as subtree:`
-This creates the subtree and calls the context manager `subtree.build()`  
-In this context, call tree-building methods of `subtree`.
-
+### Note for Scope trees
+All setters for nesting and static info must be called while "building" the Scope object, in the same order in which the corresponding ASTs are found in the `tree.ast` tree.  After this, all Scope trees are immutable.
 
 ### Private Name Mangling
 In a class, the compiler considers certain variable names as "private" to that class, by transforming them to a different name which is (usually) different from the same name in a different class.  For details see [below](#transforming-private-names).
@@ -200,7 +202,26 @@ This is specified by a method
 
 This returns the transformed name if `self.kind` is CLASS and `var` is a private name.  Otherwise it returns `var` unchanged.
 
-All of the tree-building methods, when self.kind is CLASS, call `mangle`() on all variable names.  If the name is already mangled, there is no change because mangled names are not subject to mangling.  Mangling can be suppressed with a `nomangle=True` argument to the tree-building method.
+All of these setter and getter methods, when self.kind is CLASS, call `mangle`() on all variable names and for all tree types.  If the name is already mangled, there is no change because mangled names are not subject to mangling.  Mangling can be suppressed with a `nomangle=True` argument to the tree method.
+
+> Usually, this takes care of everything.  However, if an application needs to access a private class or instance variable *outside the class definition*, then it must provide the mangled name for the variable, possibly by calling `tree.mangle(var)` on a CLASS tree for the scope in question.
+
+# Creating and Building a Tree
+
+A tree object is created simply by calling its class constructor.
+
+The tree is **built** by the following:  
+    `with `**tree.build()**`:`  
+In this context, call tree-building methods of `tree`.  
+After this context, any `TreeT` dependent cleanup is performed.  For FUNC and CLASS trees, this includes registering the name of the new tree with the parent tree.
+    
+## Nesting Methods
+
+`with `**tree.nest**`(kind, src: SrcT) as subtree:`
+This creates the subtree and calls the context manager `subtree.build()`  
+In this context, call setter methods of `subtree`.
+
+Convenient aliases are: **tree.nestXXX**`(src: SrcT)` which calls `tree.nest(tree.XXX, src)`  XXX is the name of any member of `Kind`.
 
 # Notes
 These sections provide details for some things mentioned above, so as to keep this document easier to read.
