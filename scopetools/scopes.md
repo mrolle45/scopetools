@@ -311,7 +311,7 @@ Scope.context(self, var: str) -> VarCtx
 The context of a variable is determined by a state machine which responds to certain events, which correspond to some `ast` nodes in the program.  These are applied in the program order.  
 The current context of any `var` which is not Unused is kept in the `Scope` object.  The absence of a current context means that the context is Unused.
 
-Event | Unused | Seen | Local | Closure | Global | Walrus
+| Event | Unused | Seen | Local | Closure | Global | Walrus
 ---|---|---|---|---| 
 Initial context | Unused | -- | -- | -- | -- | -- 
 Any non-binding reference to `var` | Seen
