@@ -233,8 +233,7 @@ The traverser works in program order, moving up and down the scope hierarchy[^tr
 - A **builder**.  This is a single object which will create the `TreeT` objects, build their hierarchical structure, and set their static properties.  It responds to items found by the traverser, and calls various methods on the tree objects.  
 The builder moves up and down the tree structure and applies the methods to whichever tree object it is currently visiting.
 - A **root** `TreeT` ROOT object at the top of the hierarchy being built. 
-[^trav-visit]: 
-For example, the traverser may be working on a CLASS named `C`, then find a nested CLASS named `C.D`, then find items about `C.D` and its descendant scopes, and then return to `C` and find more items about `C`.  All of this occurs in the same sequence as the overall python program.
+[^trav-visit]: For example, the traverser may be working on a CLASS named `C`, then find a nested CLASS named `C.D`, then find items about `C.D` and its descendant scopes, and then return to `C` and find more items about `C`.  All of this occurs in the same sequence as the overall python program.
 
 The entire process of accumulating information from the program occurs in two or three stages:
 1. A `Scope` tree is built using the traverser and the source.  This is always a `Scope` tree, regardless of the actual `TreeT` type.
