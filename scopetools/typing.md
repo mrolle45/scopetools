@@ -64,7 +64,7 @@ The optional assignment is treated the same as an ordinary assignment statement,
 The annotation is treated according to the class of `AST.target`, and the value of `AST.simple`:
 
 | target class | simple | scope effect | runtime effect
-|:-|:-|:-|
+|:-|:-|:-|:-|
 | `ast.Name` | 1 | Make `AST.id` a local variable in FUNC tree only. | Set `__annotations[{AST.id}]` = annotation in CLASS or GLOB tree only.
 | `ast.Name` | 0 | None. | None.
 | `ast.Attribute` | 0 |  None. | Evaluate `AST.value`, *but not* `{AST.value}.{AST.attr}`.
