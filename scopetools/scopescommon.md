@@ -59,6 +59,19 @@ A **scope kind** is an [enum](#kind-enum) which corresponds (except for ROOT) to
 
 For brevity, any of these kind names can be used to mean an `AST` having that kind.
 
+## Scope Nesting
+
+Only certain kinds of scopes can be children or parents of other kinds of scopes.  These are the possible combinations:
+
+| Kind | Parent | Child | Items |
+|:---|:---|:---|
+| ROOT | (none) | GLOB | module
+| GLOB | ROOT | CLASS, FUNC, LAMB, COMP | statement, expression
+| CLASS, FUNC | GLOB, CLASS, FUNC | CLASS, FUNC, LAMB, COMP | statement, expression
+| LAMB, COMP | GLOB, CLASS, FUNC | LAMB, COMP | expression
+
+Just as `ast.parse()` can also parse a single python expression or statement, a tree can be constructed in this package starting from one of these.  However, to maintain uniformity of structure, GLOB or ROOT tree objects will be inserted into the hierarchy, so that the tree object can have global variables and names that are only in the `builtins` module.
+
 ## Scope AST Items
 The Python compiler considers each syntax item to belong to a particular scope AST.  
 
@@ -210,16 +223,40 @@ All of these setter and getter methods, when self.kind is CLASS, call `mangle`()
 
 A tree object is created simply by calling its class constructor.
 
+**Building** a tree means creating several `TreeT` objects and arranging them in a hierarchical structure.  This structure parallels the tree structure of scopes in a particular program.
+Building the tree includes setting the static properties of the objects.  
+It requires starting with the following:
+
+- The program to be examined.  This is in the form of a **source** object, with type `SrcT`.  It provides all the elements of the program, in program order.
+- A **traverser**.  This is an object which will walk through the source and find items of interest.  The traverser is written specifically for the type `SrcT`.  
+The traverser works in program order, moving up and down the scope hierarchy[^trav-visit].
+- A **builder**.  This is a single object which will create the `TreeT` objects, build their hierarchical structure, and set their static properties.  It responds to items found by the traverser, and calls various methods on the tree objects.  
+The builder moves up and down the tree structure and applies the methods to whichever tree object it is currently visiting.
+- A **root** `TreeT` ROOT object at the top of the hierarchy being built. 
+[^trav-visit]: 
+For example, the traverser may be working on a CLASS named `C`, then find a nested CLASS named `C.D`, then find items about `C.D` and its descendant scopes, and then return to `C` and find more items about `C`.  All of this occurs in the same sequence as the overall python program.
+
+The entire process of accumulating information from the program occurs in two or three stages:
+1. A `Scope` tree is built using the traverser and the source.  This is always a `Scope` tree, regardless of the actual `TreeT` type.
+2. Static information for each `Scope` is collected.  This actually takes place simultaneously with the above step, to avoid traversing the source object twice.  
+
+If `TreeT` is other than `Scope`:
+
+3. A parallel `TreeT` structure is created.  This does not use the traverser.  Each `TreeT` references its corresponding `Scope`.
+
+At this point, the tree is considered to be built, as all the static information is now present.
+
+The application may alter dynamic properties of the objects as it wishes, possibly using reports from the traverser.
 The tree is **built** by the following:  
     `with `**tree.build()**`:`  
-In this context, call tree-building methods of `tree`.  
-After this context, any `TreeT` dependent cleanup is performed.  For FUNC and CLASS trees, this includes registering the name of the new tree with the parent tree.
+- In this context, call tree-building methods of `tree`.  
+- After this context, any `TreeT` dependent cleanup is performed.  For FUNC and CLASS trees, this includes registering the name of the new tree with the parent tree.
     
 ## Nesting Methods
 
 `with `**tree.nest**`(kind, src: SrcT) as subtree:`
 This creates the subtree and calls the context manager `subtree.build()`  
-In this context, call setter methods of `subtree`.
+- In this context, call setter methods of `subtree`.
 
 Convenient aliases are: **tree.nestXXX**`(src: SrcT)` which calls `tree.nest(tree.XXX, src)`  XXX is the name of any member of `Kind`.
 
@@ -238,7 +275,7 @@ The [ast grammar](https://docs.python.org/3.10/library/ast.html#abstract-grammar
 | T* name | list[T] | value[:]
 
 ## `Kind` enum
-`ScopeTree.Kind` is an `enum` class which distinguishes different instances from each other, as well as `ROOT`, which represents a container for other objects.  The correspondence is shown in the table [above](#scope-AST)
+`ScopeTree.Kind` is an `enum` class which distinguishes different instances from each other, as well as `ROOT`, which represents a container for other objects.  The correspondence is shown in the table [above](#Scope-AST-and-Program-Structure)
 The elements of this enum are also defined as attributes of `ScopeTree`.  For example, `tree.GLOB` is `tree.Kind.GLOB`.
 All trees have a `kind` attribute.  Depending on the type TreeT, it may be provided to a TreeT() constructor, or it may be a class attribute of a subclass of TreeT.
 
