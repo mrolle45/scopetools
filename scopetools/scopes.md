@@ -68,39 +68,30 @@ Each occurrence of a variable in the syntax tree is called a **reference**.  The
 
 #### Binding reference
 This implies that the variable is Local in the scope.  Refer to the [documentation](https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names) for name binding. The possibilities are:
-- An `ast.Name` node, where the context attribute is either `ast.Store()` or `ast.Del()`.  Yes, a `del variable` statement is considered binding.
+- An `ast.Name` node, where the context attribute is either `ast.Store()` or `ast.Del()`.  Yes, a `del variable` statement is considered binding.  There is one exception[^nonbinding].
 
   This includes a target name in:
     - an assignment statement.
     - an augmented assignment statement.
-    - an annotated assignment statement, *except as noted below*.  `target` may be either `name` or `(name)`.
+    - an annotated assignment statement, *except as noted below*[^nonbinding].  `target` may be either `name` or `(name)`.
         If a value is assigned, as in `target: anno = value`, then this is treated as two statements:
         - `target: anno`.  
         - `target = value`.  This is handled like an ordinary assignment statement, as above, and is a binding reference for `name` in both cases.  
 
         If `target` is `name`, this is a binding reference.  The `anno` expression is evaluated and added to the `__annotations__` variable for a module or class.  
-        If `target` is `(name)`, **this is not** a binding reference.  In fact, it has no effect at all.  It may be followed by a `global name` or `nonlocal name` without raising a syntax error.  
         Examples:
-        ```py
-       name: anno          # update __annotations__
-       global name         # SyntaxError
-       ```
-        ```py
-       name: anno = 0      # update __annotations__, assignname = 0
-       global name         # SyntaxError
-       ```
-        ```py
-       (name): anno        # evaluate anno
-       global name         # OK
-       ```
-        ```py
-       (name): anno = 0    # evaluate anno, assign name = 0
-       global name         # SyntaxError
-       ```
-        
+
+        | Statement | \_\_annotations__ | Bind name | Assign name |
+        |:--|:--|:--|:--|
+        | name: anno| [name] = anno | Yes | No |
+        | name: anno = 0| [name] = anno | Yes | Yes |
+        | (name): anno| No change | No[^nonbinding] | No |
+        | (name): anno = 0| No change | Yes | Yes |
     - an assignment expression.  Note that the expresion can be contained within an [owned COMP](scopescommon.md#owned-comp).  This is termed a **walrus reference** if the scope itself is a COMP.
     - a 'for' statement target.
     - a 'for' clause in a COMP.
+[^nonbinding]: In `(name): anno` (no assignment), **this is not** a binding reference.  In fact, since there is no assignment, the statement has no effect at all.  It may be followed by a `global name` or `nonlocal name` without raising a syntax error.  
+        
 - The name in a function or class definition.  The home scope is the parent.
 - A parameter name in a function definition.
 - An imported name (module name or module member) or alias in an `as variable` clause.
@@ -191,7 +182,7 @@ It can be one of:
 - **Global**.  The scope contains a `global variable` statement.
 This does not apply in the global scope itself, in which it is redundant and ignored.
 - **Seen**.  The variable appears (so far) in, and only in, a non-binding context.
-- **Walrus**.  Only used in comprehensions.  The variable appears as a walrus target in any [owned COMP](scopescommon.md#owned-comp).
+- **Walrus**.  Only used in COMPs.  The variable appears as a walrus target in any [owned COMP](scopescommon.md#owned-comp).
 - **Unused**.  None of the above.  The initial state.
 
 The Scope object records the contexts of all variables with other than Unused context.
@@ -200,7 +191,7 @@ At the beginning of the scope, the context of any variable is Unused.  This will
 Each occurrence of an identifier has exactly one context.
 Context is determined purely by the grammar.
 
-The method `scope.context(var: str)` returns a `VarCtx` object for the context.  This may change before the entire scope's text has been built.
+The method [`scope.context`](#scope-context)`(var: str)` returns a `VarCtx` object for the `var`.  This may change before the entire scope's text has been built.
 
 ## Closed and open scopes
 
@@ -231,14 +222,14 @@ Note: this cannot be computed until the *entire* module text has been processed 
 This concept is related to the determination of the binding scope.
 It is denoted by the method call
 
-`scope._closure_scope(var: str) -> Scope | None`
+`scope._closure(var: str) -> VarBind | None`
 
-The algorithm for this is detailed [below](#scope._closure_scope).
+The algorithm for this is detailed [below](#scope._closure).
 
 The closure for a closed scope where `var` has Local context, is itself.
 The closure for a closed scope where `var` has Global context, is None.
 The closure for the global scope is None.
-Otherwise, the closure is the closure of its parent.
+Otherwise, the closure is the closure for its parent.
 
 Note: this cannot be computed until the *entire* module text has been processed and `outer._cleanup()` has been called for every `outer` which encloses `scope`.
 
@@ -250,7 +241,7 @@ The **eval scope** of a variable is the scope in which `eval()` will find the va
 
 **exec scope** is another name for 'eval scope'.
 
-The **local scope** of a variable is the same, if it is found in `locals()`, otherwise it is a NameError.  It is in `locals()` if its context is either Local or Closure, but not if it is Capture or Global.
+The **local scope** of a variable is the same, if it is found in `locals()`, otherwise it is a NameError.  It is in `locals()` if its context is either Local or Closure.
 
 These are implemented by the methods `scope.eval_scope(var)`, `scope.exec_scope(var)` and `scope.locals_scope(var)`, *resp.*, which are detailed below.
 
@@ -259,20 +250,17 @@ These are implemented by the methods `scope.eval_scope(var)`, `scope.exec_scope(
 A Scope is built by first constructing it, and then calling primitive methods in the same order as corresponding items in the syntax tree.
 This will create and build all the nested scopes.
 
-The top of the Scopes tree is a RootScope, which contains a GlobalScope for each module.  There are two ways to build the tree:
-1. Construct a RootScope() directly,  
-    Build each GlobalScope using  
-    `with root.nest(root.GLOB, module name (optional)) as glob:`  
-    - primitive methods on glob and any nested scopes.
-2. Construct a `GlobalScope(name (optional))` directly.  This creates a RootScope as its parent.  The name, if provided, is bound in the RootScope.  
-    `with glob.build():`  
-    - primitive methods on glob and any nested scopes.
+The top of the Scopes tree is a RootScope, which contains a GlobalScope for each module.
 
+The tree is built using the classmethod `ScopeTree.build()`.
+- The class is usually GlobalScope, but could be some other subclass of Scope.  If the tree is not a GLOB, then a GLOB will be created as its parent.
+- A new ROOT is created to be the parent of the GLOB if one is not provided to `build()`.
+- `build()` is a context manager.  It yields the new tree
 After any GlobalScope has been built, then any post-build methods may be called on any scope in its scope tree.
 
 ## Primitive Methods
 
-A scope is specified by calling various primitive methods while scanning the scope's text.
+A scope is specified by calling various primitive methods while traversing the scope's source.
 
 - **`with scope.build(): ...`**  
     All other primitives are called in this context.  
@@ -284,7 +272,11 @@ A scope is specified by calling various primitive methods while scanning the sco
     Creates, and yields, a new scope enclosed in the current scope.  Includes new scope.build(), so all other primitives for the new scope are called within this context.
 - **`scope.use(var: str)`**  Variable in a non-binding reference.
 - **`scope.bind(var: str, **kwds)`**  Variable in a binding reference.  
-    Keywords are used to indicate if it is annotated, a function argument, or a nested scope.  
+    Keywords are used to indicate:
+    - `anno: bool = False` if it is annotated
+    - `param: bool = False` if a function argument
+    - `nested: bool = False` if a nested scope.  
+    
     The semantics are affected by these context managers:
     - **`with scope.use_walrus(): ...`**  
     Any `bind()` call is for the target in a `target := value` expression.
@@ -296,8 +288,9 @@ A scope is specified by calling various primitive methods while scanning the sco
 - **`scope._cleanup()`**  
     Called implicitly at the end of `glob.build()` for any GlobalScope `glob`.  
     Then called recursively for all nested scopes in the tree.  
-    1. Any variable with a Free, Seen or Closure context is resolved to either Closure or Global, using the `scope.binding_scope(variable)` method (detailed below).  In the case of Closure, it may raise a SyntaxError.
-    2. Call `child._cleanup()` recursively for each child scope.
+    * Any variable with a Seen or Closure context is resolved to either Closure or Global, using the [scope.binding](#scope.binding)`(variable)` method (detailed below).  In the case of Closure, it will raise a SyntaxError if the binding scope is not found.
+
+    * Call `child._cleanup()` recursively for each child scope.
 ## Post-build Methods
 These may be called after `outer._cleanup()` has been called for all `outer` scopes that enclose `scope`.
 - **`scope.binding_scope(var: str) -> Scope`**  
@@ -308,33 +301,36 @@ Returns the binding scope for `var` (defined above and detailed below).
 ## Scope.context
 Scope.context(self, var: str) -> VarCtx
 
-The context of a variable is determined by a state machine which responds to certain events, which correspond to some `ast` nodes in the program.  These are applied in the program order.  
-The current context of any `var` which is not Unused is kept in the `Scope` object.  The absence of a current context means that the context is Unused.
+The current context of any `var` which is not Unused is kept in the `Scope` object.  The absence of a current context means that the context is Unused.  
+The context of a variable is determined by a state machine which responds to certain events, which correspond to some `ast` nodes in the program.  These are applied in the program order.  This table shows the transitions.  Blank cells mean no change to the context.
 
 | Event | Unused | Seen | Local | Closure | Global | Walrus
-|---|---|---|---|---|---|---| 
+|:---|:---|:---|:---|:---|:---|:---| 
 | Initial context | Unused | -- | -- | -- | -- | -- 
 | Any non-binding reference to `var` | Seen
-| [Walrus reference](#binding-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
+| [Walrus reference](#walrus-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
 | Any other binding reference to `var` | Local | Local | | error | error | n/a [^impossible]
 | A `nonlocal var` statement | Closure | error | error | | error | n/a [^impossible]
 | A `global var` statement | Global | error | error | error | | n/a [^impossible]
-| cleanup() with closure scope | | Closure 
-| cleanup() with no closure scope | | Global | | error 
+| _cleanup() with closure scope | | Closure 
+| _cleanup() with no closure scope | | Global | | error 
 
 [^impossible]: Not possible because a COMP does not contain any statements (*i.e.* `nonlocal` or `global`), nor any binding reference other than a walrus reference.
 
-## Scope.binding_scope()
+## Scope.binding_scope
 
-The method `scope.binding_scope(var)` returns the Scope (if any) where `var` is bound.  Implementation varies by the context of `var`.
+The method `scope.binding_scope(var) -> Scope` returns the Scope (if any) where `var` is bound.  Implementation varies by the context of `var`.
 The result is None if the context is Closure but there is no scope found.
 
+## Scope.binding
+`Scope.binding(var: str) -> VarBind` returns a binding for `var` in the  Scope (if any) where `var` is bound.  Raises SyntaxError if this fails, *i.e.*, `var` is a `Closure` but no closure scope exists.  Implementation varies by the context of `var`.  
+
 ```py
-def binding_scope(self, var: str) -> Scope | None:
+def binding(self, var: str) -> VarBind:
     context = self.context(var)
     if context is Global: return global scope
     if context is Local: return self
-    closure = self._closure_scope(var)
+    closure = self._closure(var)
         if closure: return closure
         if context is Closure:
             raise SyntaxError
@@ -342,24 +338,21 @@ def binding_scope(self, var: str) -> Scope | None:
             return global scope
 ```
 
-## Scope.binding()
-This is the same as `scope.binding_scope(var)`, but it returns a `Scope.VarBind` object.  This has attributes:
+The returned binding is a `Scope.VarBind` object.  This has attributes:
 - `scope: Scope | None` = the Scope (if any) returned by `binding_scope(var)`
-- `anno: bool` = if there was a `var: annotation` statement, with or without an assignment.
-- `param: bool` = if `var` is a function parameter.  It can also be annotated.
-- `nested: bool` =  if `var` is the name of a nested CLASS or FUNC.
-
-## Scope._closure_scope()
+- `anno, param, nested`: accumulated from those keywords in all `bind(var)` calls with this `scope`.
+    
+## Scope._closure
 This is an internal helper method used to find the binding scope of a variable in a Closure context.
 
-The method `Scope._closure_scope(var) -> Scope | None` works by searching from the scope along the parent chain, looking for a *closed* scope in which the var is Local.  The search fails if it reaches a scope in which the var is Global, or if it reaches the global scope.
+The method `Scope._closure(var) -> Scope.VarBind | None` works by searching from the scope along the parent chain, looking for a *closed* scope in which the var is Local.  The search fails if it reaches a scope in which the var is Global, or if it reaches the global scope.
 
 ```py
-def _closure_scope(self, var: str) -> Scope | None:
+def _closure(self, var: str) -> Scope.VarBind | None:
     if self is global scope: return None
     if self.context(var) is Global: return None
-    if self is closed and self.context(var) is Local: return self
-    else: return self.parent._closure_scope(var)
+    if self is closed and self.context(var) is Local: return self.vars[var]
+    else: return self.parent._closure(var)
 ```
 
 ## eval and exec methods

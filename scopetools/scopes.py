@@ -120,8 +120,6 @@ Scope building primitive operations:
 		If name is specified it is stored in the current scope.
 		Calls the new scope's builder, with the new scope as the current scope.
 
-		Note, this is also called by RootScope.add_module(), which supplies GLOB as the scope kind.
-
 	with parent(): body...  Delegates load and store operations to the current scope's parent.
 
 	with walrus_allowed(): body...  Disables ALL store_walrus() calls (raise SyntaxError).
@@ -131,20 +129,20 @@ After the Create phase is complete, these operations are valid:
 
 	Note that Resolve phase will have been performed on all enclosing scopes.
 
-	_closure_scope(var).  Looks for a closed scope in which var is Local (if any),
+	_closure(var).  Looks for a closed scope in which var is Local (if any),
 		including possibly the current scope itself.
 
-		These are the _closure_scope rules:
-		1.	An open scope returns its parent._closure_scope().
+		These are the _closure rules:
+		1.	An open scope returns its parent._closure().
 		2.	The global scope returns None.
 		3.	A closed scope returns itself if var is Local,
-			otherwise returns its parent._closure_scope().
+			otherwise returns its parent._closure().
 
 	binding_scope(var).  Returns the binding scope for the var, if any.
 		The binding scope might already be stored in the scope.
 		If the binding scope exists, other than _unresolved_nonlocal, return it.
-		Try calling _closure_scope(var).  If there is a value found, this is
-			the binding scope.
+		Try calling _closure(var).  If there is a value found, this is
+			the binding.
 		Otherwise it depends on the context of var:
 			For Unresolved, then either raise a SyntaxError or leave it as Unresolved.
 			Else the var is Seen or Unused.  Use the global scope as the binding scope, and
@@ -205,14 +203,12 @@ class Scope(ScopeTree, Generic[SrcT]):
 	scope: Scope
 	src: SrcT | None = None
 
-	# Child Scopes, mapped by their src ids (which must be unique).
-	nested: Mapping[int, ScopeT]
-	@property
-	def child_scopes(self) -> Iterable[ScopeT]: return self.nested.values()
+	# Child Scopes, in the order they were created.
+	nested: list[int, ScopeT]
 
 	kind: ClassVar[Scope.Kind]
 
-	# True if this Scope will allow walrus operators.
+	# True if this Scope will currently allow walrus operators.
 	#	Otherwise reject, with a SyntaxError, any walrus expression.
 	# It is False as an instance attribute:
 	#	1. Temporarily while examining any ITER in a comprehension.
@@ -244,15 +240,13 @@ class Scope(ScopeTree, Generic[SrcT]):
 			return f'<{rep}>'
 
 	@abstractmethod
-	def __init__(self, src: SrcT, parent: Scope = None, name: str = '',
-				 **_kwds):
-		if not src: src = _EmptySrc()
-		super().__init__(src, parent, name)
+	def __init__(self, src: SrcT = None, parent: Scope = None, name: str = '',
+				 **kwds):
+		super().__init__(src, parent, name, **kwds)
 		self.global_scope = parent and parent.global_scope
 		self.src = src
 		self.scope = self
 		self.vars = dict()
-		self.nested = dict()
 		if parent and not parent.walrus_allowed: self.walrus_allowed = False
 		self.is_built = False
 
@@ -389,16 +383,13 @@ class Scope(ScopeTree, Generic[SrcT]):
 		except: return False		# self.annos not created yet.
 
 	@contextmanager
-	def nest(self, kind: Scope.Kind, src: SrcT = None, name: str = '', **kwds) -> Iterable[Scope]:
+	def nest(self, kind: Scope.Kind, src: SrcT, name: str = '', scope: ScopeT = None, **kwds) -> Iterable[Scope]:
 		""" Report a nested scope.  Create the Scope object.
 		Report the name as assigned in the current scope, except for
 			Lambda and Comprehension, which are anonymous.
 		"""
 		with super().nest(kind, src, name, **kwds) as result:
 			src = result.src
-			if id(src) in self.nested:
-				raise ValueError(f'Duplicate src {src!r} for subscopes of {self!r}')
-			self.nested[id(src)] = result
 			yield result
 
 	def cleanup(self) -> None:
@@ -406,16 +397,8 @@ class Scope(ScopeTree, Generic[SrcT]):
 		var: str
 		for var, binding in self.vars.items():
 			if not binding or not binding.scope: self.binding(var, cacheit=True)
-		for nested in self.nested.values():
+		for nested in self.nested:
 			nested.cleanup()
-
-	def child_scope(self, src: SrcT) -> ScopeT:
-		""" Find the nested Scope having the given src. """
-		return self.nested[id(src)]
-
-	@property
-	def child_scopes(self) -> Iterable[ScopeT]:
-		return self.nested.values()
 
 	def _make_binding(self, var: str) -> VarBind:
 		""" Create a binding for var if it doesn't already exist.  Return the binding.
@@ -450,22 +433,13 @@ class RootScope(Scope, kind=Scope.ROOT):
 	"""
 	modules: Mapping[str, GlobalScope]
 
+	# ROOTs always have is_built = False, so that nested trees can always be added.
+	# But all_built is True, so that nested tree.all_built works properly.
 	all_built: bool = True
-
-	#def __new__(cls, **kwds):
-	#	return super().__new__(cls, Scope.ROOT)
 
 	def __init__(self, *args, **kwds):
 		super().__init__(None, *args, **kwds)
 		self.modules = {}
-		# Root scope is always considered built.
-		del self.is_built
-		self.all_built = True
-
-	def add_module(self, var: str = '', **kwds) -> GlobalScope:
-		result = self.nest_Global(var, **kwds)
-		if var: self.modules[var] = result
-		return result
 
 class GlobalScope(Scope, kind=Scope.GLOB):
 	parent: RootScope | None
@@ -480,7 +454,7 @@ class GlobalScope(Scope, kind=Scope.GLOB):
 		raise SyntaxError("nonlocal declaration not allowed at module level")
 
 	def decl_global(self, var: str) -> VarBind:
-		return self.make_binding(var)
+		return self._make_binding(var)
 
 	@contextmanager
 	def build(self) -> Iterable[Self]:
@@ -505,8 +479,6 @@ class NestedScope(Scope):
 	""" Any Scope other than GlobalScope or RootScope.  Subclasses are OpenScope and ClosedScope.
 	"""
 	parent: GlobalScope  # Cannot be None
-	def __init__(self, *args, **kwds):
-		super().__init__(*args, **kwds)
 
 	def binding(self, var: str, cacheit: bool = False) -> VarBind:
 		""" Find the binding.
@@ -531,7 +503,7 @@ class NestedScope(Scope):
 		else:
 			if binding and not binding.scope:
 				# Closure, no closure scope.  This is an error.
-				raise SyntaxError(f"no binding for nonlocal '{var}' found")
+				raise SyntaxError(f"no binding for nonlocal '{var}' found in scope {self!r}")
 			else:
 				# Seen or Unused.  Make Global.
 				binding = self.global_scope._make_binding(var)
@@ -540,9 +512,6 @@ class NestedScope(Scope):
 		return binding
 
 class OpenScope(NestedScope):
-
-	def _closure_scope(self, var) -> ClosedScope | None:
-		return self.parent._closure_scope(var)
 
 	def _closure(self, var: str) -> VarBind | None:
 		""" Get nearest enclosing ClosedScope for var, if any.  Never self.  """
@@ -553,7 +522,7 @@ class ToplevelScope(Scope):
 	parent: GlobalScope  # Cannot be None
 
 	def __init__(self, parent: GlobalScope):
-		super().__init__("<toplevel>", parent)
+		super().__init__(None, "<toplevel>", parent)
 
 
 class ClassScope(OpenScope, kind=Scope.CLASS):
@@ -565,18 +534,6 @@ class ClassScope(OpenScope, kind=Scope.CLASS):
 		raise SyntaxError('assignment expression within a comprehension cannot be used in a class body')
 
 class ClosedScope(NestedScope):
-	def _closure_scope(self, var) -> ClosedScope | None:
-		""" Change Unused to Seen.
-		Return static scope if Local or Closure, None if Global, go to parent otherwise.
-		"""
-		context = self.context(var)
-		if context is context.Global:
-			return None
-		elif context in (context.Local, context.Closure):
-			return self.get(var)
-		else:
-			# Unused, Seen
-			return self.parent._closure_scope(var)
 
 	def _closure(self, var) -> VarBind | None:
 		""" Get nearest enclosing ClosedScope, including self, for var, if any. """
@@ -602,7 +559,7 @@ class ComprehensionScope(FunctionScope, kind=Scope.COMP):
 	is_comp: ClassVar[bool] = True
 
 	# Note, bind(var) and bind_walrus(var) for the same var are contradictory, in either order
-	# of occurence.  bind_walrus() may have bubbled up from a nested comprehension.
+	# of occurence.  bind_walrus() may have bubbled up from a nested COMP.
 	# Either of these stores a binding in self.vars[var], but the binding is Local in the
 	# first case and something else in the second case.`
 	# The second of the two raises a SyntaxError.
@@ -647,15 +604,6 @@ class ComprehensionScope(FunctionScope, kind=Scope.COMP):
 		yield
 		del self.walrus_allowed
 
-class _EmptySrc:
-	count: int = 0
-	def __init__(self):
-		type(self).count += 1
-		self.n = self.count
-
-	def __repr__(self) -> str:
-		return f'<no src {self.n}>'
-
 def test():
 	# Set up a sample program
 	# class C:
@@ -666,7 +614,7 @@ def test():
 	import treebuild
 	print('testing scopes.py')
 	root = RootScope()
-	builder = treebuild.ScopeBuilder(root)
+	builder = treebuild.Builder(root)
 	with builder.nestGLOB(None, 'top') as g:
 		with builder.nest(g.CLASS, None, 'C') as c:
 			with builder.nestFUNC(None, 'foo') as foo:

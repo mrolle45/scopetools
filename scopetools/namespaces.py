@@ -5,7 +5,7 @@ Under that is a GlobalNamespace, which has a GlobalScope.
 
 There are two ways to build the tree up to this point.
 1.	Make a RootScope, make a RootNamespace with this scope.
-	Call (the RootNamespace).add_module(optional name, key, etc.).
+	Call (the RootNamespace).nestGLOB(src, optional name, key, etc.).
 		This makes a GlobalScope and returns the new GlobalNamespace.
 2.	Make a GlobalScope, which will create a RootScope as a parent.
 	Call GlobalNamespace(the GlobalScope, optional key).
@@ -32,7 +32,7 @@ ValT = TypeVar('ValT')
 BuildT = Callable[[NsT, scopes.ScopeT, scopes.SrcT, Iterator[scopes.ScopeT]], None]
 _noarg: Final = object()				# Use as some argument default values.
 
-def null_builder(space: NsT, scope: ScopeT, src: SrcT, nested: Iterator[ScopeT]): pass
+#def null_builder(space: NsT, scope: ScopeT, src: SrcT, nested: Iterator[ScopeT]): pass
 
 class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	""" Abstract base class.
@@ -174,9 +174,9 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	scope_class: ClassVar[Type[Scope]]
 	global_ns: GlobalNamespace | None
 
-	def __init__(self, src: SrcT = None, parent: Namespace = None, name: str = None, *,
-				 key: object = None, **kwds):
-		super().__init__(src, parent, **kwds)
+	def __init__(self, src: SrcT, parent: Namespace = None, name: str = None, *,
+					key: object = None, scope: ScopeT = None, **kwds):
+		super().__init__(src, parent, name, scope=scope, **kwds)
 		#if src: self.src = src
 		#self.parent = parent
 		if parent:
@@ -188,7 +188,6 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		# Create bindings for local names in the scope.
 		self.vars = VarTable()
 		self.update_vars()
-		self.nested = []
 
 	def update_vars(self):
 		for var in self.scope.vars:
@@ -201,7 +200,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 			raise ValueError(f'Object {self!r} is already built')
 		yield self			# perform building primitives in this context.
 		if self.kind in (self.CLASS, self.FUNC):
-			self.parent.store(self.name, self)
+			if self.name: self.parent.store(self.name, self)
 		del self.is_built
 
 	# Methods called by the builder...
@@ -282,12 +281,12 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		"""
 		...
 
-	def _nest_scope(self, scope: ScopeT, **kwds) -> NsT:
-		""" Create a nested Namespace for given Scope. """
-		cls: Type[NsT] = ns_classes[scope.kind]
-		with self.nest(scope.kind, scope.src) as new:
-			x = 0
-		return cls(scope, self, **kwds)
+	#def _nest_scope(self, scope: ScopeT, **kwds) -> NsT:
+	#	""" Create a nested Namespace for given Scope. """
+	#	cls: Type[NsT] = ns_classes[scope.kind]
+	#	with self.nest(scope.kind, scope.src) as new:
+	#		x = 0
+	#	return cls(scope, self, **kwds)
 
 
 class RootNamespace(Namespace, kind=Scope.ROOT):
@@ -299,7 +298,7 @@ class RootNamespace(Namespace, kind=Scope.ROOT):
 
 	def __init__(self, scope: RootScope = None):
 		self.scope = scope or RootScope()
-		super().__init__(None, None)
+		super().__init__(None, None, scope=self.scope)
 
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
@@ -307,22 +306,17 @@ class RootNamespace(Namespace, kind=Scope.ROOT):
 		"""
 		return self.vars[var]
 
-	def add_module(self, src: SrcT, name: str = '', key: object = None) -> GlobalNamespace:
-		""" Create a nested GlobalNamespace, using a new GlobalScope. """
-		scope: GlobalScope
-		with self.scope.nest(self.GLOB, src, name) as scope:
-			with self.nest(scope.kind, scope.src) as new:
-				return new
-
 class GlobalNamespace(Namespace, kind=Scope.GLOB):
 
-	def __init__(self, src: SrcT, parent: RootNamespace = None, name: str = '', **kwds):
+	def __init__(self, src: SrcT, parent: RootNamespace = None, name: str = '', *,
+			 scope: GlobalScope = None, index: int = None, **kwds):
 		if not parent:
 			parent = RootNamespace()
-			with parent.scope.nestGLOB(src, name) as scope:
-				src = scope.src
+			with parent.scope.nestGLOB(src, name=name) as scope:
+				pass
 			scope.is_built = False
-		super().__init__(src, parent, name, **kwds)
+		if index is None: index = len(parent.nested)
+		super().__init__(src, parent, name, scope=scope, index=index, **kwds)
 		self.global_ns = self
 
 	def store(self, var: str, value: ValT) -> None:
@@ -366,8 +360,7 @@ class LambdaNamespace(FunctionNamespace, kind=Scope.LAMB):
 	pass
 
 class ComprehensionNamespace(FunctionNamespace, kind=Scope.COMP):
-	def __init__(self, *args, **kwds):
-		super().__init__(*args, **kwds)
+	pass
 
 class Binding(Generic[ValT]):
 	""" The current value (if any) of a Var in a Namespace.
@@ -519,9 +512,9 @@ expr = ast.parse('(x := y + 2)', mode='eval').body
 
 e = ASTPyObjectEval(expr)
 x = RootNamespace()
-y = x.add_module(None, 'foo', key=42)
-y.store('y', 42)
-y.store('x', None)
+with x.nestGLOB('foo', 'dummy module', key=42) as y:
+	y.store('y', 42)
+	y.store('x', None)
 
 e(y)
 #print(y.load('x'), y.load('y'))
@@ -530,6 +523,6 @@ expr = ast.parse('[1, 2, 3]', mode='eval').body
 
 #print(ASTPyObjectEval(expr)(y))
 
-z = GlobalNamespace(None, None, 'bar', key=43)
+z = GlobalNamespace('bar', None, key=43)
 
 x
