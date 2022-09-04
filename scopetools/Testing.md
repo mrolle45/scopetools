@@ -2,6 +2,7 @@
 
 This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
 
+[^foo]
 Its purpose is twofold:
 - Verify that the models for scope and namespace behavior in Python are correct.
 - Check that the code implementing those models is correct.
@@ -39,3 +40,4 @@ Some other modules in the package, when run as standalone scripts, contain a few
 - [namespaces.py](namespaces.py)
 - [scopes.py](scopes.py)
 - [treebuild.py](treebuild.py)
+[^foo]: footnote
