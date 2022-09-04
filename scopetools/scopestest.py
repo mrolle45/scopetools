@@ -127,22 +127,30 @@ class GenTraverse(Traverser):
 		"""
 		name = self.curr.name
 
-		var = 'x'
-		rvalue = self.make_rvalue(var)
+		varname = '__x' if self.do_mangle else 'x'
+		rvalue = self.make_rvalue(varname, 'x')
+
+		def allvars() -> Iterable[str]:
+			""" Generate var plus all mangled names. """
+			yield varname
+			for name in sorted(self.scope.mangled_names):
+				if name != self.mangle(varname):
+					yield name
 
 		# 1. Prologue.  This is the initial declarations or settings of name.
 		mode = src.mode
 
-		if mode is mode.Nonlocal:
-			try: self.decl_nonlocal(var)
-			except SyntaxError: return
-		elif mode is mode.Global:
-			self.decl_global(var)
-		elif mode is mode.Anno:
-			self.anno(var, 'str')
+		for var in allvars():
+			if mode is mode.Nonlocal:
+				try: self.decl_nonlocal(var)
+				except SyntaxError: return
+			elif mode is mode.Global:
+				self.decl_global(var)
+			elif mode is mode.Anno:
+				self.anno(var, 'str')
 
-		if mode is not mode.Unused:
-			self.maketest(var)
+			if mode is not mode.Unused:
+				self.maketest(var)
 
 		# 2. Nested classes and functions, with var in the original state.
 		def do_nested(sfx: str = ''):
@@ -156,11 +164,12 @@ class GenTraverse(Traverser):
 		if mode.modifies:
 
 			# 3. Modifications to var.
-			orig_bound = isinstance(self.curr, Namespace) and self.has_bind(var)
-			# Make unbound.
-			if orig_bound:
-				self.delete(var)
-				self.maketest(var)
+			for var in allvars():
+				orig_bound = isinstance(self.curr, Namespace) and self.has_bind(var)
+				# Make unbound.
+				if orig_bound:
+					self.delete(var)
+					self.maketest(var)
 
 			# Make bound using nested scope.
 			if sys.version_info < (3, 8) or self.curr.kind.is_class:
@@ -168,35 +177,41 @@ class GenTraverse(Traverser):
 			else:
 				nest_kind = self.COMP; n = f'{name}_setcomp'
 			with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n):
-				self.store_nested(var, rvalue, mode)
-			self.maketest(var)
+				for var in allvars():
+					self.store_nested(var, rvalue, mode)
+			for var in allvars():
+				self.maketest(var)
 
 			# Make unbound using nested scope.
 			nest_kind = self.FUNC
 			n = name + '_' + 'delfunc'
 			with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n):
-				self.delete_nested(var, mode)
-			self.maketest(var)
+				for var in allvars():
+					self.delete_nested(var, mode)
+			for var in allvars():
+				self.maketest(var)
 
 			# Make the opposite state from originally.
 			if not orig_bound:
-				self.store(var, rvalue)
-				self.maketest(var)
+				for var in allvars():
+					self.store(var, rvalue)
+					self.maketest(var)
 
 			# 4. Similar nested classes and functions, with var in the opposite state.
 			do_nested('2')
 
 			# 5. Epilogue.  Restore var to its original state.
-			if orig_bound: self.store(var, rvalue)
-			else: self.delete(var)
-			self.maketest(var)
+			for var in allvars():
+				if orig_bound: self.store(var, rvalue)
+				else: self.delete(var)
+				self.maketest(var)
 
 class GenScopes(Builder):
 	""" Builder subclass to create the Scopes tree. """
 
 	def __init__(self, *args, **kwds):
 		super().__init__(*args, **kwds)
-		self.has_closure = False
+		self.has_closure: Scope | None = None
 
 	# Special methods used by the traverser...
 
@@ -209,9 +224,10 @@ class GenScopes(Builder):
 		save = self.has_closure
 
 		# push into nested scope.
-		with super().nest(kind, src, *args, **kwds):
+		with super().nest(kind, src, *args, **kwds) as newtree:
 			# Update has_closure based on new scope.
-			kind = self.curr.kind
+			newtree.mangled_names = set()
+			kind = newtree.kind
 			# In a Class scope, nested scopes bypass the Class to find closures.
 			# So has_closure will be the same.
 			if kind.is_class:
@@ -219,15 +235,15 @@ class GenScopes(Builder):
 			elif src:
 				mode = src.mode
 				if mode in (mode.Local, mode.Anno):
-					self.has_closure = True
+					self.has_closure = self.curr
 				if mode is mode.Global:
-					self.has_closure = False
+					self.has_closure = None
 			yield
 		self.has_closure = save
 
 	def maketest(self, name: str): self.use(name)
 
-	def make_rvalue(self, name: str) -> str:
+	def make_rvalue(self, *args) -> str:
 		""" Make str value to store in variable {name}. """
 		return ''
 
@@ -274,20 +290,36 @@ class GenScopes(Builder):
 		""" Check if the name is resolvable. """
 		if not self.has_closure:
 			raise SyntaxError()
+		self.add_mangled(self.has_closure, name)
 		self.curr.decl_nonlocal(name)
+
+	def decl_global(self, name):
+		self.add_mangled(self.glob, name)
+		self.curr.decl_global(name)
+
+	def add_mangled(self, target: Scope, name: str):
+		# Set target to use mangled name for '__x' in curr scope.
+		n = self.mangle(name)
+		if n != name:
+			target.mangled_names.add(n)
+			target.bind(n)
 
 class GenNamespaces(NamespaceBuilder):
 	""" Builder subclass to create the Namespaces tree, and write python test code. """
 
 	scope_builder_class: ClassVar[Type[Builder]] = GenScopes
 
-	def build_all(self, out: TextIO = StringIO(), prolog: list[str] = []):
+	def __init__(self, *args, mangle: bool = False, **kwds):
+		self.do_mangle = mangle
+		super().__init__(*args, **kwds)
+
+	def build_all(self, out: TextIO = StringIO(), mangle: bool = False):
 		self.num_tests: int = 0
 		self.out = out
 		self.level: int = 0
-		self.lineno = 1
-		#self.lineno = len(prolog) + 1
+		self.lineno = len(out.getvalue().splitlines()) + 1
 		self.write('')
+		self.trav.do_mangle = mangle
 		self.build()
 
 	@contextmanager
@@ -319,6 +351,7 @@ class GenNamespaces(NamespaceBuilder):
 			yield parent
 		self.level += 1
 
+	@Scope.mangler(var='name')
 	def maketest(self, name: str):
 		""" Generate code to verify expected value of name in current namespace at current time. """
 		space: Namespace = self.curr
@@ -327,6 +360,7 @@ class GenNamespaces(NamespaceBuilder):
 		self.write(f'try: test({name}, {value!r}, {self.lineno})')
 		self.write(f'except NameError: test(None, {value!r}, {self.lineno})')
 
+	#@Scope.mangler(var='name')
 	def decl_nonlocal(self, name):
 		binding = self.scope.binding(name)
 		scope = binding and binding.scope
@@ -342,23 +376,27 @@ class GenNamespaces(NamespaceBuilder):
 			raise SyntaxError
 		self.write(f'nonlocal {name}')
 
+	#@Scope.mangler(var='name')
 	def decl_global(self, name):
 		self.write(f'global {name}')
 
-	def make_rvalue(self, name: str) -> str:
+	@Scope.mangler
+	def make_rvalue(self, var: str, name: str) -> str:
 		""" Make str value to store in variable {name}. """
 		scope = self.curr.scope
-		try: rvalue: str = scope.binding_scope(name).name + '.' + name
+		try: rvalue: str = scope.binding_scope(var).name + '.' + name
 		except SyntaxError: rvalue = name
 		if rvalue.startswith('.'): rvalue = name
 		return rvalue
 
+	#@Scope.mangler(var='name')
 	def store(self, name: str, rvalue: str, **kwds) -> None:
 		""" Output python code to store the expected value of '{name}'. """
 
 		self.write(f'{name} = "{rvalue}"')
 		self.curr.store(name, rvalue, **kwds)
 
+	#@Scope.mangler(var='name')
 	def store_nested(self, name: str, rvalue: ValT, parent_mode: VarMode, **kwds) -> None:
 		""" Output python code to store the expected value of '{name}'. """
 
@@ -366,12 +404,18 @@ class GenNamespaces(NamespaceBuilder):
 		if self.kind.is_comp:
 			# Can use a Comrehension with a walrus if Python 3.8 or later and
 			#	parent is not a class.
-			with self.use_parent(): self.write(f'[{name} := _ for _ in ["{rvalue}"]]')
+			# HOWEVER, if parent is Global mode, a compiler bug croaks on the private name
+			#	as a walrus target, but the mangled name is OK.
+			if scope.parent.src.mode is scope.parent.src.mode.Global and name != self.mangle(name):
+				name = self.mangle(name)
+				comm = ' # (mangled target name needed due to compiler bug)'
+			else: comm = ''
+			with self.use_parent(): self.write(f'[{(name)} := _ for _ in ["{rvalue}"]]{comm}')
 			self.store_walrus(name, rvalue)
 		else:
 			if scope.parent.kind.is_class and parent_mode.is_loc:
 				# For a class, it is necessary to find its stack frame and store in its locals.
-				self.write(f'inspect.stack()[1].frame.f_locals["{name}"] = "{rvalue}"')
+				self.write(f'inspect.stack()[1].frame.f_locals["{self.mangle(name)}"] = "{rvalue}"')
 			else:
 				if parent_mode is parent_mode.Global:
 					self.write(f'global {name}; {name} = "{rvalue}"')
@@ -380,10 +424,12 @@ class GenNamespaces(NamespaceBuilder):
 			with self.use_parent():
 				self.curr.store(name, rvalue)
 
+	#@Scope.mangler(var='name')
 	def delete(self, name: str, **kwds) -> None:
 		self.write(f'del {name}')
 		self.curr.delete(name, **kwds)
 
+	#@Scope.mangler(var='name')
 	def delete_nested(self, name: str, parent_mode: VarMode, **kwds) -> None:
 		""" Write code to delete value in parent.  There are no nested scopes.
 		"""
@@ -393,7 +439,7 @@ class GenNamespaces(NamespaceBuilder):
 		if scope.parent.kind.is_class and context.is_local:
 			# For a class with a Local variable, it is necessary to find its stack frame
 			#	and remove from its locals.
-			self.write(f'del inspect.stack()[1].frame.f_locals["{name}"]')
+			self.write(f'del inspect.stack()[1].frame.f_locals["{self.mangle(name)}"]')
 		else:
 			if context.is_global or self.parent.kind.is_global:
 				self.write(f'global {name}; del {name}')
@@ -402,45 +448,49 @@ class GenNamespaces(NamespaceBuilder):
 		with self.use_parent():
 			self.curr.delete(name)
 
-	def anno(self, name: str, anno, rvalue: ValT = _noarg) -> Self:
-		self.curr.anno(name, anno, rvalue)
+	#@Scope.mangler(var='name')
+	def anno(self, name: str, anno) -> Self:
+		self.curr.anno(name, anno)
 		if isinstance(anno, str):
 			s = anno
 		else:
 			s = str(anno)
-		if rvalue is _noarg:
-			self.write(f'{name}: {s}')
-		else:
-			self.write(f'{name}: {s} = {rvalue!r}')
+		self.write(f'{name}: {s}')
+
 
 	def write(self, s: str):
 		print('    ' * self.level + s, file=out)
 		self.lineno += len(s.split('\n'))
 
 
-def gen(args, out: TextIO, prolog: list[str]) -> Tuple[int, Namespace]:
+def gen(args, out: TextIO, prolog: list[str], mangle: bool = False) -> Tuple[int, Namespace]:
 	""" Main function to write most of the output. """
 
+	print(f'Generating code... ', end='', flush=True)
 	top_ref = ScopeParams(0, args.d, VarMode.Local)
 	scope = Scope(kind=Scope.GLOB, cache_resolved=False, src=top_ref)
 	# TODO: Let the namespace builder build the scope.
 	trav = GenTraverse()
-	ns = GlobalNamespace(top_ref, None, key=43)
-	ns_bldr = GenNamespaces(ns, trav, indexed=True)
-	try: ns_bldr.build_all(out, prolog)
+	try:
+		num_tests = 0
+		ns = GlobalNamespace(top_ref, None, key=43)
+		ns.scope.mangled_names = set()
+		ns_bldr = GenNamespaces(ns, trav, indexed=True)
+		ns_bldr.build_all(out, mangle=mangle)
+		num_tests += ns_bldr.num_tests
 	finally:
-		print(f'{ns_bldr.num_tests} tests')
-		if args.s:
-			with open(args.o, 'w') as f:
-				map(f.write, prolog)
-				f.write(out.getvalue())
-				print(f'Writing to "{f.name}."')
-		if args.t:
-			with open(f'{args.o}.txt', 'w') as f:
-				map(f.write, prolog)
-				f.write(out.getvalue())
-				print(f'Copying to "{f.name}."')
-	return ns_bldr.num_tests, ns
+		print(f'{num_tests} tests')
+	return num_tests, ns
+
+
+g = GlobalScope(None)
+with g.nestCLASS(None, name='c') as c:
+	with c.nestFUNC(None, name='f') as f:
+		pass
+
+n = GlobalNamespace(None, scope=g)
+n.add_nested()
+assert n.nested[0].nested[0].mangle('__x') == '_c__x'
 
 if __name__ == '__main__':
 
@@ -450,11 +500,11 @@ if __name__ == '__main__':
 	parser.add_argument('-s', action='store_true', help='Save the output file')
 	parser.add_argument('-t', action='store_true', help='Copy the output file to file with ".txt" appended to the name')
 	parser.add_argument('-o', default='sc_test.py', help='Output file name (default "sc_test.py")')
+	parser.add_argument('--nomangle', action='store_true', help='Skip tests with mangled names')
 
 	args = parser.parse_args()
-	print(f'Generating code... ', end='', flush=True)
 
-	out = StringIO()
+	#out = StringIO()
 	prolog = (
 '''from __future__ import annotations
 import inspect
@@ -470,62 +520,93 @@ def test(value: str | None, comp: str | None, lineno: int):
 def error(msg: str, lineno: int):
 	raise ValueError(f'Line {lineno}: {msg}.', lineno) from None
 
-print('Running tests. ')
 ''').splitlines()
 
-	num_tests, root_ns = gen(args, out, prolog)
+	def run_test(mangle: bool = False) -> str:
+		global out
+		out = StringIO()
+		num_tests, root_ns = gen(args, out, prolog, mangle=mangle)
 
-	print('Compiling... ', end='', flush=True)
-	code = compile('\n'.join((*prolog, out.getvalue())), '<generated>', 'exec')
-	print('done')
-	try: exec(code)
-	except ValueError as exc:
-		print()
-		msg, lineno = exc.args
-		lines = out.getvalue().splitlines()
-		print(*lines[max(lineno - 11, 0):lineno], sep='\n')
-		print('---- ' + msg)
-		print(*lines[lineno: lineno + 10], sep='\n')
-	else:
-		if num_tests % 1000: print('\r' f'{num_tests}', end='')
-		print(' done')
-		print(f'All {num_tests} tests passed.')
+		print('Compiling... ', end='', flush=True)
+		lines = [*prolog, *out.getvalue().splitlines()]
+		code = compile('\n'.join(lines), '<generated>', 'exec')
 
-	# Regression test.  Generate trees from the output code.
-	import treebuild, ast
-	src = ast.parse(out.getvalue())
-	root = GlobalNamespace(src=src)
-	trav = treebuild.ASTTraverser()
-	build = treebuild.NamespaceBuilder(root, trav, indexed=True)
-	build.build()
-	x = 0
-	from itertools import zip_longest
-	# Compare the scopes trees.
-	def compare(scope1, scope2) -> bool:
-		if scope1.name != scope2.name:
-			if scope2.kind is not scope2.kind.COMP:
-				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
-		b1, b2 = scope1.vars.get('x'), scope2.vars.get('x')
-		if (b1 is None) != (b2 is None):
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1}, {b2}")
-		if b1 and (b1.scope is None) != (b2.scope is None):
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope!r}, {b2.scope!r}")
-		if b1 and b1.scope and b1.scope.name != b2.scope.name:
-			raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope.name}, {b2.scope.name}")
-		for n1, n2 in zip_longest(scope1.nested, scope2.nested):
-			if n1 is None or n2 is None:
-				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
-			compare(n1, n2)
-	compare(root_ns.scope, root.scope)
-	# Compare the namespace trees.
-	def compare(ns1, ns2) -> bool:
-		if ns1.name != ns2.name and ns1.kind is not ns1.COMP:
-			raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
-		nest1 = ns1.nested
-		nest2 = ns2.nested
-		if len(nest1) != len(nest1):
-			raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
-		for ns1, ns2 in zip(nest1, nest2):
-			compare(ns1, ns2)
-	compare(root_ns, root)
-			
+		code = compile('\n'.join((*prolog, out.getvalue())), '<generated>', 'exec')
+		print('done')
+		print('Running tests. ')
+		try: exec(code, globals())
+		except ValueError as exc:
+			print()
+			msg, lineno = exc.args
+			lines = out.getvalue().splitlines()
+			print(*lines[max(lineno - 11, 0):lineno], sep='\n')
+			print('---- ' + msg)
+			print(*lines[lineno: lineno + 10], sep='\n')
+		else:
+			if num_tests % 1000: print('\r' f'{num_tests}', end='', flush=True)
+			print(' done')
+			print(f'All {num_tests} tests passed.')
+
+		# Regression test.  Generate trees from the output code.
+		print('Analyzing output file...', end='', flush=True)
+		import treebuild, ast
+		src = ast.parse(out.getvalue())
+		root = GlobalNamespace(src=src)
+		trav = treebuild.ASTTraverser()
+		build = treebuild.NamespaceBuilder(root, trav, indexed=True)
+		build.build()
+		print('')
+		x = 0
+		from itertools import zip_longest
+		var = '__x' if mangle else 'x'
+		# Compare the scopes trees.
+		def compare(scope1, scope2) -> bool:
+			if scope1.name != scope2.name:
+				if scope2.kind is not scope2.kind.COMP:
+					raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
+			b1, b2 = scope1.vars.get('x'), scope2.vars.get('x')
+			if (b1 is None) != (b2 is None):
+				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1}, {b2}")
+			if b1 and (b1.scope is None) != (b2.scope is None):
+				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope!r}, {b2.scope!r}")
+			if b1 and b1.scope and b1.scope.name != b2.scope.name:
+				raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match: {b1.scope.name}, {b2.scope.name}")
+			for n1, n2 in zip_longest(scope1.nested, scope2.nested):
+				if n1 is None or n2 is None:
+					raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
+				compare(n1, n2)
+		print('Comparing scopes...', end='', flush=True)
+		compare(root_ns.scope, root.scope)
+		print('')
+		# Compare the namespace trees.
+		def compare(ns1, ns2) -> bool:
+			if ns1.name != ns2.name and ns1.kind is not ns1.COMP:
+				raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
+			nest1 = ns1.nested
+			nest2 = ns2.nested
+			if len(nest1) != len(nest1):
+				raise ValueError(f"Namespaces {ns1!r} and {ns2!r} don't match")
+			for ns1, ns2 in zip(nest1, nest2):
+				compare(ns1, ns2)
+		print('Comparing namespaces...', end='', flush=True)
+		compare(root_ns, root)
+		print('')
+		return out.getvalue()
+
+	print('Testing.')
+	text = run_test()
+	#text = ''; print()
+	if not args.nomangle:
+		print('Testing mangled names.')
+		text += run_test(mangle=True)
+	filename = args.o
+	if args.s:
+		with open(filename, 'w') as f:
+			map(f.write, prolog)
+			f.write(text)
+			print(f'Writing to "{f.name}."')
+	if args.t:
+		with open(f'{filename}.txt', 'w') as f:
+			map(f.write, prolog)
+			f.write(text)
+			print(f'Copying to "{f.name}."')

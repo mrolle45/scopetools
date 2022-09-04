@@ -3,7 +3,7 @@
 This document describes ways in which typing information can be provided in a Python module, and methods for conveying that information to `TreeT` trees maintained by this `scopetools` package.
 
 `Scope` trees do not use any typing information, with one exception:
-- A *bare* annotated assignment without a value, as in `name: anno`, defines `"name"` as a local variable.  This is conveyed by the method call  
+- A *bare* annotated assignment without a value, as in `name: anno`, defines `"name"` as a local variable.  This is conveyed by the static state method call  
  `tree.bind("name", anno=True)`.  
 Note, if the name is parenthesized, this is treated as an expression, and so `(name): anno` *does not* bind `"name"`.  Refer to the [table](#annotated-assignment)
 
@@ -60,7 +60,8 @@ The annotation is `AST.returns`.  This is reported as `tree.anno_return(annotati
 #### Annotated assignment
 `AST: ast.AnnAssign`  
   This has two parts, an annotation definition, and an optional assignment to a value.  
-The optional assignment is treated the same as an ordinary assignment statement, as `{AST.target} = {AST.value}`.  At runtime, the assignment is performed *before* the annotation is performed.  
+> The optional assignment is treated the same as an ordinary assignment statement, as `{AST.target} = {AST.value}`.  At runtime, the assignment is performed *before* the annotation is performed.  
+
 The annotation is treated according to the class of `AST.target`, and the value of `AST.simple`:
 
 | target class | simple | scope effect | runtime effect
@@ -114,3 +115,9 @@ Quote from [PEP 484](https://peps.python.org/pep-0484/#type-comments):
 
 The GLOB tree will need to examine the AST for the module to determine if the first type ignore line satisfies the above requirement.  
 (Future enhancement) The AST traverser in `treebuild.py` will provide this indication, via `tree.type_ignores(linenos, all=True)`.
+
+# Typing State
+
+- `tree.type_hint(var: str, type: str, type_comment: bool = False)`
+
+This provides either an annotation or a type comment associated with a named variable.  An annotation is always a str, which could be a forward reference to the actual annotation expression in the program.

@@ -83,6 +83,12 @@ TravT: TypeAlias = 'Traverser[TreeT, SrcT]'
 BldT: TypeAlias = 'Builder[SrcT, TreeT]'
 _noarg: Final = object()				# Use as some argument default values.
 
+def build() -> TreeT:
+	pass
+
+def build_from_scopes() -> TreeT:
+	pass
+
 class Traverser(Generic[TreeT, SrcT]):
 	""" Walk the source, whatever form that may take, and perform operations on the builder.
 	"""
@@ -125,6 +131,7 @@ class Builder(TreeRef, Generic[SrcT, TreeT]):
 	def __getattr__(self, attr: str) -> Any:
 		try: return getattr(self.curr, attr)
 		except AttributeError: return self.__getattribute__(attr)
+
 
 class NamespaceBuilder(Builder):
 	""" Specialized builder for Namespace trees. """
@@ -228,11 +235,11 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		#	Assign the exception to the name, if present.
 		#	Execute the body.
 		#	Delete the name, if present.
-		# Cannot use traverse() because it will visit the type and then the body, and not the name.
-		typ = self.visit(src.type)
+		# Cannot use generic_visit() because visiting the name, which is not an AST, does nothing.
+		self.visit(src.type)
 		name = src.name
 		if name:
-			self.store(name, typ)
+			self.store(name, src.typ)
 		self.visit(src.body)
 		if name:
 			self.delete(name)
@@ -278,8 +285,16 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 
 	def visit_AnnAssign(self, src: ast.AnnAssign):
 		anno = self.anno_str(src.annotation)
+		# (var) : anno is a no-op, so don't visit target, which 
+		# mistakenly has Store() context.
+		if not src.simple and not src.value: return
+
+		# expr : anno [ = value ] does nothing for now.  The anno is ignored,
+		# and we don't know how to report 'expr = value' yet.
+		if not isinstance(src.target, ast.Name): return
+
 		if src.value:
-			self.anno_assign(src.target.id, anno, src.value)
+			self.anno_store(src.target.id, anno, src.value)
 		else:
 			self.anno(src.target.id, anno)
 
@@ -291,10 +306,14 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		anno = self.anno_str(src.annotation)
 		rvalue = self.ArgValue(src.arg)
 		comm = src.type_comment
+		if comm:
+			if anno:
+				raise SyntaxError(f'Function parameter {src.arg!r} has both annotation and type comment.')
+			anno = comm
 		if anno:
-			self.anno_assign(src.arg, anno, rvalue, type_comment=comm)
+			self.anno_store(src.arg, anno, rvalue)
 		else:
-			self.store(src.arg, rvalue, type_comment=comm)
+			self.store(src.arg, rvalue, type_comment=anno)
 
 	def visit_Constant(self, src: ast.Constant):
 		pass
@@ -302,7 +321,7 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 	# Helpers
 
 	def anno_str(self, anno: ast.AST) -> str | None:
-		""" Converts an annotation expression to a str, if it is not already a Str.
+		""" Converts an annotation expression to a str, if it is not already a str.
 		None becomes None.
 		"""
 		if isinstance(anno, ast.Str):
@@ -347,15 +366,20 @@ ast_make_target = ASTTargetTraverser()
 
 if __name__ == '__main__':
 	# Test building from module code.
-	sample = '''
+	sample = '''if 1:
 	x = 2
 	class A:
 		pass
+
+	try: x
+	except NameError as e:
+		foo
 
 	'''
 	#b = Builder(RootNamespace())
 	b = Builder(RootScope())
 	t = ASTTraverser()
+	t.builder = b
 	t.visit(ast.parse(sample))
 
 	root_scope = GlobalScope()

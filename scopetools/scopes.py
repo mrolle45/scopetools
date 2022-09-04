@@ -188,7 +188,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 	is_scope: ClassVar[boo] = True
 	name: str
 	parent: Self | None
-	global_scope: GlobalScope[SrcT] = None
+	glob: GlobalScope[SrcT] = None
 
 	# Has the build completed?  Set False as an instance variable from the constructor
 	# until the end of the build() context manager.  It prevents resolving vars.
@@ -243,7 +243,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 	def __init__(self, src: SrcT = None, parent: Scope = None, name: str = '',
 				 **kwds):
 		super().__init__(src, parent, name, **kwds)
-		self.global_scope = parent and parent.global_scope
+		self.glob = parent and parent.glob
 		self.src = src
 		self.scope = self
 		self.vars = dict()
@@ -259,6 +259,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 			self.parent.bind(self.name, nested=True)
 		self.is_built = True
 
+	@ScopeTree.mangler(var='varname')
 	def qualname(self, varname: str = '', *, sep: str = '.') -> str:
 		""" Fully qualified name of this scope, or given variable name in this scope.
 		Optional separator to replace '.'.
@@ -280,6 +281,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 		yield from self.parent.scope_names
 		yield self.name
 
+	@ScopeTree.mangler
 	def context(self, var: str) -> VarCtx:
 		try: binding = self.vars[var]
 		except KeyError: return VarCtx.Unused
@@ -287,18 +289,21 @@ class Scope(ScopeTree, Generic[SrcT]):
 		scope = binding.scope
 		if scope is self: return VarCtx.Local
 		elif self.kind is self.COMP: return VarCtx.Walrus
-		elif scope is self.global_scope: return VarCtx.Global
+		elif scope is self.glob: return VarCtx.Global
 		else: return VarCtx.Closure
 
+	@ScopeTree.mangler
 	def get(self, var: str) -> Scope | None:
 		return self.vars.get(var)
 
+	@ScopeTree.mangler
 	def use(self, var: str) -> None:
 		""" Change from Unused to Seen, otherwise no change.
 		"""
 		# Unused -> Seen.
 		self.vars.setdefault(var, None)
 
+	@ScopeTree.mangler
 	def bind(self, var: str,
 			anno: bool = False,
 			param: bool = False,			# Variable is a function parameter
@@ -312,6 +317,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 		if param: binding.param = True
 		if nested: binding.nested = True
 
+	@ScopeTree.mangler
 	def bind_walrus(self, var: str, **kwds) -> VarBind:
 		""" Find or create binding for var in some enclosing scope, which originated in a comprehension.
 		Implemented differently in Class and Comprehension scopes.
@@ -333,6 +339,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 		yield
 		self.in_walrus = save
 
+	@ScopeTree.mangler
 	def decl_nonlocal(self, var: str) -> None:
 		""" Declare the var as being nonlocal. """
 		context = self.context(var)
@@ -356,12 +363,13 @@ class Scope(ScopeTree, Generic[SrcT]):
 			else:
 				raise SyntaxError(f"name '{var}' is assigned to before nonlocal declaration")
 
+	@ScopeTree.mangler
 	def decl_global(self, var: str) -> None:
 		""" Declare the var as being global. """
 		context = self.context(var)
 		if not context:
 			# Name Unused.  Change to Global.
-			self.vars[var] = self.global_scope._make_binding(var)
+			self.vars[var] = self.glob._make_binding(var)
 			return
 		# Only Global is valid.
 		if context.is_global:
@@ -378,6 +386,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 			else:
 				raise SyntaxError(f"name '{var}' is assigned to before nonlocal declaration")
 
+	@ScopeTree.mangler
 	def has_anno(self, var: str) -> bool:
 		try: return var in self.annos
 		except: return False		# self.annos not created yet.
@@ -395,11 +404,13 @@ class Scope(ScopeTree, Generic[SrcT]):
 	def cleanup(self) -> None:
 		""" Resolve binding scope for all Seen and Closure variables, recursively. """
 		var: str
-		for var, binding in self.vars.items():
+		x = 0
+		for var, binding in dict(self.vars).items():
 			if not binding or not binding.scope: self.binding(var, cacheit=True)
 		for nested in self.nested:
 			nested.cleanup()
 
+	@ScopeTree.mangler
 	def _make_binding(self, var: str) -> VarBind:
 		""" Create a binding for var if it doesn't already exist.  Return the binding.
 		In response to
@@ -418,6 +429,7 @@ class Scope(ScopeTree, Generic[SrcT]):
 		""" Is this Scope and all enclosing Scopes all built? """
 		return self.is_built and self.parent.all_built
 
+	@ScopeTree.mangler
 	def binding(self, var: str, **kwds) -> VarBind | None:
 		""" Tries to find the binding object for the var. """
 		# Implemented differently in NestedScope, GlobalScope.
@@ -446,7 +458,7 @@ class GlobalScope(Scope, kind=Scope.GLOB):
 
 	def __init__(self, src: SrcT, parent: RootScope = None, name: str = '', **kwds):
 		super().__init__(src, parent or RootScope(), name, **kwds)
-		self.global_scope = self
+		self.glob = self
 		if name:
 			self.parent.modules[name] = self
 
@@ -480,6 +492,7 @@ class NestedScope(Scope):
 	"""
 	parent: GlobalScope  # Cannot be None
 
+	@ScopeTree.mangler
 	def binding(self, var: str, cacheit: bool = False) -> VarBind:
 		""" Find the binding.
 		SyntaxError if var is still unresolved (i.e. nonlocal variable with no matching scope).
@@ -506,7 +519,7 @@ class NestedScope(Scope):
 				raise SyntaxError(f"no binding for nonlocal '{var}' found in scope {self!r}")
 			else:
 				# Seen or Unused.  Make Global.
-				binding = self.global_scope._make_binding(var)
+				binding = self.glob._make_binding(var)
 
 		if cacheit: self.vars[var] = binding
 		return binding
@@ -533,8 +546,17 @@ class ClassScope(OpenScope, kind=Scope.CLASS):
 		"""
 		raise SyntaxError('assignment expression within a comprehension cannot be used in a class body')
 
+#class S(ClassScope):
+#	pass
+
+#o = S(None, RootScope(), 'classname')
+#o.f('x1')
+#o.g('__var2')
+#o.h('__var3', type_comment='comm')
+
 class ClosedScope(NestedScope):
 
+	@ScopeTree.mangler
 	def _closure(self, var) -> VarBind | None:
 		""" Get nearest enclosing ClosedScope, including self, for var, if any. """
 		binding: VarBind | None = self.vars.get(var)

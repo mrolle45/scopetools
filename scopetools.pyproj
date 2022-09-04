@@ -12,7 +12,7 @@
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|PythonCore|3.9</InterpreterId>
-    <CommandLineArguments>-tsd2</CommandLineArguments>
+    <CommandLineArguments>-tsd3</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -35,11 +35,15 @@
     <Folder Include="scopetools" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.7" />
     <InterpreterReference Include="Global|PythonCore|3.9" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="scopetools\README.md" />
     <Content Include="scopetools\scopescommon.md" />
     <Content Include="scopetools\scopes.md" />
+    <Content Include="scopetools\Testing.md" />
+    <Content Include="scopetools\treebuild.md" />
     <Content Include="scopetools\typing.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

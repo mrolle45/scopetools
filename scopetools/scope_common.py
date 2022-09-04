@@ -7,8 +7,11 @@ from abc import *
 from enum import *
 from typing import Generic, TypeVar, Iterator
 
+import attrs
+
 TreeT = TypeVar('TreeT')
 
+NEW: Final[bool] = 0x01
 
 class ScopeMeta(type):
 	""" Metaclass for ScopeTree and its subclasses.
@@ -70,16 +73,13 @@ class _Kind(Enum):
 
 class _NestMixin(Generic[TreeT]):
 	""" Define nest_Module, etc. methods """
-	def nestGLOB(self, *args, _kind = _Kind.GLOB, **kwds) -> TreeT:
-		return self.nest(_kind, *args, **kwds)
-	def nestFUNC(self, *args, _kind = _Kind.FUNC, **kwds) -> TreeT:
-		return self.nest(_kind, *args, **kwds)
-	def nestCLASS(self, *args, _kind = _Kind.CLASS, **kwds) -> TreeT:
-		return self.nest(_kind, *args, **kwds)
-	def nestLAMB(self, *args, _kind = _Kind.LAMB, **kwds) -> TreeT:
-		return self.nest(_kind, *args, **kwds)
-	def nestCOMP(self, *args, _kind = _Kind.COMP, **kwds) -> TreeT:
-		return self.nest(_kind, *args, **kwds)
+	from functools import partialmethod
+	def nest2(self, *args, **kwds): return self.nest(*args, **kwds)
+	nestGLOB = partialmethod(nest2, _Kind.GLOB)
+	nestFUNC = partialmethod(nest2, _Kind.FUNC)
+	nestCLASS = partialmethod(nest2, _Kind.CLASS)
+	nestLAMB = partialmethod(nest2, _Kind.LAMB)
+	nestCOMP = partialmethod(nest2, _Kind.COMP)
 
 class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	""" Common base class for Scopes, Namespaces, or other similar objects.
@@ -97,6 +97,8 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	# Constants for above Kind members, copied into class variables
 	locals().update(Kind.__members__)
 
+	# Index of self in parent.nested list (or None for ROOT)
+	index: int | None
 
 	def __new__(cls, *args, kind: Kind = None, **kwds):
 		""" Factory for all tree objects.
@@ -109,47 +111,101 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 			cls.kind				# Verify that cls.kind exists.
 		return super().__new__(cls)
 
-	def __init__(self, src: SrcT, parent: TreeT = None, name: str = '', kind: Kind = None, **kwds):
+	def __init__(self, src: SrcT = None, parent: TreeT = None, name: str = '', *,
+			index: int = None, kind: Kind = None, scope: ScopeT = None, **kwds):
 		self.is_built = False
 		# If self.kind exists it must match kind.  Otherwise set self.kind
 		try: assert self.kind is kind or kind is None, 'tree kinds don\'t match'
 		except AttributeError: self.kind = kind
 
-		assert parent != (kind is self.ROOT), 'tree parent required except for ROOT.'
+		assert parent != (self.kind.is_root), 'tree parent required except for ROOT.'
 		self.parent = parent
+		if parent:
+			if index is None: index = len(parent.nested)
+			parent.nested.append(self)
+			assert self.parent.nested[index] is self
+		else:
+			assert index is None
+		self.index = index
 
+		self.scope = scope
 		if self.is_scope:
-			self.scope = self
 			if kind in (self.FUNC, self.CLASS):
 				assert name, f'name required for {type(self).__name__} tree'
 			self.name, self.src = name, src
 		else:
-			if self.parent:
-				# Match the src to child of parent's scope.
-				scope = self.scope = self.parent.scope.child_scope(src)
-			else:
-				# ROOT tree, needs corresponding ROOT scope...
-				scope = self.scope
+			if not scope:
+				# Make a Scope from other parameters.
+				with parent.scope.nest(self.kind, src, name) as scope:
+					self.scope = scope
+			assert scope, f'Scope object required to initialize {type(self).__name__} tree'
 			self.name, self.src = scope.name, scope.src
 			if name and name != self.name:
 				raise ValueError(f'name {name!r} doesn\'t match {scope!r}.')
+		self.nested = []
+
+	# DECORATORS
+
+	# Decorator to mangle a variable name.
+	# @mangler, or @mangler(var name) or @mangler(var position).
+
+	def mangler(func: FuncT = None, *, var: str | int = 'var') -> FuncT:
+		def actual_decorator(f):
+			assert callable(f)
+			from functools import wraps
+			import inspect
+			sig = inspect.signature(f)
+			nonlocal var
+			if isinstance(var, str):
+				var = list(sig.parameters).index(var)
+			def fix_args(args) -> list:
+				self = args[0]
+				# If the arg is missing, assume it defaults to ''.
+				try:
+					name = args[var]
+					name2 = self.mangle(name)
+					if name != name2:
+						args = list(args)
+						args[var] = name2
+				except IndexError: pass
+				return args
+
+			@wraps(f)
+			def wrapper(*args, **kwargs):
+				# Do stuff with var here...
+				args = fix_args(args)
+				return f(*args, **kwargs)
+			return wrapper
+		if func:
+			return actual_decorator(func)
+		return actual_decorator
+	
+	# Decorator to dispatch type comment separately.
+	def has_type_comment(func: FuncT = None, *, var: str | int = 'var') -> FuncT:
+		def actual_decorator(f):
+			assert callable(f)
+			from functools import wraps
+			import inspect
+			sig = inspect.signature(f)
+			nonlocal var
+			if isinstance(var, str):
+				var = list(sig.parameters).index(var)
+			@wraps(func)
+			def wrapper(*args, **kwargs):
+				# Do stuff with type comment here...
+				self = args[0]
+				name = args[var]
+				# Separate out the type_comment.
+				comm = kwargs.pop('type_comment', '')
+				if comm:
+					self.type_hint(name, comm)
+				return func(*args, **kwargs)
+			return wrapper
+		if func:
+			return actual_decorator(func)
+		return actual_decorator
 
 	# TREE BUILDING:
-
-	# Build an object with
-	#
-	#	with obj:
-	#		call building methods on obj...
-
-	def __enter__(self) -> Self:
-		return self
-
-	def __exit__(self, exc_type, exc_value, traceback) -> None:
-		if exc_type: return
-		if self.parent: self.parent.nested.append(self)
-		if self.kind in (self.CLASS, self.FUNC):
-			self.parent.bind(self.name, nested=True)
-			self.parent.store(self.name, self)
 
 	@contextmanager
 	def build(self) -> Self:
@@ -157,16 +213,31 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 		yield self			# Perform tree building primitives in this context.
 
 	@contextmanager
-	def nest(self, kind: Kind, src: SrcT, name: str = '', **kwds) -> TreeT:
-		""" Creates a nested tree object, which is yielded.
+	@mangler(var='name')
+	def nest(self, kind: Kind, src: SrcT, name: str = '', index: int = None, **kwds) -> Iterable[TreeT]:
+		""" Finds or creates a nested tree object, which is yielded.
 		Caller does building methods in the context.
 		Followed by assignment of a FUNC or CLASS to its name.
 		"""
-		newtree = self.tree_type(src, self, name, kind=kind, **kwds)
-		with newtree.build(): yield newtree
+		if self.is_built and self.parent:
+			newtree = self.nested[index]
+			yield newtree
+		else:
+			newtree = self.tree_type(src, self, name, kind=kind, index=index, **kwds)
+			with newtree.build(): yield newtree
 		if kind in (self.CLASS, self.FUNC):
 			self.bind(name)
 			self.store(name, newtree)
+
+	def add_nested(self) -> None:
+		""" Create nested trees at all levels, parallel with self.scope.
+		Ignored for Scope trees.
+		"""
+		if self.is_scope: return
+		for scope in self.scope.nested:
+			sub = self.tree_type(scope.src, self, kind=scope.kind, scope=scope)
+			sub.add_nested()
+		del self.is_built
 
 	# STATIC PROPERTIES:
 
@@ -178,38 +249,29 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 
 	def use(self, var: str, **kwds) -> None:
 		""" A var which appears somewhere in this Scope, as a bare unannotated name. """
-		
+		return
+	
 	def bind(self, var: str,
 			 anno: bool = False,			# Variable is annotated
 			 param: bool = False,			# Variable is a function parameter
 			 nested: bool = False,			# Variable is a nested tree
-			 walrus: bool = False,			# In (var := rvalue) expression,
-											#	special behavior in comprehensions.
-			 ):
+			 **kwds) -> None:
 		""" A var which appears in some binding operation.
-		If var does not yet have a binding (it only has possibly been used), then 
-		a binding is created in this scope and var becomes Local.
-		Includes assignments, annotations (with or without a value), deletes, etc.
-		iF walrus is true, in a comprehension, then the binding occurs in the first 
-			non-comprehension enclosing scope, and may be a syntax error.
 		"""
+		return
 
 	@contextmanager
 	def use_walrus(self):
 		""" Any call in this context is a walrus operator.  Only matters in Scope. """
 		yield
 
-	def anno(self, var: str, anno, **kwds) -> None:
-		""" Define an annotated variable, without an assigned value.  
-		Default implementation is to bind it and ignore the annotation.
-		"""
-		self.bind(var)
-
 	def decl_nonlocal(self, var: str, **kwds) -> None:
 		""" Declare the var as being nonlocal. """
+		return
 
 	def decl_global(self, var: str, **kwds) -> None:
 		""" Declare the var as being global. """
+		return
 
 
 	# DYNAMIC PROPERTIES:
@@ -219,18 +281,11 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	# Scope objects ignore these primitives.
 
 	def store(self, var: str, value, **_kwds) -> None:
-		pass
+		return
 
 	def delete(self, var: str, **_kwds) -> None:
-		pass
+		return
 
-	def anno_assign(self, var: str, anno, rvalue: ValT, **kwds) -> None:
-		""" Define an annotation and a value for var, as in 'var: anno = rvalue'. """
-		# Default implementation is to do separate anno() and store().
-		# Subclass may treat this as a single operation.
-		self.anno(var, anno, **kwds)
-		self.store(var, rvalue, **kwds)
-	
 	class ArgValue:
 		""" A placeholder to represent the initial value of a function argument. """
 		def __init__(self, name: str):
@@ -238,27 +293,66 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 		def __repr__(self) -> str:
 			return f'<Arg {self.name}.'
 
+	# TYPING PROPERTIES
+
+	def type_hint(self, var: str, typ: str, **kwds) -> None:
+		pass
+
+	# COMPOUND EVENTS
+
+	def anno(self, var: str, anno: str, **kwds) -> None:
+		self.bind(var, anno=True, **kwds)
+		self.type_hint(var, anno, **kwds)
+
+	def anno_store(self, var: str, anno: str, rvalue: ValT, **kwds) -> None:
+		""" Define an annotation and a value for var, as in 'var: anno = rvalue'. """
+		# Default implementation is to do separate anno() and store().
+		# Subclass may treat this as a single operation.
+		self.anno(var, anno, **kwds)
+		self.store(var, rvalue, **kwds)
+	
 	# NAME MANGLING:
-	@staticmethod
-	def mangle(var: str, class_name: str) -> str:
+	def class_tree(self, _class_kind = Kind.CLASS, _glob_root_kind = (Kind.GLOB, Kind.ROOT)
+			) -> TreeT | None:
+		""" Look for a CLASS tree in the parent chain. """
+		if self.kind is _class_kind: return self
+		if self.kind in _glob_root_kind: return None
+		return self.parent.class_tree()
+
+	def mangle(self, var: str) -> str:
 		""" Return the mangled version of a variable name in a scope of a given kind.
 		Mostly returns same name.  In a CLASS scope, some names get changed.
 		"""
-		if kind is not kind.CLASS:
-			return var
+		# Most common case: the name is not private.
 		if not var.startswith('__') or var.endswith('__'):
+			return var
+		class_tree = self.class_tree()
+		if not class_tree:
 			return var
 		# Create copy of scope class with given variable, then look at its locals.
 		d = {}
-		exec(f'''
-		class {class_name}:
-			__loc__ = set(locals())
-			{var} = 0
-			__loc__ = set(locals()) - __loc__
-			__loc__.remove('__loc__')
-		mangled = {class_name}.__loc__.pop()
-		''',  d)
+		class_name = class_tree.name
+		exec(
+f'''
+class {class_name}:
+	__loc__ = set(locals())
+	{var} = 0
+	__loc__ = set(locals()) - __loc__
+	__loc__.remove('__loc__')
+mangled = {class_name}.__loc__.pop()
+''',
+			d)
 		return d['mangled']
+
+	@mangler
+	def f(self, var): print(var); return var
+
+	@mangler(var='foo')
+	def g(self, foo): print(foo); return foo
+
+	@mangler
+	@has_type_comment
+	def h(self, var, *, type_comment: bool = ''): print(var); return var
 
 	def __repr__(self) -> str:
 		return f"{self.__class__.__qualname__}({self.name!r})"
@@ -270,11 +364,11 @@ class TreeRef(_NestMixin):
 	Current tree changed to a nested subtree by a context manager.
 	"""
 	curr: TreeT
-	_nest_iter: Iterator[ScopeT] | None
+	state: State
 
 	def __init__(self, curr: TreeT):
 		self.curr = curr
-		self._nest_iter = None
+		self.state = self.State(curr)
 
 	def __getattr__(self, attr: str) -> Any:
 		""" Delegate undefined attributes to the current tree. """
@@ -282,33 +376,26 @@ class TreeRef(_NestMixin):
 		except AttributeError: return self.__getattribute__(attr)
 
 	@contextmanager
-	def nest(self, kind: _Kind, src: SrtT, *args, **kwds) -> Iterable[TreeT]:
+	def nest(self, kind: _Kind, src: SrcT, *args, scope: ScopeT = None, **kwds) -> Iterable[TreeT]:
 		""" Create a nested tree and point to it during the context. """
-		oldtree: TreeT = self.curr
-		newtree: TreeT
-		olditer: Iterator[SrcT] | None = self._nest_iter
-		self._nest_iter = None
-		if olditer:
-			# Use the iterator to get src.  It should be == provided src.
-			s = src
-			src = next(olditer).src
-			if s and s != src:
-				raise ValueError(f'src {s!r} for nest() does not match next nested src {src!r}.')
-		with self.curr.nest(kind, src, *args, **kwds) as newtree:
+		oldstate = self.state
+		scope = None
+		with self.curr.nest(kind, src, *args, scope=scope, index=oldstate.nest_count, **kwds) as newtree:
 			self.curr = newtree
+			self.state = self.State(newtree)
 			yield newtree
-		self.curr = oldtree
-		self._nest_iter = olditer
+			oldstate.nest_count += 1
+		self.curr = oldstate.curr
+		self.state = oldstate
 
 	@contextmanager
-	def use_scope_srcs(self) -> Iterable[Iterator[SrcT] | None]:
-		""" In this context, all nest() calls will use consecutive src's from curr scope.
-		Only happens in non-scope TreeT.  For scopes, do nothing and yield None.
-		"""
-		if self.curr.is_scope:
-			yield None
-			return
-		save: Iterator[SrcT] | None = self._nest_iter
-		self._nest_iter = iter(self.curr.scope.child_scopes)
-		yield self._nest_iter
-		self._nest_iter = save
+	def use_parent(self) -> None:
+		save, self.curr = self.curr, self.curr.parent
+		assert self.curr, f'No parent for {save!r}.'
+		yield
+		self.curr = save
+
+	@attrs.define
+	class State:
+		curr: TreeT
+		nest_count: int = 0

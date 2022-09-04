@@ -18,7 +18,12 @@ from __future__ import annotations
 import sys
 from typing import *
 from abc import *
-from functools import cached_property
+
+if sys.version_info >= (3, 8):
+	from functools import cached_property
+else:
+	from backports.cached_property import cached_property
+
 import ast
 
 from scope_common import *
@@ -205,6 +210,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 
 	# Methods called by the builder...
 
+	@ScopeTree.mangler
 	def load(self, var: str) -> ValT:
 		""" Get the current value for the var if any, else raise a NameError.
 		Raise SyntaxError if var is unresolved in the scope.
@@ -220,6 +226,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	def anno(self, var: str, anno, rvalue: ValT = _noarg, **kwds) -> Self:
 		pass
 
+	@ScopeTree.mangler
 	def has(self, var: str) -> bool:
 		""" True if there is a Binding for Var and the Binding is bound. """
 		try: b = self._binding_namespace(var)
@@ -227,6 +234,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		if not b: return False
 		return bool(b._load_binding(var))
 
+	@ScopeTree.mangler
 	def has_bind(self, var: str) -> bool:
 		""" True if there is a Binding for Var and the Binding is bound,
 		but only looks in the binding Namespace (i.e., where bind and unbind take place).
@@ -236,6 +244,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		if not b: return False
 		return bool(b.vars[var])
 		
+	@ScopeTree.mangler
 	def store(self, var: str, value: ValT, **kwds) -> None:
 		""" Set the value of the var in the binding namespace.
 		Raise SyntaxError if var is unresolved in the scope.
@@ -245,6 +254,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	# Same as store()
 	store_walrus = store
 
+	@ScopeTree.mangler
 	def delete(self, var: str) -> None:
 		""" Unbind the var in the binding namespace, if it is now bound.
 		Raise NameError if it is not bound.
@@ -311,10 +321,11 @@ class GlobalNamespace(Namespace, kind=Scope.GLOB):
 	def __init__(self, src: SrcT, parent: RootNamespace = None, name: str = '', *,
 			 scope: GlobalScope = None, index: int = None, **kwds):
 		if not parent:
-			parent = RootNamespace()
-			with parent.scope.nestGLOB(src, name=name) as scope:
+			parent = RootNamespace(scope and scope.parent)
+			with parent.scope.nestGLOB(src, name=name) as sc:
 				pass
-			scope.is_built = False
+			sc.is_built = False
+			if not scope: scope = sc
 		if index is None: index = len(parent.nested)
 		super().__init__(src, parent, name, scope=scope, index=index, **kwds)
 		self.global_ns = self
@@ -397,10 +408,10 @@ class VarTable(dict[str, Binding[ValT]]):
 	""" Lookup table for Var names, with missing name resulting in None.
 	Behavior can be customized by subclassing (for example, logging all operations).
 	"""
-	def __getitem__(self, var: str) -> Binding[VarT]:
+	def __getitem__(self, var: str) -> Binding[ValT]:
 		return self.get(var)
 
-	def bind(self, var: str, value: VarT) -> None:
+	def bind(self, var: str, value: ValT) -> None:
 		self[var].bind(value)
 
 	def unbind(self, var: str) -> None:
@@ -408,14 +419,14 @@ class VarTable(dict[str, Binding[ValT]]):
 
 class GlobalVarTable(VarTable):
 	""" Lookup table for Var names, using supplied global dict. """
-	def __init__(self, glob: dict[str, VarT]):
+	def __init__(self, glob: dict[str, ValT]):
 		self.glob = glob
 
-	def __getitem__(self, var: str) -> Binding[VarT]:
+	def __getitem__(self, var: str) -> Binding[ValT]:
 		try: return Binding(self.glob[var])
 		except: return None
 
-	def bind(self, var: str, value: VarT) -> None:
+	def bind(self, var: str, value: ValT) -> None:
 		self.glob[var] = value
 
 	def unbind(self, var: str) -> None:
@@ -508,21 +519,21 @@ class ASTPyObjectEval(Evaluator[ast.AST, object]):
 		def generic_visit(self, node):
 			return super().generic_visit(node)
 
-expr = ast.parse('(x := y + 2)', mode='eval').body
+if __name__ == '__main__':
+	expr = ast.parse('(x := y + 2)', mode='eval').body
 
-e = ASTPyObjectEval(expr)
-x = RootNamespace()
-with x.nestGLOB('foo', 'dummy module', key=42) as y:
-	y.store('y', 42)
-	y.store('x', None)
+	e = ASTPyObjectEval(expr)
+	x = RootNamespace()
+	with x.nestGLOB('foo', 'dummy module', key=42) as y:
+		y.store('y', 42)
+		y.store('x', None)
 
-e(y)
-#print(y.load('x'), y.load('y'))
+	e(y)
+	#print(y.load('x'), y.load('y'))
 
-expr = ast.parse('[1, 2, 3]', mode='eval').body
+	expr = ast.parse('[1, 2, 3]', mode='eval').body
 
-#print(ASTPyObjectEval(expr)(y))
+	#print(ASTPyObjectEval(expr)(y))
 
-z = GlobalNamespace('bar', None, key=43)
+	z = GlobalNamespace('bar', None, key=43)
 
-x

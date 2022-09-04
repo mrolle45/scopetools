@@ -21,7 +21,7 @@ The code in this `scopetools` package does not require that there be an actual A
 
 ## Inclusion
 
-As a shorhand notation, for any `node` and `item`, **`node` > `item`**, or **`item` < `node`**, when `item` is a descendant of `node`.  Likewise, **`node` >= `item`**, or **`item` <= `node`**, which includes that `node` and `item` are the same object.
+As a shorhand notation, for any `node` and `item`, **`node` > `item`**, or **`item` < `node`**, when `item` is a descendant of `node`.  Likewise, **`node` >= `item`**, or **`item` <= `node`**, which means that (`node > item or node is item`).
 
 ## Scope AST and Program Structure
 
@@ -39,7 +39,7 @@ What the documentation does not mention is that:
      `[x for x in range(0) if x in [name := y for y in range(3)]]` evaluates to [] and does not modify `name` in the current scope.  However, this is still a binding operation for `name`.  
     `[x for x in [y for y in range(3)] if (lambda: (name := x))()]` evaluates to [1, 2] but does not set `name` at all in the current scope, and is *not* a binding operation.  The `name := y` sets a local variable `name` in the lambda expression.
 
-- private names in a class are transformed *only* within the class body.  To use the name in any other context, such as `C().name` or `getattr(C, name)` the program must [provide or compute the transformed name](#transforming-private-names) and use that instead of `name`.
+- private names in a class are transformed *only* within the class body.  To use the name in any other context, such as `C.name` or `getattr(C, name)` the program must [provide or compute the transformed name](#transforming-private-names) and use that instead of `name`.
 
 A **scope AST** is an instance of one of a few specific AST subclasses.
 
@@ -73,9 +73,11 @@ Only certain kinds of scopes can be children or parents of other kinds of scopes
 Just as `ast.parse()` can also parse a single python expression or statement, a tree can be constructed in this package starting from one of these.  However, to maintain uniformity of structure, GLOB or ROOT tree objects will be inserted into the hierarchy, so that the tree object can have global variables and names that are only in the `builtins` module.
 
 ## Scope AST Items
-The Python compiler considers each syntax item to belong to a particular scope AST.  
+The Python compiler considers each syntax item to belong to a particular scope AST.  This can be written as **scope -> item**, or the scope **owns** the item.
 
-Not all the items in the AST starting with a scope AST are considered as a part of the scope, or **owned by** it.  This can be written as **`scope` -> `item`**.
+The item is always part of the tree starting with the scope AST.
+
+However, not all such items are owned by it.
 
 ### Direct Items
 
@@ -98,8 +100,23 @@ Certain items in a scope AST are classified as **direct items**, and notated as 
 **`scope` -> `item`** if:
 
 1. `scope` is a scope AST instance.
-2. `scope` ->> `dir` >= `item`, for some direct item `dir`.
-4. There is no other scope AST instance `scope2` such that `scope` > `scope2` ->> `item` (defined recursively).  Note, `item` can be another scope AST.  
+2. `scope` ->> `dir` >= `item`, for some direct item `dir`, or `scope` is `item`.
+3. There is no other scope AST instance `scope2` such that `scope` > `scope2` ->> `item` (defined recursively).  Note, `item` can be another scope AST.  
+
+In other words, a scope contains all direct items, plus all of their descendants, minus any other scope's items.
+
+In this way, every AST item in the program is owned by exactly one scope.
+
+## Class Scope of an Item
+
+The **class scope** of an item, if any, is the nearest CLASS in the chain of owner scopes.  
+More precisely, `scope` is the class scope of `item` if either
+- `scope` is a CLASS and `scope` -> `item`,
+- or `scope` is the class scope of the owner of `item`.
+
+An item will have no class scope if its owner is the GLOB, or if its owner has no class scope.
+
+This concept is applicable for [private names](#private-name-mangling).
 
 # `ScopeTree[TreeT, SrcT]` Class
 
@@ -194,70 +211,38 @@ The parent chains of `tree` and `tree.scope` are exactly parallel.  `tree.parent
 
 ## Tree State Methods
 
-There are many methods defined by `ScopeTree`.  **Setters** alter some aspect of the state of a tree, corresponding to something in the `tree.ast` (known as setters), and **getters** make inquiries about the current state.
+There are many methods defined by `ScopeTree`.  **Setters** alter some aspect of the state of a tree, corresponding to something in the `tree.ast`, and **getters** make inquiries about the current state.
 
   Some of these methods are implemented only by some tree types; in other tree types, they are ignored and return None.
 
-The tree state is arranged in a number of categories.
-- **Nesting info**.  These apply to all tree types.  They are used to create subtrees or inspect the tree structure.  Refer to [Nesting Methods](#nesting-methods) for details.
-- **Static info**.  These only apply to Scope trees.  Static properties are aspects of a Scope which are determined at compile time, such as how to interpret a variable name.  Refer to [scopes.md](scopes.md) for listing.  Non-Scope trees will delegate the getters to the `tree.scope` object.  
-- **Dynamic info**.  These only mainly to Namespace trees and ignored by Scope trees.  Dynamic properties are aspects of the object which change at runtime, such as the value of a variable, or child trees.  Refer to [namespaces.md](namespaces.md) for listing.
-- **Typing info**.  These only mainly to Typing trees and ignored by Scope trees.  This records static typing information associated with names.  A type checker might make several passes over a module, or a set of modules, and accumulate information.  Refer to [typing.md](typing.md) for listing.
+The **tree state** is composed of a number of items, arranged in a number of categories...
+- **Static state**.  Setters only apply to Scope trees.  Static properties are aspects of a Scope which are determined at compile time, such as how to interpret a variable name.  Refer to [scopes.md](scopes.md) for details.  Non-Scope trees will delegate the getters to the `tree.scope` object.  
+- **Dynamic state**.  These apply mainly to Namespace trees and are ignored by Scope trees.  Dynamic properties are aspects of the object which change at runtime, such as the value of a variable, or child trees.  Refer to [namespaces.md](namespaces.md) for details.
+- **Typing state**.  These only mainly to Typing trees and ignored by Scope trees.  This records static typing information associated with names.  A type checker might make several passes over a module, or a set of modules, and accumulate information.  Refer to [typing.md](typing.md) for details.
 
 ### Note for Scope trees
-All setters for nesting and static info must be called while "building" the Scope object, in the same order in which the corresponding ASTs are found in the `tree.ast` tree.  After this, all Scope trees are immutable.
+All setters for nesting and static state must be called while "building" the Scope object, in the same order in which the corresponding ASTs are found in the `tree.ast` tree.  After this, all Scope trees are immutable.
 
 ### Private Name Mangling
 In a class, the compiler considers certain variable names as "private" to that class, by transforming them to a different name which is (usually) different from the same name in a different class.  For details see [below](#transforming-private-names).
 
+Note, these names include those found in other non-CLASS enclosed scopes.
+
 This is specified by a method  
- **`mangle(self, var: str) -> str`**.
+ **`scope.mangle(var: str) -> str`**.
 
-This returns the transformed name if `self.kind` is CLASS and `var` is a private name.  Otherwise it returns `var` unchanged.
+- If `scope.kind` is CLASS and `var` is a private name, it returns the transformed name, using the name of the CLASS.
+- If `scope` is the GLOB scope, it returns `var` unchanged.
+- Otherwise, it returns `scope.parent.mangle(var)`.
 
-All of these setter and getter methods, when self.kind is CLASS, call `mangle`() on all variable names and for all tree types.  If the name is already mangled, there is no change because mangled names are not subject to mangling.  Mangling can be suppressed with a `nomangle=True` argument to the tree method.
+All of the nesting and state info (both setter and getter) methods call `tree.scope.mangle`() on all variable names and for all tree types.  If the name is already mangled, there is no change because mangled names are not subject to mangling.  Mangling can be suppressed with a `nomangle=True` argument to the tree method.
 
-> Usually, this takes care of everything.  However, if an application needs to access a private class or instance variable *outside the class definition*, then it must provide the mangled name for the variable, possibly by calling `tree.mangle(var)` on a CLASS tree for the scope in question.
+- Usually, this takes care of everything.  However, if an application needs to access a private class or instance variable *outside the class definition*, that is, when the class scope is not the class scope of the variable, then it must provide the mangled name for the variable, possibly by calling `tree.mangle(var)` on a CLASS tree for the scope in question.
 
 # Creating and Building a Tree
 
-A tree object is created simply by calling its class constructor.
+See [treebuild.md](treebuild.md) for this information.
 
-**Building** a tree means creating several `TreeT` objects and arranging them in a hierarchical structure.  This structure parallels the tree structure of scopes in a particular program.
-Building the tree includes setting the static properties of the objects.  
-It requires starting with the following:
-
-- The program to be examined.  This is in the form of a **source** object, with type `SrcT`.  It provides all the elements of the program, in program order.
-- A **traverser**.  This is an object which will walk through the source and find items of interest.  The traverser is written specifically for the type `SrcT`.  
-The traverser works in program order, moving up and down the scope hierarchy[^trav-visit].
-- A **builder**.  This is a single object which will create the `TreeT` objects, build their hierarchical structure, and set their static properties.  It responds to items found by the traverser, and calls various methods on the tree objects.  
-The builder moves up and down the tree structure and applies the methods to whichever tree object it is currently visiting.
-- A **root** `TreeT` ROOT object at the top of the hierarchy being built. 
-[^trav-visit]: For example, the traverser may be working on a CLASS named `C`, then find a nested CLASS named `C.D`, then find items about `C.D` and its descendant scopes, and then return to `C` and find more items about `C`.  All of this occurs in the same sequence as the overall python program.
-
-The entire process of accumulating information from the program occurs in two or three stages:
-1. A `Scope` tree is built using the traverser and the source.  This is always a `Scope` tree, regardless of the actual `TreeT` type.
-2. Static information for each `Scope` is collected.  This actually takes place simultaneously with the above step, to avoid traversing the source object twice.  
-
-If `TreeT` is other than `Scope`:
-
-3. A parallel `TreeT` structure is created.  This does not use the traverser.  Each `TreeT` references its corresponding `Scope`.
-
-At this point, the tree is considered to be built, as all the static information is now present.
-
-The application may alter dynamic properties of the objects as it wishes, possibly using reports from the traverser.
-The tree is **built** by the following:  
-    `with `**tree.build()**`:`  
-- In this context, call tree-building methods of `tree`.  
-- After this context, any `TreeT` dependent cleanup is performed.  For FUNC and CLASS trees, this includes registering the name of the new tree with the parent tree.
-    
-## Nesting Methods
-
-`with `**tree.nest**`(kind, src: SrcT) as subtree:`
-This creates the subtree and calls the context manager `subtree.build()`  
-- In this context, call setter methods of `subtree`.
-
-Convenient aliases are: **tree.nestXXX**`(src: SrcT)` which calls `tree.nest(tree.XXX, src)`  XXX is the name of any member of `Kind`.
 
 # Notes
 These sections provide details for some things mentioned above, so as to keep this document easier to read.
@@ -321,6 +306,7 @@ def f():                        # FUNC owner
 This is described in [Language doc 6.2.1](https://docs.python.org/3.10/reference/expressions.html#atom-identifiers), in the section "**Private Name Mangling**".
 
 Everywhere within the body of the `class` statement, the compiler generates the code using the transformed name.  Please note that the transforming also applies to a name declared global or nonlocal.  
+More precisely, this occurs when the [class scope](#class-scope-of-an-item) for the name item is that `class` statement.  So it includes any descendant non-CLASS scopes, and excludes the body of any descendant CLASS scope.
 *Anywhere else*, if a program wants to access an attribute of a class or instance with a private name, it must use the transformed name, as described.
 
 As an example,
@@ -360,4 +346,6 @@ def transform(name: str, class_name: str) -> str:
     ''',  d)
     return d[class_name].transformed
 ```
+This is implemented in the method **`scope_common.ScopeTree.mangle(name: str) -> str**, and can be called on a tree object of any kind and any tree type.
+
 I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for cpython to provide this functionality in the language.  Please feel free to read this and comment on it.

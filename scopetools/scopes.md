@@ -2,6 +2,7 @@
 
 Michael Rolle, 2022
 
+[goo](Testing.md#Other-Tests)
 # Definitions
 
 ## Syntax Tree
@@ -61,7 +62,7 @@ The exceptions are:
 - A keyword in a function call, as in `function(keyword=expression)`
 
 This document is concerned only with variables.
-
+        
 ### References
 
 Each occurrence of a variable in the syntax tree is called a **reference**.  The reference is a syntax item.
