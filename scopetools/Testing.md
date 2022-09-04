@@ -35,7 +35,7 @@ Each tree in the overall tree structure has certain properties, which are specif
 ## Dynamic Methods
 ## Executing the Python Module
 ## Comparing Trees
-[^othertests]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.
+[^othertests]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
 More footnote.
 - [namespaces.py](namespaces.py)
 - [scopes.py](scopes.py)
