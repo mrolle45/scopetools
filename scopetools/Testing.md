@@ -17,7 +17,7 @@ The above may be run **twice**.  The second time is done in [mangled mode](#Mang
 
 ## The Variable Name
 
-All static and dynamic properties involve a single variable names `x`, or `__x` if testing in mangle mode.  This name will be designated by the name **`var`**.
+All static and dynamic properties involve a single variable names `x`, or `__x` if testing in [mangled mode](#Mangled-Mode).  This name will be designated by the name **`var`**.
 ## Building the Tree
 
 The first thing that `scopestest` does is build a `Scope` tree, then a `Namespace` tree which uses the scope tree.
@@ -37,7 +37,7 @@ In both cases, the above class name is appended to the name of the parent tree (
 
 #### Tree Modes
 | mode | suffix | prolog | modifies? | captures? |
-|:--|:--|:--|:--|
+|:--|:--|:--|:--|:--|
 | Unused | (none) | | | |
 | Used | _use | var | | |
 | Anno | _anno | var: str | | |
