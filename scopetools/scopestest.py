@@ -85,6 +85,8 @@ class ScopeParams:
 	nocapt: bool = False	# If true, restricts nested scopes to those that don't capture
 							# 'x' from this scope.
 	kind: ScopeKind = None
+	only_child: int + None = None	# If an int, then only the child with this position in children is used.
+
 
 	def nest(self, mode: VarMode, kind: ScopeKind) -> ScopeParams:
 		""" New object to go with a nested scope. """
@@ -97,14 +99,17 @@ class ScopeParams:
 				mode=mode,
 				nocapt=nocapt,
 				kind=kind,
+				only_child = None,
 				)
 
 	@property
 	def nested_params(self) -> Iterable[ScopeParams]:
 		if self.depth:
+			index = 0
 			for kind in Scope.CLASS, Scope.FUNC:
-				for mode in self.mode.nocapt_modes(self.nocapt):
-					yield self.nest(mode, kind)
+				for index, mode in enumerate(self.mode.nocapt_modes(self.nocapt), index):
+					if self.only_child is None or self.only_child == index:
+						yield self.nest(mode, kind)
 
 	def makename(self, suffix: str = ''):
 		"Name for a nested scope."
@@ -475,11 +480,11 @@ class GenNamespaces(NamespaceBuilder):
 		self.lineno += len(s.split('\n'))
 
 
-def gen(args, out: TextIO, prolog: list[str], mangle: bool = False) -> Tuple[int, Namespace]:
+def gen(args, out: TextIO, prolog: list[str], mangle: bool = False, only_child: int | None = None) -> Tuple[int, Namespace]:
 	""" Main function to write most of the output. """
 
 	print(f'Generating code... ', end='', flush=True)
-	top_ref = ScopeParams(0, args.d, VarMode.Local)
+	top_ref = ScopeParams(0, args.d, VarMode.Local, only_child=only_child)
 	scope = Scope(kind=Scope.GLOB, cache_resolved=False, src=top_ref)
 	# TODO: Let the namespace builder build the scope.
 	trav = GenTraverse()
@@ -534,9 +539,18 @@ def error(msg: str, lineno: int):
 
 ''').splitlines()
 
-	def run_test(mangle: bool = False) -> str:
+	def run_test(mangle: bool = False, only_child: int | None = None) -> str:
 		global out
-		num_tests, root_ns = gen(args, out, prolog, mangle=mangle)
+		if args.d == 4 and only_child is None:
+			# Perform several shorter tests each with a different only child index.
+			top_ref = ScopeParams(0, args.d, VarMode.Local)
+			nested = list(top_ref.nested_params)
+			for only_child, params in enumerate(nested):
+				name = params.mode.name_sfx('aA'[params.kind.is_class])
+				print(f'{only_child + 1} of {len(nested)} ({name}).')
+				run_test(mangle, only_child)
+			return ''
+		num_tests, root_ns = gen(args, out, prolog, mangle=mangle, only_child=only_child)
 
 		print('Compiling... ', end='', flush=True)
 		lines = [*prolog, *out.getvalue().splitlines()]
@@ -612,13 +626,14 @@ def error(msg: str, lineno: int):
 		print('Testing mangled names.')
 		text += run_test(mangle=True)
 	filename = args.o
-	if args.s:
-		with open(filename, 'w') as f:
-			map(f.write, prolog)
-			f.write(text)
-			print(f'Writing to "{f.name}."')
-	if args.t:
-		with open(f'{filename}.txt', 'w') as f:
-			map(f.write, prolog)
-			f.write(text)
-			print(f'Copying to "{f.name}."')
+	if args.d < 4:
+		if args.s:
+			with open(filename, 'w') as f:
+				map(f.write, prolog)
+				f.write(text)
+				print(f'Writing to "{f.name}."')
+		if args.t:
+			with open(f'{filename}.txt', 'w') as f:
+				map(f.write, prolog)
+				f.write(text)
+				print(f'Copying to "{f.name}."')
