@@ -36,7 +36,7 @@ _noarg: Final = object()				# Use as some argument default values.
 
 class VarMode(Enum):
 	""" Defines how a scope uses the variable 'x'.
-	Except for LocalNoCapt, makes no restrictions on nested classes.
+	Except for NoCap, makes no restrictions on nested classes.
 	"""
 	Unused = 'none'
 	Used = 'use'
@@ -46,7 +46,7 @@ class VarMode(Enum):
 							# verify that the nonlocal declaration is a syntax error.
 	Global = 'glob'
 	Local = 'loc'			# x will be bound in this scope by an assignment.
-	LocalNoCapt = 'ncap'	# same, but nested scopes may not capture x.
+	NoCap = 'ncap'			# same, but nested scopes may not capture x.
 							# used as a mode for a nested scope, nested.mode = Local and nested.nocapt = True.
 
 	@classmethod
@@ -63,11 +63,11 @@ class VarMode(Enum):
 
 	@property
 	def is_loc(self) -> bool:
-		return self in (self.Local, self.LocalNoCapt)
+		return self in (self.Local, self.NoCap)
 
 	@property
 	def modifies(self) -> bool:
-		return self in (self.Local, self.LocalNoCapt, self.Nonlocal, self.Global, )
+		return self in (self.Local, self.NoCap, self.Nonlocal, self.Global, )
 
 	def name_sfx(self, name: str = '') -> str:
 		""" Suffix for a scope name, optionally added to given name. """
@@ -89,7 +89,7 @@ class ScopeParams:
 	def nest(self, mode: VarMode, kind: ScopeKind) -> ScopeParams:
 		""" New object to go with a nested scope. """
 		nocapt = self.nocapt
-		if mode is mode.LocalNoCapt:
+		if mode is mode.NoCap:
 			nocapt = True
 		return attrs.evolve(self,
 				level=self.level + 1,
@@ -137,7 +137,7 @@ class GenTraverse(Traverser):
 				if name != self.mangle(varname):
 					yield name
 
-		# 1. Prologue.  This is the initial declarations or settings of name.
+		# 1. Prologue.  This is the initial declaration of name.
 		mode = src.mode
 
 		for var in allvars():
@@ -164,8 +164,9 @@ class GenTraverse(Traverser):
 		if mode.modifies:
 
 			# 3. Modifications to var.
+			orig_bounds = dict()
 			for var in allvars():
-				orig_bound = isinstance(self.curr, Namespace) and self.has_bind(var)
+				orig_bound = orig_bounds[var] = isinstance(self.curr, Namespace) and self.has_bind(var)
 				# Make unbound.
 				if orig_bound:
 					self.delete(var)
@@ -191,9 +192,19 @@ class GenTraverse(Traverser):
 			for var in allvars():
 				self.maketest(var)
 
+			# Make bound.
+			for var in allvars():
+				self.store(var, rvalue)
+				self.maketest(var)
+
+			# Make unbound.
+			for var in allvars():
+				self.delete(var)
+				self.maketest(var)
+
 			# Make the opposite state from originally.
-			if not orig_bound:
-				for var in allvars():
+			for var, orig_bound in orig_bounds.items():
+				if not orig_bound:
 					self.store(var, rvalue)
 					self.maketest(var)
 
@@ -318,6 +329,8 @@ class GenNamespaces(NamespaceBuilder):
 		self.out = out
 		self.level: int = 0
 		self.lineno = len(out.getvalue().splitlines()) + 1
+		out.truncate(0)
+		out.seek(0)
 		self.write('')
 		self.trav.do_mangle = mangle
 		self.build()
@@ -365,7 +378,6 @@ class GenNamespaces(NamespaceBuilder):
 		binding = self.scope.binding(name)
 		scope = binding and binding.scope
 		if not (scope and scope.kind.is_closed):
-		#if not self.scope.has_closure:
 			# No nonlocal binding.  There are no nested scopes, but generate a test.
 
 			self.write('# No enclosed binding exists.')
@@ -493,7 +505,7 @@ n.add_nested()
 assert n.nested[0].nested[0].mangle('__x') == '_c__x'
 
 if __name__ == '__main__':
-
+	out = StringIO()
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', default = 3, type=int, choices=range(2, 5),
 		help='Depth of the scopes and namespaces tree (default 3)')
@@ -524,14 +536,13 @@ def error(msg: str, lineno: int):
 
 	def run_test(mangle: bool = False) -> str:
 		global out
-		out = StringIO()
 		num_tests, root_ns = gen(args, out, prolog, mangle=mangle)
 
 		print('Compiling... ', end='', flush=True)
 		lines = [*prolog, *out.getvalue().splitlines()]
+		import ast
 		code = compile('\n'.join(lines), '<generated>', 'exec')
 
-		code = compile('\n'.join((*prolog, out.getvalue())), '<generated>', 'exec')
 		print('done')
 		print('Running tests. ')
 		try: exec(code, globals())
@@ -542,6 +553,7 @@ def error(msg: str, lineno: int):
 			print(*lines[max(lineno - 11, 0):lineno], sep='\n')
 			print('---- ' + msg)
 			print(*lines[lineno: lineno + 10], sep='\n')
+			raise
 		else:
 			if num_tests % 1000: print('\r' f'{num_tests}', end='', flush=True)
 			print(' done')
@@ -576,7 +588,7 @@ def error(msg: str, lineno: int):
 					raise ValueError(f"Scopes {scope1!r} and {scope2!r} don't match")
 				compare(n1, n2)
 		print('Comparing scopes...', end='', flush=True)
-		compare(root_ns.scope, root.scope)
+		#compare(root_ns.scope, root.scope)
 		print('')
 		# Compare the namespace trees.
 		def compare(ns1, ns2) -> bool:
@@ -589,7 +601,7 @@ def error(msg: str, lineno: int):
 			for ns1, ns2 in zip(nest1, nest2):
 				compare(ns1, ns2)
 		print('Comparing namespaces...', end='', flush=True)
-		compare(root_ns, root)
+		#compare(root_ns, root)
 		print('')
 		return out.getvalue()
 
