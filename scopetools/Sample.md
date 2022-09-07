@@ -58,3 +58,4 @@ This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  T
 
 [^Foo]: Bar
 
+More bar.
