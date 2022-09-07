@@ -29,7 +29,7 @@ The children of an AST node are found by looking at the class attribute `node._f
     For each `field` the node has 0 or more child objects, depending on the coding of `field` as shown in this table.  `T` is the type of the child.  `value` is the value of `node.name`.  
 
     | field | value type | count | children |
-    |:-|:-|:-|:-|:-|
+    |:-|:-|:-|:-|
     | T name | T | 1 | [value] |
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
