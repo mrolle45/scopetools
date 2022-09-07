@@ -1,20 +1,6 @@
-# Python Name Resolution Rules
-
-This document specifies the complete set of rules for resolving a name (an identifier) at runtime in a running Python program, and getting, setting, or deleting its current value.
-
-Contents:
-- [Syntax tree for the Python program](#syntax-tree)
-- [Scope -- static state](#scope)
-  - [Name resolution rules](#scope-name-resolution)
-- [Namespace -- dynamic state](#namespace)
-  - [Operations](#dynamic-operations)
-  - [Name resolution rules](#namespace-name-resolution)
 
 # Syntax Tree
 
-When a program is compiled, it is first converted to a **syntax tree**, which is described in the [ast](https://docs.python.org/3.10/library/ast.html) module.  This is an `ast.Module` object.  It is then converted to a binary format which can be executed by the interpreter at the time the module is imported.  The syntax tree can be obtained directly with the `ast.parse()` function.
-
-A **node**, or **AST node** is an object which is a subclass of `ast.AST`.  In this document, **AST** is shorthand for any `ast.AST` node.  
 An AST has some **child** objects[^ASTChild], some of which can be other ASTs.  A non-AST child is called a **leaf**, or **AST leaf**
 
 An **item**, or **AST item**, is either a node or a leaf.
@@ -38,12 +24,3 @@ foo [^Foo]
     | T* name | list[T] | 0 or more | value[:] |
 
 
-# Scope
-
-## Scope Name Resolution
-
-# Namespace
-
-## Dynamic Operations
-
-## Namespace Name Resolution
