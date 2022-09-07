@@ -56,6 +56,6 @@ This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  T
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
 
-[^Foo]: Bar
+[^Foo]: Bar  
 
-More bar.
+    More bar.
