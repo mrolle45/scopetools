@@ -1,7 +1,3 @@
-# Running Tests
-
-This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
-
 # Python Name Resolution Rules
 
 This document specifies the complete set of rules for resolving a name (an identifier) at runtime in a running Python program, and getting, setting, or deleting its current value.
@@ -38,6 +34,10 @@ foo [^Foo]
 
 ## Namespace Name Resolution
 
+
+# Running Tests
+
+This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
 
 [^othertests]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
     - [namespaces.py](namespaces.py)
