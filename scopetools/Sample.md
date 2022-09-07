@@ -29,18 +29,6 @@ foo [^Foo]
 
 [^Foo]: Bar
 
-[^ASTChild]: The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
-    
-    The [ast grammar](https://docs.python.org/3.10/library/ast.html#abstract-grammar) shows the names and types of fields of each AST node class, in the form `class(field, ...)`.  
-
-    For each `field` the node has 0 or more child objects, depending on the coding of `field` as shown in this table.  `T` is the type of the child.  `value` is the value of `node.name`.  
-
-    | field | value type | count | children |
-    |:-|:-|:-|:-|
-    | T name | T | 1 | [value] |
-    | T? name | T \| None | 0 or 1 | filter(None, [value]) |
-    | T* name | list[T] | 0 or more | value[:] |
-
 
 # Scope
 
@@ -57,3 +45,16 @@ foo [^Foo]
     - [namespaces.py](namespaces.py)
     - [scopes.py](scopes.py)
     - [treebuild.py](treebuild.py)
+
+[^ASTChild]: The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
+    
+    The [ast grammar](https://docs.python.org/3.10/library/ast.html#abstract-grammar) shows the names and types of fields of each AST node class, in the form `class(field, ...)`.  
+
+    For each `field` the node has 0 or more child objects, depending on the coding of `field` as shown in this table.  `T` is the type of the child.  `value` is the value of `node.name`.  
+
+    | field | value type | count | children |
+    |:-|:-|:-|:-|
+    | T name | T | 1 | [value] |
+    | T? name | T \| None | 0 or 1 | filter(None, [value]) |
+    | T* name | list[T] | 0 or more | value[:] |
+
