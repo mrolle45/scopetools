@@ -1,7 +1,8 @@
 This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
 
-This mostly[^Foo] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
-foo [^Foo]
+This mostly[^foo] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
+
+foo [^foo]
 
 # Python Name Resolution Rules
 
@@ -57,5 +58,7 @@ Each item represents a single contiguous section of the text.  Children of a nod
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
 
-[^Foo]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
-    More bar.
+[^foo]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
+    - [namespaces.py](namespaces.py)
+    - [scopes.py](scopes.py)
+    - [treebuild.py](treebuild.py)
