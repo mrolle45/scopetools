@@ -27,8 +27,6 @@ Each item represents a single contiguous section of the text.  Children of a nod
 
 foo [^Foo]
 
-[^Foo]: Bar
-
 
 # Scope
 
@@ -57,4 +55,6 @@ foo [^Foo]
     | T name | T | 1 | [value] |
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
+
+[^Foo]: Bar
 
