@@ -20,7 +20,9 @@ An AST has some **child** objects[^ASTChild], some of which can be other ASTs.  
 An **item**, or **AST item**, is either a node or a leaf.
 
 Each item represents a single contiguous section of the text.  Children of a node represent subsets of that section of text.  Some node classes have attributes (which are not child items) showing the range of the text.
-[^Foo]
+
+foo [^Foo]
+
 [^Foo]: Bar
 
 [^ASTChild]: The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
@@ -30,7 +32,7 @@ Each item represents a single contiguous section of the text.  Children of a nod
     For each `field` the node has 0 or more child objects, depending on the coding of `field` as shown in this table.  `T` is the type of the child.  `value` is the value of `node.name`.  
 
     | field | value type | count | children |
-    |:-|:-|:-|:-|:-|
+    |:-|:-|:-|:-|
     | T name | T | 1 | [value] |
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
