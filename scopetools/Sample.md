@@ -1,3 +1,8 @@
+This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
+
+This mostly[^Foo] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
+foo [^Foo]
+
 # Python Name Resolution Rules
 
 This document specifies the complete set of rules for resolving a name (an identifier) at runtime in a running Python program, and getting, setting, or deleting its current value.
@@ -21,9 +26,6 @@ An **item**, or **AST item**, is either a node or a leaf.
 
 Each item represents a single contiguous section of the text.  Children of a node represent subsets of that section of text.  Some node classes have attributes (which are not child items) showing the range of the text.
 
-This mostly[^Foo] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
-foo [^Foo]
-
 
 # Scope
 
@@ -37,8 +39,6 @@ foo [^Foo]
 
 
 # Running Tests
-
-This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
 
 [^othertests]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
     - [namespaces.py](namespaces.py)
