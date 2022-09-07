@@ -21,7 +21,7 @@ Contents:
 When a program is compiled, it is first converted to a **syntax tree**, which is described in the [ast](https://docs.python.org/3.10/library/ast.html) module.  This is an `ast.Module` object.  It is then converted to a binary format which can be executed by the interpreter at the time the module is imported.  The syntax tree can be obtained directly with the `ast.parse()` function.
 
 A **node**, or **AST node** is an object which is a subclass of `ast.AST`.  In this document, **AST** is shorthand for any `ast.AST` node.  
-An AST has some **child** objects[^ASTChild], some of which can be other ASTs.  A non-AST child is called a **leaf**, or **AST leaf**
+An AST has some **child** objects[^astchild], some of which can be other ASTs.  A non-AST child is called a **leaf**, or **AST leaf**
 
 An **item**, or **AST item**, is either a node or a leaf.
 
@@ -46,7 +46,7 @@ Each item represents a single contiguous section of the text.  Children of a nod
     - [scopes.py](scopes.py)
     - [treebuild.py](treebuild.py)
 
-[^ASTChild]: The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
+[^astchild]: The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
     
     The [ast grammar](https://docs.python.org/3.10/library/ast.html#abstract-grammar) shows the names and types of fields of each AST node class, in the form `class(field, ...)`.  
 
