@@ -21,6 +21,7 @@ An **item**, or **AST item**, is either a node or a leaf.
 
 Each item represents a single contiguous section of the text.  Children of a node represent subsets of that section of text.  Some node classes have attributes (which are not child items) showing the range of the text.
 
+This mostly[^Foo] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
 foo [^Foo]
 
 
