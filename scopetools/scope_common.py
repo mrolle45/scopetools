@@ -95,7 +95,8 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 
 	Kind = _Kind
 	# Constants for above Kind members, copied into class variables
-	locals().update(Kind.__members__)
+	for kind, x in Kind.__members__.items():
+		exec(f'{kind} = {x}')
 
 	# Index of self in parent.nested list (or None for ROOT)
 	index: int | None
@@ -143,6 +144,28 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 			if name and name != self.name:
 				raise ValueError(f'name {name!r} doesn\'t match {scope!r}.')
 		self.nested = []
+
+	def __getattr__(self, name: str) -> Any:
+		try:
+			if self.scope is not self: return getattr(self.scope, name)
+		except AttributeError: pass
+		return self.__getattribute__(name)
+
+	def search_scope(self, scope: Scope) -> TreeT:
+		""" Find ancestor (or self) having given scope. """
+		while self:
+			if scope is self.scope: return self
+			self = self.parent
+		raise ValueError(f'No ancestor of {self!r} for scope {scope!r}')
+
+	@property
+	def root(self) -> TreeT:
+		return self.parent and self.parent.root or self
+
+	@property
+	def glob(self) -> TreeT:
+		parent = self.parent
+		return parent and (parent and parent.glob or self)
 
 	# DECORATORS
 
@@ -252,9 +275,6 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 		return
 	
 	def bind(self, var: str,
-			 anno: bool = False,			# Variable is annotated
-			 param: bool = False,			# Variable is a function parameter
-			 nested: bool = False,			# Variable is a nested tree
 			 **kwds) -> None:
 		""" A var which appears in some binding operation.
 		"""
@@ -301,7 +321,7 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 	# COMPOUND EVENTS
 
 	def anno(self, var: str, anno: str, **kwds) -> None:
-		self.bind(var, anno=True, **kwds)
+		self.bind(var, self.ANNO, **kwds)
 		self.type_hint(var, anno, **kwds)
 
 	def anno_store(self, var: str, anno: str, rvalue: ValT, **kwds) -> None:
@@ -329,20 +349,7 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 		class_tree = self.class_tree()
 		if not class_tree:
 			return var
-		# Create copy of scope class with given variable, then look at its locals.
-		d = {}
-		class_name = class_tree.name
-		exec(
-f'''
-class {class_name}:
-	__loc__ = set(locals())
-	{var} = 0
-	__loc__ = set(locals()) - __loc__
-	__loc__.remove('__loc__')
-mangled = {class_name}.__loc__.pop()
-''',
-			d)
-		return d['mangled']
+		return mangle(class_tree.name, var)
 
 	@mangler
 	def f(self, var): print(var); return var
@@ -399,3 +406,22 @@ class TreeRef(_NestMixin):
 	class State:
 		curr: TreeT
 		nest_count: int = 0
+
+def mangle(clsname: str, var: str) -> str:
+		""" Return the mangled version of a variable name in a CLASS owner scope.
+		Mostly returns same name.
+		"""
+		# Create copy of scope class with given variable, then look at its locals.
+		d = {}
+		exec(
+f'''
+class {clsname}:
+	__loc__ = set(locals())
+	{var} = 0
+	__loc__ = set(locals()) - __loc__
+	__loc__.remove('__loc__')
+mangled = {clsname}.__loc__.pop()
+''',
+			d)
+		return d['mangled']
+

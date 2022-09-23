@@ -305,7 +305,9 @@ def f():                        # FUNC owner
 ## Transforming Private Names
 This is described in [Language doc 6.2.1](https://docs.python.org/3.10/reference/expressions.html#atom-identifiers), in the section "**Private Name Mangling**".
 
-Everywhere within the body of the `class` statement, the compiler generates the code using the transformed name.  Please note that the transforming also applies to a name declared global or nonlocal.  
+Note some **exceptional cases** below.
+
+Everywhere within the body of the `class` statement, the compiler generates the code using the transformed name.  If the transformed name appears in place of the private name, the compiled result is the same.  Please note that the transforming also applies to a name declared global or nonlocal.  
 More precisely, this occurs when the [class scope](#class-scope-of-an-item) for the name item is that `class` statement.  So it includes any descendant non-CLASS scopes, and excludes the body of any descendant CLASS scope.
 *Anywhere else*, if a program wants to access an attribute of a class or instance with a private name, it must use the transformed name, as described.
 
@@ -329,7 +331,9 @@ print(_C__glob)        # 13
 print(_D__glob)        # 14
 ```
 
-However, the description of name transformation referenced above is *not entirely correct*, as it says:
+### Very Long Names
+
+The description of name transformation referenced above is *not entirely correct*, as it says:
 
   >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
 
@@ -339,9 +343,9 @@ def transform(name: str, class_name: str) -> str:
     d = {}
     exec(f'''class {class_name}:
     loc = set(locals())
-    {name} = 0                     # make it a local variable
+    {name} = 0                  # make it a local variable
     loc = set(locals()) - loc
-    loc.remove('loc')       # Only transformed name remains.
+    loc.remove('loc')           # Only transformed name remains.
     transformed = loc.pop()
     ''',  d)
     return d[class_name].transformed
@@ -349,3 +353,21 @@ def transform(name: str, class_name: str) -> str:
 This is implemented in the method **`scope_common.ScopeTree.mangle(name: str) -> str**, and can be called on a tree object of any kind and any tree type.
 
 I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for cpython to provide this functionality in the language.  Please feel free to read this and comment on it.
+
+### Walrus in a COMP with a global variable
+There is a bug in the cpython compiler, in a case such as this:
+```py
+class C:
+    (possibly some more nested functions ...)
+    def f():
+        global __x
+        [__x := 1 for ...]
+```
+The compiler ignores the global `__x` and tries to resolve the *unmangled* name `__x`, resulting in a SyntaxError.
+The workaround is to figure out the mangled name and use this in the walrus, as:
+```py
+        [_C__x := 1 for ...]
+```
+The `scopetools` module does this in the Python code that it generates.
+
+See [bug report](https://github.com/python/cpython/issues/96497).

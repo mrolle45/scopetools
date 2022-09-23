@@ -2,7 +2,6 @@
 
 Michael Rolle, 2022
 
-[goo](Testing.md#Other-Tests)
 # Definitions
 
 ## Syntax Tree
@@ -68,7 +67,7 @@ This document is concerned only with variables.
 Each occurrence of a variable in the syntax tree is called a **reference**.  The reference is a syntax item.
 
 #### Binding reference
-This implies that the variable is Local in the scope.  Refer to the [documentation](https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names) for name binding. The possibilities are:
+This implies that the variable is BINDING in the scope.  Refer to the [documentation](https://docs.python.org/3.10/reference/executionmodel.html#binding-of-names) for name binding. The possibilities are:
 - An `ast.Name` node, where the context attribute is either `ast.Store()` or `ast.Del()`.  Yes, a `del variable` statement is considered binding.  There is one exception[^nonbinding].
 
   This includes a target name in:
@@ -178,7 +177,7 @@ This is an enumeration `Scope.VarCtx` in the `Basic` class (a base class of `Sco
 During the build of the scope, it may change.  
 It can be one of:
 
-- **Local**.  The variable appears in a binding reference in the scope, other than a [walrus reference](#walrus-reference).  Also, in a GlobalScope, if its context is Global in any enclosed scope.
+- **BINDING**.  The variable appears in a binding reference in the scope, other than a [walrus reference](#walrus-reference).  Also, in a GlobalScope, if its context is Global in any enclosed scope.
 - **Closure**.  The scope contains a `nonlocal variable` statement.
 - **Global**.  The scope contains a `global variable` statement.
 This does not apply in the global scope itself, in which it is redundant and ignored.
@@ -227,7 +226,7 @@ It is denoted by the method call
 
 The algorithm for this is detailed [below](#scope._closure).
 
-The closure for a closed scope where `var` has Local context, is itself.
+The closure for a closed scope where `var` has BINDING context, is itself.
 The closure for a closed scope where `var` has Global context, is None.
 The closure for the global scope is None.
 Otherwise, the closure is the closure for its parent.
@@ -289,7 +288,7 @@ A scope is specified by calling various primitive methods while traversing the s
 - **`scope._cleanup()`**  
     Called implicitly at the end of `glob.build()` for any GlobalScope `glob`.  
     Then called recursively for all nested scopes in the tree.  
-    * Any variable with a Seen or Closure context is resolved to either Closure or Global, using the [scope.binding](#scope.binding)`(variable)` method (detailed below).  In the case of Closure, it will raise a SyntaxError if the binding scope is not found.
+    * Any variable with a Seen or NLOCDECL context is resolved to either Free or Global, using the [scope.binding](#scope.binding)`(variable)` method (detailed below).  In the case of Closure, it will raise a SyntaxError if the binding scope is not found.
 
     * Call `child._cleanup()` recursively for each child scope.
 ## Post-build Methods
@@ -305,23 +304,23 @@ Scope.context(self, var: str) -> VarCtx
 The current context of any `var` which is not Unused is kept in the `Scope` object.  The absence of a current context means that the context is Unused.  
 The context of a variable is determined by a state machine which responds to certain events, which correspond to some `ast` nodes in the program.  These are applied in the program order.  This table shows the transitions.  Blank cells mean no change to the context.
 
-| Event | Unused | Seen | Local | Closure | Global | Walrus
+| Event | Unused | Seen | Local | Free | Global | Walrus
 |:---|:---|:---|:---|:---|:---|:---| 
 | Initial context | Unused | -- | -- | -- | -- | -- 
 | Any non-binding reference to `var` | Seen
 | [Walrus reference](#walrus-reference) to `var` | Walrus | Walrus | error | n/a [^impossible] | n/a [^impossible]
 | Any other binding reference to `var` | Local | Local | | error | error | n/a [^impossible]
-| A `nonlocal var` statement | Closure | error | error | | error | n/a [^impossible]
+| A `nonlocal var` statement | Free | error | error | | error | n/a [^impossible]
 | A `global var` statement | Global | error | error | error | | n/a [^impossible]
-| _cleanup() with closure scope | | Closure 
+| _cleanup() with closure scope | | Free 
 | _cleanup() with no closure scope | | Global | | error 
 
 [^impossible]: Not possible because a COMP does not contain any statements (*i.e.* `nonlocal` or `global`), nor any binding reference other than a walrus reference.
 
-## Scope.binding_scope
+## Scope.binder
 
-The method `scope.binding_scope(var) -> Scope` returns the Scope (if any) where `var` is bound.  Implementation varies by the context of `var`.
-The result is None if the context is Closure but there is no scope found.
+The method `scope.binder(var) -> Scope` returns the Scope (if any) where `var` is bound.  Implementation varies by the context of `var`.
+The result is None if the context is Free but there is no scope found.
 
 ## Scope.binding
 `Scope.binding(var: str) -> VarBind` returns a binding for `var` in the  Scope (if any) where `var` is bound.  Raises SyntaxError if this fails, *i.e.*, `var` is a `Closure` but no closure scope exists.  Implementation varies by the context of `var`.  
@@ -340,7 +339,7 @@ def binding(self, var: str) -> VarBind:
 ```
 
 The returned binding is a `Scope.VarBind` object.  This has attributes:
-- `scope: Scope | None` = the Scope (if any) returned by `binding_scope(var)`
+- `scope: Scope | None` = the Scope (if any) returned by `binder(var)`
 - `anno, param, nested`: accumulated from those keywords in all `bind(var)` calls with this `scope`.
     
 ## Scope._closure

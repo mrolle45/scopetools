@@ -40,6 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="scopetools\README.md" />
+    <Content Include="scopetools\Rules.md" />
+    <Content Include="scopetools\Sample.md" />
     <Content Include="scopetools\scopescommon.md" />
     <Content Include="scopetools\scopes.md" />
     <Content Include="scopetools\Testing.md" />

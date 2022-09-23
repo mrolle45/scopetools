@@ -95,7 +95,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 
 						binding namespace     -->      binding scope
 						       ^                            ^
-						       | 0 or more parents          | binding_scope(Var)
+						       | 0 or more parents          | binder(Var)
 						current namespace     -->      current scope
 
 	Assign and delete of a Var by a Namespace is delegated to the Binding for the Var in the
@@ -176,14 +176,11 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 
 	# Nested namespaces created during build.
 	nested: List[Namespace]
-	scope_class: ClassVar[Type[Scope]]
 	global_ns: GlobalNamespace | None
 
 	def __init__(self, src: SrcT, parent: Namespace = None, name: str = None, *,
 					key: object = None, scope: ScopeT = None, **kwds):
 		super().__init__(src, parent, name, scope=scope, **kwds)
-		#if src: self.src = src
-		#self.parent = parent
 		if parent:
 			assert self.scope.parent is parent.scope
 			self.global_ns = parent.global_ns
@@ -215,31 +212,32 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		""" Get the current value for the var if any, else raise a NameError.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
-		binding_ns = self._binding_namespace(var)
-		binding = binding_ns._load_binding(var)
+		binding = self._load_binding(var)
 		if binding: return binding.value
-		if self is binding_ns:
-			raise UnboundLocalError(f"local variable '{var}' referenced before assignment")
-		else:
-			raise NameError(f"name '{var}' is not defined")
+		self.raise_unbound(var, self.binder(var))
 
 	def anno(self, var: str, anno, rvalue: ValT = _noarg, **kwds) -> Self:
 		pass
 
+	def raise_unbound(self, var: str, binder: Namespace) -> NoReturn:
+		if self is binder:
+			raise UnboundLocalError(f"local variable '{var}' referenced before assignment")
+		else:
+			raise NameError(f"name '{var}' is not defined")
+
 	@ScopeTree.mangler
 	def has(self, var: str) -> bool:
 		""" True if there is a Binding for Var and the Binding is bound. """
-		try: b = self._binding_namespace(var)
-		except SyntaxError: return False
-		if not b: return False
-		return bool(b._load_binding(var))
+		try: self.load(var)
+		except NameError: return False
+		return True
 
 	@ScopeTree.mangler
 	def has_bind(self, var: str) -> bool:
 		""" True if there is a Binding for Var and the Binding is bound,
 		but only looks in the binding Namespace (i.e., where bind and unbind take place).
 		"""
-		try: b = self._binding_namespace(var)
+		try: b = self.binder(var)
 		except SyntaxError: return False
 		if not b: return False
 		return bool(b.vars[var])
@@ -249,7 +247,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		""" Set the value of the var in the binding namespace.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
-		self._binding_namespace(var).vars.bind(var, value)
+		self.binder(var).vars.bind(var, value)
 
 	# Same as store()
 	store_walrus = store
@@ -261,26 +259,26 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
 		if self.has(var):
-			self._binding_namespace(var).vars.unbind(var)
+			self.binder(var).vars.unbind(var)
 			return
-		# This will raise the appropriate exception.
-		self.load(var)
+		self.raise_unbound(var, self.binder(var))
 
 	# Helper methods...
 
-	def _binding_namespace(self, var: str) -> Namespace | None:
+	def binder(self, var: str) -> Namespace | None:
 		""" Find the binding namespace for var.
 		Return None if there is no binding scope.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
 		try:
-			scope: Scope = self.scope.binding_scope(var)
+			scope: Scope = self.scope.binder(var)
 		except SyntaxError:
 			raise
-		while True:
-			if scope is self.scope: return self
-			self = self.parent
-		assert False, f"binding namespace not found for name '{var}'"
+		return self.search_scope(scope)
+
+	def _get_bind(self, var: str) -> Binding | None:
+		""" Binding object, if any, in this namespace. """
+		return self.vars.get(var)
 
 	@abstractmethod
 	def _load_binding(self, var: str) -> Binding | None:
@@ -289,15 +287,14 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		be the binding stored here.
 		The RootNamespace is not a binding namespace, and is handled differently.
 		"""
+		binding_ns = self.binder(var)
+		if binding_ns is self:
+			return self._get_bind(var)
+		try: return self.binder(var)._load_binding(var)
+		except RecursionError:
+			print(f'{var} in {self!r}')
+			raise
 		...
-
-	#def _nest_scope(self, scope: ScopeT, **kwds) -> NsT:
-	#	""" Create a nested Namespace for given Scope. """
-	#	cls: Type[NsT] = ns_classes[scope.kind]
-	#	with self.nest(scope.kind, scope.src) as new:
-	#		x = 0
-	#	return cls(scope, self, **kwds)
-
 
 class RootNamespace(Namespace, kind=Scope.ROOT):
 	""" The environment for a program and its modules.
@@ -314,7 +311,7 @@ class RootNamespace(Namespace, kind=Scope.ROOT):
 		""" Find the Binding, if any, containing the value of Var.
 		self is not a binding namespace.  There might or might not be a Binding for var.
 		"""
-		return self.vars[var]
+		return self._get_bind(var)
 
 class GlobalNamespace(Namespace, kind=Scope.GLOB):
 
@@ -341,31 +338,31 @@ class GlobalNamespace(Namespace, kind=Scope.GLOB):
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
 		"""
-		binding = self.vars[var]
+		binding = self._get_bind(var)
 		if binding: return binding				# Binding exists and is bound.
 		# Else try the root namespace.
-		return self.parent._load_binding(var)
-
-	def use_globals(self, glob: dict):
-		""" Use given globals dictionary instead of separate VarTable(). """
-		self.vars = GlobalVarTable(glob)
+		return self.root._load_binding(var)
 
 class ClassNamespace(Namespace, kind=Scope.CLASS):
 
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of var.
 		"""
-		binding = self.vars[var]
+		ctx = self.scope.context(var)
+		if ctx.hasGLOBDECL:
+			return self.glob._load_binding(var)
+
+		binding = self._get_bind(var)
 		if binding: return binding
-		# Else try the global namespace.
-		return self.global_ns._load_binding(var)
+		if ctx.hasLOCAL:
+			return self.glob._load_binding(var)
+		if ctx.hasGLOBAL:
+			return self.glob._load_binding(var)
+		if ctx.hasFREE:
+			return super()._load_binding(var)
 
 class FunctionNamespace(Namespace, kind=Scope.FUNC):
-
-	def _load_binding(self, var: str) -> Binding | None:
-		""" Find the Binding, if any, containing the value of var.
-		"""
-		return self.vars[var]
+	pass
 
 class LambdaNamespace(FunctionNamespace, kind=Scope.LAMB):
 	pass

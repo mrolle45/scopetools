@@ -134,10 +134,14 @@ class GenTraverse(Traverser):
 
 		varname = '__x' if self.do_mangle else 'x'
 		rvalue = self.make_rvalue(varname, 'x')
-
+		#self.add_mangled(self.scope, varname, )
 		def allvars() -> Iterable[str]:
 			""" Generate var plus all mangled names. """
-			yield varname
+			if self.curr.is_scope:
+				yield varname
+				return
+
+			yield self.mangle(varname)
 			for name in sorted(self.scope.mangled_names):
 				if name != self.mangle(varname):
 					yield name
@@ -157,6 +161,8 @@ class GenTraverse(Traverser):
 			if mode is not mode.Unused:
 				self.maketest(var)
 
+		if self.do_mangle and self.curr.is_scope:
+			self.add_mangled(self, varname)
 		# 2. Nested classes and functions, with var in the original state.
 		def do_nested(sfx: str = ''):
 			for sub_ref in src.nested_params:
@@ -166,17 +172,20 @@ class GenTraverse(Traverser):
 					self.visit(sub_ref)
 		do_nested()
 
+		orig_bounds = dict()
+		for var in allvars():
+			orig_bounds[var] = isinstance(self.curr, Namespace) and self.has_bind(var)
+
 		if mode.modifies:
 
 			# 3. Modifications to var.
-			orig_bounds = dict()
-			for var in allvars():
-				orig_bound = orig_bounds[var] = isinstance(self.curr, Namespace) and self.has_bind(var)
+			for var, orig_bound in orig_bounds.items():
 				# Make unbound.
-				if orig_bound:
+				if orig_bounds[var]:
 					self.delete(var)
 					self.maketest(var)
 
+		if mode.modifies:
 			# Make bound using nested scope.
 			if sys.version_info < (3, 8) or self.curr.kind.is_class:
 				nest_kind = self.FUNC; n = f'{name}_setfunc'
@@ -197,8 +206,29 @@ class GenTraverse(Traverser):
 			for var in allvars():
 				self.maketest(var)
 
+		elif self.curr.kind.is_class:
+			# Modify local x in a CLASS when it is not Local.
+
+			# Make bound using exec().
+			rvalue = self.make_rvalue(varname, 'x', exec=True)
+			for var in allvars():
+				self.store_exec(var, rvalue)
+			for var in allvars():
+				self.maketest(var)
+
+			# Make unbound using exec().
+			nest_kind = self.FUNC
+			n = name + '_' + 'delfunc'
+			for var in allvars():
+				self.delete_exec(var)
+			for var in allvars():
+				self.maketest(var)
+
+		if mode.modifies:
+
 			# Make bound.
 			for var in allvars():
+
 				self.store(var, rvalue)
 				self.maketest(var)
 
@@ -241,8 +271,8 @@ class GenScopes(Builder):
 
 		# push into nested scope.
 		with super().nest(kind, src, *args, **kwds) as newtree:
-			# Update has_closure based on new scope.
 			newtree.mangled_names = set()
+			# Update has_closure based on new scope.
 			kind = newtree.kind
 			# In a Class scope, nested scopes bypass the Class to find closures.
 			# So has_closure will be the same.
@@ -259,12 +289,15 @@ class GenScopes(Builder):
 
 	def maketest(self, name: str): self.use(name)
 
-	def make_rvalue(self, *args) -> str:
+	def make_rvalue(self, *args, **kwds) -> str:
 		""" Make str value to store in variable {name}. """
 		return ''
 
 	def store(self, name: str, _rvalue: ValT) -> None:
 		self.bind(name)
+
+	def store_exec(self, name, _rvalue: ValT) -> None:
+		pass
 
 	def store_nested(self, name: str, _rvalue: ValT, parent_mode: VarMode, **kwds) -> None:
 		""" Function or Comprehension that stores a value in the parent. """
@@ -302,18 +335,40 @@ class GenScopes(Builder):
 			else:
 				self.curr.decl_nonlocal(name)
 
+	def delete_exec(self, name: str, **kwds) -> None:
+		""" delete the variable from the current using exec(). """
+		pass
+
 	def decl_nonlocal(self, name):
 		""" Check if the name is resolvable. """
 		if not self.has_closure:
 			raise SyntaxError()
-		self.add_mangled(self.has_closure, name)
+		#self.add_mangled(self.has_closure, name)
 		self.curr.decl_nonlocal(name)
 
 	def decl_global(self, name):
-		self.add_mangled(self.glob, name)
+		#self.add_mangled(self.glob, name)
 		self.curr.decl_global(name)
 
 	def add_mangled(self, target: Scope, name: str):
+		""" Add a mangled name to the target scope that name resolves to, if it is an ancestor
+		of the class scope.
+		"""
+		mode = self.curr.src.mode
+		class_tree = self.class_tree()
+		if not class_tree: return
+
+		# Find the target, using the VarMode.
+		if mode is mode.Global:
+			target = self.glob
+		elif mode is mode.Nonlocal:
+			target = self.has_closure
+		elif mode in (mode.Used, mode.Unused):
+			target = self.has_closure or self.glob
+		else:
+			return
+		if target.class_tree() is class_tree:
+			return
 		# Set target to use mangled name for '__x' in curr scope.
 		n = self.mangle(name)
 		if n != name:
@@ -398,11 +453,17 @@ class GenNamespaces(NamespaceBuilder):
 		self.write(f'global {name}')
 
 	@Scope.mangler
-	def make_rvalue(self, var: str, name: str) -> str:
+	def make_rvalue(self, var: str, name: str, exec: bool = False) -> str:
 		""" Make str value to store in variable {name}. """
-		scope = self.curr.scope
-		try: rvalue: str = scope.binding_scope(var).name + '.' + name
-		except SyntaxError: rvalue = name
+		if exec:
+			rvalue = self.name
+			if rvalue: rvalue += '_exec'
+			else: rvalue = 'exec'
+		else:
+			scope = self.curr.scope
+			try: rvalue: str = scope.binder(var).name
+			except SyntaxError: rvalue = ''
+		rvalue += '.' + name
 		if rvalue.startswith('.'): rvalue = name
 		return rvalue
 
@@ -441,6 +502,12 @@ class GenNamespaces(NamespaceBuilder):
 			with self.use_parent():
 				self.curr.store(name, rvalue)
 
+	def store_exec(self, name: str, rvalue: str, **kwds) -> None:
+		""" Output python code to store the expected value of '{name}'. """
+
+		self.write(f'exec(\'{self.mangle(name)} = "{rvalue}"\')')
+		self.curr.vars.bind(name, rvalue)
+
 	#@Scope.mangler(var='name')
 	def delete(self, name: str, **kwds) -> None:
 		self.write(f'del {name}')
@@ -451,19 +518,22 @@ class GenNamespaces(NamespaceBuilder):
 		""" Write code to delete value in parent.  There are no nested scopes.
 		"""
 		scope = self.scope
-		context = scope.parent.context(name)
 
-		if scope.parent.kind.is_class and context.is_local:
+		if scope.parent.kind.is_class and parent_mode.is_loc:
 			# For a class with a Local variable, it is necessary to find its stack frame
 			#	and remove from its locals.
 			self.write(f'del inspect.stack()[1].frame.f_locals["{self.mangle(name)}"]')
 		else:
-			if context.is_global or self.parent.kind.is_global:
+			if parent_mode is parent_mode.Global or self.parent.kind.is_global:
 				self.write(f'global {name}; del {name}')
 			else:
 				self.write(f'nonlocal {name}; del {name}')
 		with self.use_parent():
 			self.curr.delete(name)
+
+	def delete_exec(self, name: str, **kwds) -> None:
+		self.write(f'exec("del {self.mangle(name)}")')
+		self.curr.vars.unbind(name)
 
 	#@Scope.mangler(var='name')
 	def anno(self, name: str, anno) -> Self:
@@ -518,6 +588,7 @@ if __name__ == '__main__':
 	parser.add_argument('-t', action='store_true', help='Copy the output file to file with ".txt" appended to the name')
 	parser.add_argument('-o', default='sc_test.py', help='Output file name (default "sc_test.py")')
 	parser.add_argument('--nomangle', action='store_true', help='Skip tests with mangled names')
+	parser.add_argument('--mangle', action='store_true', help='Only tests with mangled names')
 
 	args = parser.parse_args()
 
@@ -555,7 +626,12 @@ def error(msg: str, lineno: int):
 		print('Compiling... ', end='', flush=True)
 		lines = [*prolog, *out.getvalue().splitlines()]
 		import ast
-		code = compile('\n'.join(lines), '<generated>', 'exec')
+		try: code = compile('\n'.join(lines), '<generated>', 'exec')
+		except:
+			print()
+			import traceback
+			traceback.print_exc()
+			return out.getvalue()
 
 		print('done')
 		print('Running tests. ')
@@ -567,7 +643,7 @@ def error(msg: str, lineno: int):
 			print(*lines[max(lineno - 11, 0):lineno], sep='\n')
 			print('---- ' + msg)
 			print(*lines[lineno: lineno + 10], sep='\n')
-			raise
+			return out.getvalue()
 		else:
 			if num_tests % 1000: print('\r' f'{num_tests}', end='', flush=True)
 			print(' done')
@@ -619,8 +695,10 @@ def error(msg: str, lineno: int):
 		print('')
 		return out.getvalue()
 
-	print('Testing.')
-	text = run_test()
+	text = ''
+	if not args.mangle:
+		print('Testing.')
+		text += run_test()
 	#text = ''; print()
 	if not args.nomangle:
 		print('Testing mangled names.')

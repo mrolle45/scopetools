@@ -45,7 +45,7 @@ The events of interest are:
 *	Escape to parent of current tree in body of a context manager.
 	All operations while doing so are applied to the parent.  Nesting operations disallowed.
 
-*	A load, assignment or delete of an Target object.
+*	A load, assignment or delete of a Target object.
 	Provides a token for the assigned value (for an assignment)
 	and one or more tokens for the targets (only one for load or delete).
 	Traversing each target reports details:
