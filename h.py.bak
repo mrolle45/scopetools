@@ -1,0 +1,30 @@
+import ast
+import dis
+import inspect
+import sys
+
+dd = dis.dis
+import importlib
+def reimp(mod):
+	importlib.reload(mod)
+	glob = inspect.stack()[1].frame.f_locals
+	exec(f'from {mod.__name__} import *', glob)
+
+def adp(s: str):
+	print(ast.dump(ast.parse(s, type_comments=True),
+				indent=4))
+def adpf(f: str = 'x.py'):
+	adp(rf(f))
+def rf(f: str = 'x.py'):
+	if not f.endswith('.py'): f += '.py'
+	file = open(f)
+	return file.read()
+def ia(mod):
+	print(f'from {mod.__name__} import *')
+	exec(f'from {mod.__name__} import *', globals())
+
+def ddf(f: str = 'x.py', **kwds):
+	if not f.endswith('.py'): f += '.py'
+	s = rf(f)
+	dd(compile(s, f, 'exec'), **kwds)
+    

@@ -1,0 +1,3923 @@
+   1           0 LOAD_CONST               0 (0)
+               2 LOAD_CONST               1 (None)
+               4 IMPORT_NAME              0 (sys)
+               6 STORE_NAME               0 (sys)
+
+   2           8 LOAD_CONST               0 (0)
+              10 LOAD_CONST               2 (('MappingProxyType', 'DynamicClassAttribute'))
+              12 IMPORT_NAME              1 (types)
+              14 IMPORT_FROM              2 (MappingProxyType)
+              16 STORE_NAME               2 (MappingProxyType)
+              18 IMPORT_FROM              3 (DynamicClassAttribute)
+              20 STORE_NAME               3 (DynamicClassAttribute)
+              22 POP_TOP
+
+   5          24 BUILD_LIST               0
+              26 LOAD_CONST               3 (('EnumMeta', 'Enum', 'IntEnum', 'Flag', 'IntFlag', 'auto', 'unique'))
+              28 LIST_EXTEND              1
+              30 STORE_NAME               4 (__all__)
+
+  12          32 LOAD_CONST               4 (<code object _is_descriptor at 0x00000236F4FAF710, file "", line 12>)
+              34 LOAD_CONST               5 ('_is_descriptor')
+              36 MAKE_FUNCTION            0
+              38 STORE_NAME               5 (_is_descriptor)
+
+  22          40 LOAD_CONST               6 (<code object _is_dunder at 0x00000236F4FAF7C0, file "", line 22>)
+              42 LOAD_CONST               7 ('_is_dunder')
+              44 MAKE_FUNCTION            0
+              46 STORE_NAME               6 (_is_dunder)
+
+  33          48 LOAD_CONST               8 (<code object _is_sunder at 0x00000236F4FAF870, file "", line 33>)
+              50 LOAD_CONST               9 ('_is_sunder')
+              52 MAKE_FUNCTION            0
+              54 STORE_NAME               7 (_is_sunder)
+
+  44          56 LOAD_CONST              10 (<code object _is_private at 0x00000236F4FAF920, file "", line 44>)
+              58 LOAD_CONST              11 ('_is_private')
+              60 MAKE_FUNCTION            0
+              62 STORE_NAME               8 (_is_private)
+
+  57          64 LOAD_CONST              12 (<code object _make_class_unpicklable at 0x00000236F4FAFA80, file "", line 57>)
+              66 LOAD_CONST              13 ('_make_class_unpicklable')
+              68 MAKE_FUNCTION            0
+              70 STORE_NAME               9 (_make_class_unpicklable)
+
+  66          72 LOAD_NAME               10 (object)
+              74 CALL_FUNCTION            0
+              76 STORE_NAME              11 (_auto_null)
+
+  67          78 LOAD_BUILD_CLASS
+              80 LOAD_CONST              14 (<code object auto at 0x00000236F4FAFB30, file "", line 67>)
+              82 LOAD_CONST              15 ('auto')
+              84 MAKE_FUNCTION            0
+              86 LOAD_CONST              15 ('auto')
+              88 CALL_FUNCTION            2
+              90 STORE_NAME              12 (auto)
+
+  74          92 LOAD_BUILD_CLASS
+              94 LOAD_CONST              16 (<code object _EnumDict at 0x00000236F4FAFF50, file "", line 74>)
+              96 LOAD_CONST              17 ('_EnumDict')
+              98 MAKE_FUNCTION            0
+             100 LOAD_CONST              17 ('_EnumDict')
+             102 LOAD_NAME               13 (dict)
+             104 CALL_FUNCTION            3
+             106 STORE_NAME              14 (_EnumDict)
+
+ 158         108 LOAD_CONST               1 (None)
+             110 STORE_NAME              15 (Enum)
+
+ 160         112 LOAD_BUILD_CLASS
+             114 LOAD_CONST              18 (<code object EnumMeta at 0x00000236F50E45B0, file "", line 160>)
+             116 LOAD_CONST              19 ('EnumMeta')
+             118 MAKE_FUNCTION            0
+             120 LOAD_CONST              19 ('EnumMeta')
+             122 LOAD_NAME               16 (type)
+             124 CALL_FUNCTION            3
+             126 STORE_NAME              17 (EnumMeta)
+
+ 664         128 LOAD_BUILD_CLASS
+             130 LOAD_CONST              20 (<code object Enum at 0x00000236F50E7240, file "", line 664>)
+             132 LOAD_CONST              21 ('Enum')
+             134 MAKE_FUNCTION            0
+             136 LOAD_CONST              21 ('Enum')
+             138 LOAD_NAME               17 (EnumMeta)
+             140 LOAD_CONST              22 (('metaclass',))
+             142 CALL_FUNCTION_KW         3
+             144 STORE_NAME              15 (Enum)
+
+ 798         146 LOAD_BUILD_CLASS
+             148 LOAD_CONST              23 (<code object IntEnum at 0x00000236F50E70E0, file "", line 798>)
+             150 LOAD_CONST              24 ('IntEnum')
+             152 MAKE_FUNCTION            0
+             154 LOAD_CONST              24 ('IntEnum')
+             156 LOAD_NAME               18 (int)
+             158 LOAD_NAME               15 (Enum)
+             160 CALL_FUNCTION            4
+             162 STORE_NAME              19 (IntEnum)
+
+ 802         164 LOAD_CONST              25 (<code object _reduce_ex_by_name at 0x00000236F50E72F0, file "", line 802>)
+             166 LOAD_CONST              26 ('_reduce_ex_by_name')
+             168 MAKE_FUNCTION            0
+             170 STORE_NAME              20 (_reduce_ex_by_name)
+
+ 805         172 LOAD_BUILD_CLASS
+             174 LOAD_CONST              27 (<code object Flag at 0x00000236F50E7DF0, file "", line 805>)
+             176 LOAD_CONST              28 ('Flag')
+             178 MAKE_FUNCTION            0
+             180 LOAD_CONST              28 ('Flag')
+             182 LOAD_NAME               15 (Enum)
+             184 CALL_FUNCTION            3
+             186 STORE_NAME              21 (Flag)
+
+ 923         188 LOAD_BUILD_CLASS
+             190 LOAD_CONST              29 (<code object IntFlag at 0x00000236F50DD240, file "", line 923>)
+             192 LOAD_CONST              30 ('IntFlag')
+             194 MAKE_FUNCTION            0
+             196 LOAD_CONST              30 ('IntFlag')
+             198 LOAD_NAME               18 (int)
+             200 LOAD_NAME               21 (Flag)
+             202 CALL_FUNCTION            4
+             204 STORE_NAME              22 (IntFlag)
+
+ 996         206 LOAD_CONST              31 (<code object _high_bit at 0x00000236F50DD2F0, file "", line 996>)
+             208 LOAD_CONST              32 ('_high_bit')
+             210 MAKE_FUNCTION            0
+             212 STORE_NAME              23 (_high_bit)
+
+1002         214 LOAD_CONST              33 (<code object unique at 0x00000236F50DD450, file "", line 1002>)
+             216 LOAD_CONST              34 ('unique')
+             218 MAKE_FUNCTION            0
+             220 STORE_NAME              24 (unique)
+
+1017         222 LOAD_CONST              35 (<code object _decompose at 0x00000236F50DD5B0, file "", line 1017>)
+             224 LOAD_CONST              36 ('_decompose')
+             226 MAKE_FUNCTION            0
+             228 STORE_NAME              25 (_decompose)
+             230 LOAD_CONST               1 (None)
+             232 RETURN_VALUE
+
+Disassembly of <code object _is_descriptor at 0x00000236F4FAF710, file "", line 12>:
+ 17           0 LOAD_GLOBAL              0 (hasattr)
+              2 LOAD_FAST                0 (obj)
+              4 LOAD_CONST               1 ('__get__')
+              6 CALL_FUNCTION            2
+              8 JUMP_IF_TRUE_OR_POP     28
+
+ 18          10 LOAD_GLOBAL              0 (hasattr)
+             12 LOAD_FAST                0 (obj)
+             14 LOAD_CONST               2 ('__set__')
+             16 CALL_FUNCTION            2
+
+ 17          18 JUMP_IF_TRUE_OR_POP     28
+
+ 19          20 LOAD_GLOBAL              0 (hasattr)
+             22 LOAD_FAST                0 (obj)
+             24 LOAD_CONST               3 ('__delete__')
+             26 CALL_FUNCTION            2
+
+ 16     >>   28 RETURN_VALUE
+
+Disassembly of <code object _is_dunder at 0x00000236F4FAF7C0, file "", line 22>:
+ 27           0 LOAD_GLOBAL              0 (len)
+              2 LOAD_FAST                0 (name)
+              4 CALL_FUNCTION            1
+              6 LOAD_CONST               1 (4)
+              8 COMPARE_OP               4 (>)
+             10 JUMP_IF_FALSE_OR_POP    74
+
+ 28          12 LOAD_FAST                0 (name)
+             14 LOAD_CONST               2 (None)
+             16 LOAD_CONST               3 (2)
+             18 BUILD_SLICE              2
+             20 BINARY_SUBSCR
+             22 LOAD_FAST                0 (name)
+             24 LOAD_CONST               4 (-2)
+             26 LOAD_CONST               2 (None)
+             28 BUILD_SLICE              2
+             30 BINARY_SUBSCR
+             32 DUP_TOP
+             34 ROT_THREE
+             36 COMPARE_OP               2 (==)
+             38 JUMP_IF_FALSE_OR_POP    46
+             40 LOAD_CONST               5 ('__')
+             42 COMPARE_OP               2 (==)
+             44 JUMP_FORWARD             4 (to 50)
+        >>   46 ROT_TWO
+             48 POP_TOP
+
+ 27     >>   50 JUMP_IF_FALSE_OR_POP    74
+
+ 29          52 LOAD_FAST                0 (name)
+             54 LOAD_CONST               3 (2)
+             56 BINARY_SUBSCR
+             58 LOAD_CONST               6 ('_')
+             60 COMPARE_OP               3 (!=)
+
+ 27          62 JUMP_IF_FALSE_OR_POP    74
+
+ 30          64 LOAD_FAST                0 (name)
+             66 LOAD_CONST               7 (-3)
+             68 BINARY_SUBSCR
+             70 LOAD_CONST               6 ('_')
+             72 COMPARE_OP               3 (!=)
+
+ 26     >>   74 RETURN_VALUE
+
+Disassembly of <code object _is_sunder at 0x00000236F4FAF870, file "", line 33>:
+ 38           0 LOAD_GLOBAL              0 (len)
+              2 LOAD_FAST                0 (name)
+              4 CALL_FUNCTION            1
+              6 LOAD_CONST               1 (2)
+              8 COMPARE_OP               4 (>)
+             10 JUMP_IF_FALSE_OR_POP    74
+
+ 39          12 LOAD_FAST                0 (name)
+             14 LOAD_CONST               2 (0)
+             16 BINARY_SUBSCR
+             18 LOAD_FAST                0 (name)
+             20 LOAD_CONST               3 (-1)
+             22 BINARY_SUBSCR
+             24 DUP_TOP
+             26 ROT_THREE
+             28 COMPARE_OP               2 (==)
+             30 JUMP_IF_FALSE_OR_POP    38
+             32 LOAD_CONST               4 ('_')
+             34 COMPARE_OP               2 (==)
+             36 JUMP_FORWARD             4 (to 42)
+        >>   38 ROT_TWO
+             40 POP_TOP
+
+ 38     >>   42 JUMP_IF_FALSE_OR_POP    74
+
+ 40          44 LOAD_FAST                0 (name)
+             46 LOAD_CONST               5 (1)
+             48 LOAD_CONST               1 (2)
+             50 BUILD_SLICE              2
+             52 BINARY_SUBSCR
+             54 LOAD_CONST               4 ('_')
+             56 COMPARE_OP               3 (!=)
+
+ 38          58 JUMP_IF_FALSE_OR_POP    74
+
+ 41          60 LOAD_FAST                0 (name)
+             62 LOAD_CONST               6 (-2)
+             64 LOAD_CONST               3 (-1)
+             66 BUILD_SLICE              2
+             68 BINARY_SUBSCR
+             70 LOAD_CONST               4 ('_')
+             72 COMPARE_OP               3 (!=)
+
+ 37     >>   74 RETURN_VALUE
+
+Disassembly of <code object _is_private at 0x00000236F4FAF920, file "", line 44>:
+ 46           0 LOAD_CONST               1 ('_%s__')
+              2 LOAD_FAST                0 (cls_name)
+              4 BUILD_TUPLE              1
+              6 BINARY_MODULO
+              8 STORE_FAST               2 (pattern)
+
+ 48          10 LOAD_GLOBAL              0 (len)
+             12 LOAD_FAST                1 (name)
+             14 CALL_FUNCTION            1
+             16 LOAD_CONST               2 (5)
+             18 COMPARE_OP               5 (>=)
+
+ 47          20 POP_JUMP_IF_FALSE       76
+
+ 49          22 LOAD_FAST                1 (name)
+             24 LOAD_METHOD              1 (startswith)
+             26 LOAD_FAST                2 (pattern)
+             28 CALL_METHOD              1
+
+ 47          30 POP_JUMP_IF_FALSE       76
+
+ 50          32 LOAD_FAST                1 (name)
+             34 LOAD_GLOBAL              0 (len)
+             36 LOAD_FAST                2 (pattern)
+             38 CALL_FUNCTION            1
+             40 BINARY_SUBSCR
+             42 LOAD_CONST               3 ('_')
+             44 COMPARE_OP               3 (!=)
+
+ 47          46 POP_JUMP_IF_FALSE       76
+
+ 51          48 LOAD_FAST                1 (name)
+             50 LOAD_CONST               4 (-1)
+             52 BINARY_SUBSCR
+             54 LOAD_CONST               3 ('_')
+             56 COMPARE_OP               3 (!=)
+
+ 47          58 POP_JUMP_IF_TRUE        72
+
+ 51          60 LOAD_FAST                1 (name)
+             62 LOAD_CONST               5 (-2)
+             64 BINARY_SUBSCR
+             66 LOAD_CONST               3 ('_')
+             68 COMPARE_OP               3 (!=)
+
+ 47          70 POP_JUMP_IF_FALSE       76
+
+ 53     >>   72 LOAD_CONST               6 (True)
+             74 RETURN_VALUE
+
+ 55     >>   76 LOAD_CONST               7 (False)
+             78 RETURN_VALUE
+             80 LOAD_CONST               0 (None)
+             82 RETURN_VALUE
+
+Disassembly of <code object _make_class_unpicklable at 0x00000236F4FAFA80, file "", line 57>:
+ 61           0 LOAD_CONST               1 (<code object _break_on_call_reduce at 0x00000236F4FAF9D0, file "", line 61>)
+              2 LOAD_CONST               2 ('_make_class_unpicklable.<locals>._break_on_call_reduce')
+              4 MAKE_FUNCTION            0
+              6 STORE_FAST               1 (_break_on_call_reduce)
+
+ 63           8 LOAD_FAST                1 (_break_on_call_reduce)
+             10 LOAD_FAST                0 (cls)
+             12 STORE_ATTR               0 (__reduce_ex__)
+
+ 64          14 LOAD_CONST               3 ('<unknown>')
+             16 LOAD_FAST                0 (cls)
+             18 STORE_ATTR               1 (__module__)
+             20 LOAD_CONST               4 (None)
+             22 RETURN_VALUE
+
+Disassembly of <code object _break_on_call_reduce at 0x00000236F4FAF9D0, file "", line 61>:
+ 62           0 LOAD_GLOBAL              0 (TypeError)
+              2 LOAD_CONST               1 ('%r cannot be pickled')
+              4 LOAD_FAST                0 (self)
+              6 BINARY_MODULO
+              8 CALL_FUNCTION            1
+             10 RAISE_VARARGS            1
+             12 LOAD_CONST               0 (None)
+             14 RETURN_VALUE
+
+Disassembly of <code object auto at 0x00000236F4FAFB30, file "", line 67>:
+ 67           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('auto')
+              6 STORE_NAME               2 (__qualname__)
+
+ 68           8 LOAD_CONST               1 ('\n    Instances are replaced with an appropriate value in Enum class suites.\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+ 71          12 LOAD_NAME                4 (_auto_null)
+             14 STORE_NAME               5 (value)
+             16 LOAD_CONST               2 (None)
+             18 RETURN_VALUE
+
+Disassembly of <code object _EnumDict at 0x00000236F4FAFF50, file "", line 74>:
+ 74           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('_EnumDict')
+              6 STORE_NAME               2 (__qualname__)
+
+ 75           8 LOAD_CONST               1 ('\n    Track enum member order and ensure member names are not reused.\n\n    EnumMeta will use the names found in self._member_names as the\n    enumeration member names.\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+ 81          12 LOAD_CLOSURE             0 (__class__)
+             14 BUILD_TUPLE              1
+             16 LOAD_CONST               2 (<code object __init__ at 0x00000236F4FAFD40, file "", line 81>)
+             18 LOAD_CONST               3 ('_EnumDict.__init__')
+             20 MAKE_FUNCTION            8 (closure)
+             22 STORE_NAME               4 (__init__)
+
+ 88          24 LOAD_CLOSURE             0 (__class__)
+             26 BUILD_TUPLE              1
+             28 LOAD_CONST               4 (<code object __setitem__ at 0x00000236F4FAFEA0, file "", line 88>)
+             30 LOAD_CONST               5 ('_EnumDict.__setitem__')
+             32 MAKE_FUNCTION            8 (closure)
+             34 STORE_NAME               5 (__setitem__)
+             36 LOAD_CLOSURE             0 (__class__)
+             38 DUP_TOP
+             40 STORE_NAME               6 (__classcell__)
+             42 RETURN_VALUE
+
+Disassembly of <code object __init__ at 0x00000236F4FAFD40, file "", line 81>:
+ 82           0 LOAD_GLOBAL              0 (super)
+              2 CALL_FUNCTION            0
+              4 LOAD_METHOD              1 (__init__)
+              6 CALL_METHOD              0
+              8 POP_TOP
+
+ 83          10 BUILD_LIST               0
+             12 LOAD_FAST                0 (self)
+             14 STORE_ATTR               2 (_member_names)
+
+ 84          16 BUILD_LIST               0
+             18 LOAD_FAST                0 (self)
+             20 STORE_ATTR               3 (_last_values)
+
+ 85          22 BUILD_LIST               0
+             24 LOAD_FAST                0 (self)
+             26 STORE_ATTR               4 (_ignore)
+
+ 86          28 LOAD_CONST               1 (False)
+             30 LOAD_FAST                0 (self)
+             32 STORE_ATTR               5 (_auto_called)
+             34 LOAD_CONST               0 (None)
+             36 RETURN_VALUE
+
+Disassembly of <code object __setitem__ at 0x00000236F4FAFEA0, file "", line 88>:
+ 97           0 LOAD_GLOBAL              0 (_is_private)
+              2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                1 (_cls_name)
+              6 LOAD_FAST                1 (key)
+              8 CALL_FUNCTION            2
+             10 POP_JUMP_IF_FALSE       42
+
+ 98          12 LOAD_CONST               1 (0)
+             14 LOAD_CONST               2 (None)
+             16 IMPORT_NAME              2 (warnings)
+             18 STORE_FAST               3 (warnings)
+
+ 99          20 LOAD_FAST                3 (warnings)
+             22 LOAD_ATTR                3 (warn)
+
+100          24 LOAD_CONST               3 ('private variables, such as %r, will be normal attributes in 3.10')
+
+101          26 LOAD_FAST                1 (key)
+             28 BUILD_TUPLE              1
+
+100          30 BINARY_MODULO
+
+102          32 LOAD_GLOBAL              4 (DeprecationWarning)
+
+103          34 LOAD_CONST               4 (2)
+
+ 99          36 LOAD_CONST               5 (('stacklevel',))
+             38 CALL_FUNCTION_KW         3
+             40 POP_TOP
+
+105     >>   42 LOAD_GLOBAL              5 (_is_sunder)
+             44 LOAD_FAST                1 (key)
+             46 CALL_FUNCTION            1
+             48 POP_JUMP_IF_FALSE      190
+
+106          50 LOAD_FAST                1 (key)
+             52 LOAD_CONST               6 (('_order_', '_create_pseudo_member_', '_generate_next_value_', '_missing_', '_ignore_'))
+             54 CONTAINS_OP              1
+             56 POP_JUMP_IF_FALSE       66
+
+110          58 LOAD_GLOBAL              6 (ValueError)
+             60 LOAD_CONST               7 ('_names_ are reserved for future Enum use')
+             62 CALL_FUNCTION            1
+             64 RAISE_VARARGS            1
+
+111     >>   66 LOAD_FAST                1 (key)
+             68 LOAD_CONST               8 ('_generate_next_value_')
+             70 COMPARE_OP               2 (==)
+             72 POP_JUMP_IF_FALSE      102
+
+113          74 LOAD_FAST                0 (self)
+             76 LOAD_ATTR                7 (_auto_called)
+             78 POP_JUMP_IF_FALSE       88
+
+114          80 LOAD_GLOBAL              8 (TypeError)
+             82 LOAD_CONST               9 ('_generate_next_value_ must be defined before members')
+             84 CALL_FUNCTION            1
+             86 RAISE_VARARGS            1
+
+115     >>   88 LOAD_GLOBAL              9 (setattr)
+             90 LOAD_FAST                0 (self)
+             92 LOAD_CONST              10 ('_generate_next_value')
+             94 LOAD_FAST                2 (value)
+             96 CALL_FUNCTION            3
+             98 POP_TOP
+            100 JUMP_FORWARD            86 (to 188)
+
+116     >>  102 LOAD_FAST                1 (key)
+            104 LOAD_CONST              11 ('_ignore_')
+            106 COMPARE_OP               2 (==)
+            108 POP_JUMP_IF_FALSE      188
+
+117         110 LOAD_GLOBAL             10 (isinstance)
+            112 LOAD_FAST                2 (value)
+            114 LOAD_GLOBAL             11 (str)
+            116 CALL_FUNCTION            2
+            118 POP_JUMP_IF_FALSE      138
+
+118         120 LOAD_FAST                2 (value)
+            122 LOAD_METHOD             12 (replace)
+            124 LOAD_CONST              12 (',')
+            126 LOAD_CONST              13 (' ')
+            128 CALL_METHOD              2
+            130 LOAD_METHOD             13 (split)
+            132 CALL_METHOD              0
+            134 STORE_FAST               2 (value)
+            136 JUMP_FORWARD             8 (to 146)
+
+120     >>  138 LOAD_GLOBAL             14 (list)
+            140 LOAD_FAST                2 (value)
+            142 CALL_FUNCTION            1
+            144 STORE_FAST               2 (value)
+
+121     >>  146 LOAD_FAST                2 (value)
+            148 LOAD_FAST                0 (self)
+            150 STORE_ATTR              15 (_ignore)
+
+122         152 LOAD_GLOBAL             16 (set)
+            154 LOAD_FAST                2 (value)
+            156 CALL_FUNCTION            1
+            158 LOAD_GLOBAL             16 (set)
+            160 LOAD_FAST                0 (self)
+            162 LOAD_ATTR               17 (_member_names)
+            164 CALL_FUNCTION            1
+            166 BINARY_AND
+            168 STORE_FAST               4 (already)
+
+123         170 LOAD_FAST                4 (already)
+            172 POP_JUMP_IF_FALSE      188
+
+124         174 LOAD_GLOBAL              6 (ValueError)
+
+125         176 LOAD_CONST              14 ('_ignore_ cannot specify already set names: %r')
+
+126         178 LOAD_FAST                4 (already)
+            180 BUILD_TUPLE              1
+
+125         182 BINARY_MODULO
+
+124         184 CALL_FUNCTION            1
+            186 RAISE_VARARGS            1
+        >>  188 JUMP_FORWARD           192 (to 382)
+
+128     >>  190 LOAD_GLOBAL             18 (_is_dunder)
+            192 LOAD_FAST                1 (key)
+            194 CALL_FUNCTION            1
+            196 POP_JUMP_IF_FALSE      212
+
+129         198 LOAD_FAST                1 (key)
+            200 LOAD_CONST              15 ('__order__')
+            202 COMPARE_OP               2 (==)
+            204 POP_JUMP_IF_FALSE      210
+
+130         206 LOAD_CONST              16 ('_order_')
+            208 STORE_FAST               1 (key)
+        >>  210 JUMP_FORWARD           170 (to 382)
+
+131     >>  212 LOAD_FAST                1 (key)
+            214 LOAD_FAST                0 (self)
+            216 LOAD_ATTR               17 (_member_names)
+            218 CONTAINS_OP              0
+            220 POP_JUMP_IF_FALSE      236
+
+133         222 LOAD_GLOBAL              8 (TypeError)
+            224 LOAD_CONST              17 ('Attempted to reuse key: %r')
+            226 LOAD_FAST                1 (key)
+            228 BINARY_MODULO
+            230 CALL_FUNCTION            1
+            232 RAISE_VARARGS            1
+            234 JUMP_FORWARD           146 (to 382)
+
+134     >>  236 LOAD_FAST                1 (key)
+            238 LOAD_FAST                0 (self)
+            240 LOAD_ATTR               15 (_ignore)
+            242 CONTAINS_OP              0
+            244 POP_JUMP_IF_FALSE      248
+
+135         246 JUMP_FORWARD           134 (to 382)
+
+136     >>  248 LOAD_GLOBAL             19 (_is_descriptor)
+            250 LOAD_FAST                2 (value)
+            252 CALL_FUNCTION            1
+            254 EXTENDED_ARG             1
+            256 POP_JUMP_IF_TRUE       382
+
+137         258 LOAD_FAST                1 (key)
+            260 LOAD_FAST                0 (self)
+            262 CONTAINS_OP              0
+            264 EXTENDED_ARG             1
+            266 POP_JUMP_IF_FALSE      288
+
+139         268 LOAD_GLOBAL              8 (TypeError)
+            270 LOAD_CONST              18 ('%r already defined as: %r')
+            272 LOAD_FAST                1 (key)
+            274 LOAD_FAST                0 (self)
+            276 LOAD_FAST                1 (key)
+            278 BINARY_SUBSCR
+            280 BUILD_TUPLE              2
+            282 BINARY_MODULO
+            284 CALL_FUNCTION            1
+            286 RAISE_VARARGS            1
+
+140     >>  288 LOAD_GLOBAL             10 (isinstance)
+            290 LOAD_FAST                2 (value)
+            292 LOAD_GLOBAL             20 (auto)
+            294 CALL_FUNCTION            2
+            296 EXTENDED_ARG             1
+            298 POP_JUMP_IF_FALSE      358
+
+141         300 LOAD_FAST                2 (value)
+            302 LOAD_ATTR               21 (value)
+            304 LOAD_GLOBAL             22 (_auto_null)
+            306 COMPARE_OP               2 (==)
+            308 EXTENDED_ARG             1
+            310 POP_JUMP_IF_FALSE      352
+
+142         312 LOAD_FAST                0 (self)
+            314 LOAD_METHOD             23 (_generate_next_value)
+
+143         316 LOAD_FAST                1 (key)
+
+144         318 LOAD_CONST              19 (1)
+
+145         320 LOAD_GLOBAL             24 (len)
+            322 LOAD_FAST                0 (self)
+            324 LOAD_ATTR               17 (_member_names)
+            326 CALL_FUNCTION            1
+
+146         328 LOAD_FAST                0 (self)
+            330 LOAD_ATTR               25 (_last_values)
+            332 LOAD_CONST               2 (None)
+            334 LOAD_CONST               2 (None)
+            336 BUILD_SLICE              2
+            338 BINARY_SUBSCR
+
+142         340 CALL_METHOD              4
+            342 LOAD_FAST                2 (value)
+            344 STORE_ATTR              21 (value)
+
+148         346 LOAD_CONST              20 (True)
+            348 LOAD_FAST                0 (self)
+            350 STORE_ATTR               7 (_auto_called)
+
+149     >>  352 LOAD_FAST                2 (value)
+            354 LOAD_ATTR               21 (value)
+            356 STORE_FAST               2 (value)
+
+150     >>  358 LOAD_FAST                0 (self)
+            360 LOAD_ATTR               17 (_member_names)
+            362 LOAD_METHOD             26 (append)
+            364 LOAD_FAST                1 (key)
+            366 CALL_METHOD              1
+            368 POP_TOP
+
+151         370 LOAD_FAST                0 (self)
+            372 LOAD_ATTR               25 (_last_values)
+            374 LOAD_METHOD             26 (append)
+            376 LOAD_FAST                2 (value)
+            378 CALL_METHOD              1
+            380 POP_TOP
+
+152     >>  382 LOAD_GLOBAL             27 (super)
+            384 CALL_FUNCTION            0
+            386 LOAD_METHOD             28 (__setitem__)
+            388 LOAD_FAST                1 (key)
+            390 LOAD_FAST                2 (value)
+            392 CALL_METHOD              2
+            394 POP_TOP
+            396 LOAD_CONST               2 (None)
+            398 RETURN_VALUE
+
+Disassembly of <code object EnumMeta at 0x00000236F50E45B0, file "", line 160>:
+160           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('EnumMeta')
+              6 STORE_NAME               2 (__qualname__)
+
+161           8 LOAD_CONST               1 ('\n    Metaclass for Enum\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+164          12 LOAD_NAME                4 (classmethod)
+
+165          14 LOAD_CONST               2 (<code object __prepare__ at 0x00000236F50F5030, file "", line 164>)
+             16 LOAD_CONST               3 ('EnumMeta.__prepare__')
+             18 MAKE_FUNCTION            0
+             20 CALL_FUNCTION            1
+             22 STORE_NAME               5 (__prepare__)
+
+179          24 LOAD_CLOSURE             0 (__class__)
+             26 BUILD_TUPLE              1
+             28 LOAD_CONST               4 (<code object __new__ at 0x00000236F50F5450, file "", line 179>)
+             30 LOAD_CONST               5 ('EnumMeta.__new__')
+             32 MAKE_FUNCTION            8 (closure)
+             34 STORE_NAME               6 (__new__)
+
+352          36 LOAD_CONST               6 (<code object __bool__ at 0x00000236F50F5500, file "", line 352>)
+             38 LOAD_CONST               7 ('EnumMeta.__bool__')
+             40 MAKE_FUNCTION            0
+             42 STORE_NAME               7 (__bool__)
+
+358          44 LOAD_CONST              45 ((None,))
+             46 LOAD_CONST               8 (None)
+             48 LOAD_CONST               8 (None)
+             50 LOAD_CONST               8 (None)
+             52 LOAD_CONST               9 (1)
+             54 LOAD_CONST              10 (('module', 'qualname', 'type', 'start'))
+             56 BUILD_CONST_KEY_MAP      4
+             58 LOAD_CONST              11 (<code object __call__ at 0x00000236F50F55B0, file "", line 358>)
+             60 LOAD_CONST              12 ('EnumMeta.__call__')
+             62 MAKE_FUNCTION            3 (defaults, kwdefaults)
+             64 STORE_NAME               8 (__call__)
+
+395          66 LOAD_CONST              13 (<code object __contains__ at 0x00000236F50F5660, file "", line 395>)
+             68 LOAD_CONST              14 ('EnumMeta.__contains__')
+             70 MAKE_FUNCTION            0
+             72 STORE_NAME               9 (__contains__)
+
+402          74 LOAD_CLOSURE             0 (__class__)
+             76 BUILD_TUPLE              1
+             78 LOAD_CONST              15 (<code object __delattr__ at 0x00000236F50F5710, file "", line 402>)
+             80 LOAD_CONST              16 ('EnumMeta.__delattr__')
+             82 MAKE_FUNCTION            8 (closure)
+             84 STORE_NAME              10 (__delattr__)
+
+409          86 LOAD_CONST              17 (<code object __dir__ at 0x00000236F50F57C0, file "", line 409>)
+             88 LOAD_CONST              18 ('EnumMeta.__dir__')
+             90 MAKE_FUNCTION            0
+             92 STORE_NAME              11 (__dir__)
+
+415          94 LOAD_CONST              19 (<code object __getattr__ at 0x00000236F50F5870, file "", line 415>)
+             96 LOAD_CONST              20 ('EnumMeta.__getattr__')
+             98 MAKE_FUNCTION            0
+            100 STORE_NAME              12 (__getattr__)
+
+431         102 LOAD_CONST              21 (<code object __getitem__ at 0x00000236F50F5920, file "", line 431>)
+            104 LOAD_CONST              22 ('EnumMeta.__getitem__')
+            106 MAKE_FUNCTION            0
+            108 STORE_NAME              13 (__getitem__)
+
+434         110 LOAD_CONST              23 (<code object __iter__ at 0x00000236F50F5A80, file "", line 434>)
+            112 LOAD_CONST              24 ('EnumMeta.__iter__')
+            114 MAKE_FUNCTION            0
+            116 STORE_NAME              14 (__iter__)
+
+440         118 LOAD_CONST              25 (<code object __len__ at 0x00000236F50F5B30, file "", line 440>)
+            120 LOAD_CONST              26 ('EnumMeta.__len__')
+            122 MAKE_FUNCTION            0
+            124 STORE_NAME              15 (__len__)
+
+443         126 LOAD_NAME               16 (property)
+
+444         128 LOAD_CONST              27 (<code object __members__ at 0x00000236F50F5BE0, file "", line 443>)
+            130 LOAD_CONST              28 ('EnumMeta.__members__')
+            132 MAKE_FUNCTION            0
+            134 CALL_FUNCTION            1
+            136 STORE_NAME              17 (__members__)
+
+453         138 LOAD_CONST              29 (<code object __repr__ at 0x00000236F50F5C90, file "", line 453>)
+            140 LOAD_CONST              30 ('EnumMeta.__repr__')
+            142 MAKE_FUNCTION            0
+            144 STORE_NAME              18 (__repr__)
+
+456         146 LOAD_CONST              31 (<code object __reversed__ at 0x00000236F50F5DF0, file "", line 456>)
+            148 LOAD_CONST              32 ('EnumMeta.__reversed__')
+            150 MAKE_FUNCTION            0
+            152 STORE_NAME              19 (__reversed__)
+
+462         154 LOAD_CLOSURE             0 (__class__)
+            156 BUILD_TUPLE              1
+            158 LOAD_CONST              33 (<code object __setattr__ at 0x00000236F50F5EA0, file "", line 462>)
+            160 LOAD_CONST              34 ('EnumMeta.__setattr__')
+            162 MAKE_FUNCTION            8 (closure)
+            164 STORE_NAME              20 (__setattr__)
+
+475         166 LOAD_CONST               8 (None)
+            168 LOAD_CONST               8 (None)
+            170 LOAD_CONST               8 (None)
+            172 LOAD_CONST               9 (1)
+            174 LOAD_CONST              10 (('module', 'qualname', 'type', 'start'))
+            176 BUILD_CONST_KEY_MAP      4
+            178 LOAD_CONST              35 (<code object _create_ at 0x00000236F50F5F50, file "", line 475>)
+            180 LOAD_CONST              36 ('EnumMeta._create_')
+            182 MAKE_FUNCTION            2 (kwdefaults)
+            184 STORE_NAME              21 (_create_)
+
+528         186 LOAD_CONST              46 ((None,))
+            188 LOAD_CONST              37 (<code object _convert_ at 0x00000236F50E4240, file "", line 528>)
+            190 LOAD_CONST              38 ('EnumMeta._convert_')
+            192 MAKE_FUNCTION            1 (defaults)
+            194 STORE_NAME              22 (_convert_)
+
+561         196 LOAD_NAME               23 (staticmethod)
+
+562         198 LOAD_CONST              39 (<code object _check_for_existing_members at 0x00000236F50E42F0, file "", line 561>)
+            200 LOAD_CONST              40 ('EnumMeta._check_for_existing_members')
+            202 MAKE_FUNCTION            0
+            204 CALL_FUNCTION            1
+            206 STORE_NAME              24 (_check_for_existing_members)
+
+571         208 LOAD_NAME               23 (staticmethod)
+
+572         210 LOAD_CONST              41 (<code object _get_mixins_ at 0x00000236F50E4500, file "", line 571>)
+            212 LOAD_CONST              42 ('EnumMeta._get_mixins_')
+            214 MAKE_FUNCTION            0
+            216 CALL_FUNCTION            1
+            218 STORE_NAME              25 (_get_mixins_)
+
+618         220 LOAD_NAME               23 (staticmethod)
+
+619         222 LOAD_CONST              43 (<code object _find_new_ at 0x00000236F50E4710, file "", line 618>)
+            224 LOAD_CONST              44 ('EnumMeta._find_new_')
+            226 MAKE_FUNCTION            0
+            228 CALL_FUNCTION            1
+            230 STORE_NAME              26 (_find_new_)
+            232 LOAD_CLOSURE             0 (__class__)
+            234 DUP_TOP
+            236 STORE_NAME              27 (__classcell__)
+            238 RETURN_VALUE
+
+Disassembly of <code object __prepare__ at 0x00000236F50F5030, file "", line 164>:
+167           0 LOAD_FAST                0 (metacls)
+              2 LOAD_METHOD              0 (_check_for_existing_members)
+              4 LOAD_FAST                1 (cls)
+              6 LOAD_FAST                2 (bases)
+              8 CALL_METHOD              2
+             10 POP_TOP
+
+169          12 LOAD_GLOBAL              1 (_EnumDict)
+             14 CALL_FUNCTION            0
+             16 STORE_FAST               4 (enum_dict)
+
+170          18 LOAD_FAST                1 (cls)
+             20 LOAD_FAST                4 (enum_dict)
+             22 STORE_ATTR               2 (_cls_name)
+
+172          24 LOAD_FAST                0 (metacls)
+             26 LOAD_METHOD              3 (_get_mixins_)
+             28 LOAD_FAST                1 (cls)
+             30 LOAD_FAST                2 (bases)
+             32 CALL_METHOD              2
+             34 UNPACK_SEQUENCE          2
+             36 STORE_FAST               5 (member_type)
+             38 STORE_FAST               6 (first_enum)
+
+173          40 LOAD_FAST                6 (first_enum)
+             42 LOAD_CONST               0 (None)
+             44 IS_OP                    1
+             46 POP_JUMP_IF_FALSE       64
+
+174          48 LOAD_GLOBAL              4 (getattr)
+
+175          50 LOAD_FAST                6 (first_enum)
+             52 LOAD_CONST               1 ('_generate_next_value_')
+             54 LOAD_CONST               0 (None)
+
+174          56 CALL_FUNCTION            3
+             58 LOAD_FAST                4 (enum_dict)
+             60 LOAD_CONST               1 ('_generate_next_value_')
+             62 STORE_SUBSCR
+
+177     >>   64 LOAD_FAST                4 (enum_dict)
+             66 RETURN_VALUE
+
+Disassembly of <code object __new__ at 0x00000236F50F5450, file "", line 179>:
+186           0 LOAD_DEREF               1 (classdict)
+              2 LOAD_METHOD              0 (setdefault)
+              4 LOAD_CONST               1 ('_ignore_')
+              6 BUILD_LIST               0
+              8 CALL_METHOD              2
+             10 LOAD_METHOD              1 (append)
+             12 LOAD_CONST               1 ('_ignore_')
+             14 CALL_METHOD              1
+             16 POP_TOP
+
+187          18 LOAD_DEREF               1 (classdict)
+             20 LOAD_CONST               1 ('_ignore_')
+             22 BINARY_SUBSCR
+             24 STORE_FAST               5 (ignore)
+
+188          26 LOAD_FAST                5 (ignore)
+             28 GET_ITER
+        >>   30 FOR_ITER                16 (to 48)
+             32 STORE_FAST               6 (key)
+
+189          34 LOAD_DEREF               1 (classdict)
+             36 LOAD_METHOD              2 (pop)
+             38 LOAD_FAST                6 (key)
+             40 LOAD_CONST               0 (None)
+             42 CALL_METHOD              2
+             44 POP_TOP
+             46 JUMP_ABSOLUTE           30
+
+190     >>   48 LOAD_FAST                0 (metacls)
+             50 LOAD_METHOD              3 (_get_mixins_)
+             52 LOAD_FAST                1 (cls)
+             54 LOAD_FAST                2 (bases)
+             56 CALL_METHOD              2
+             58 UNPACK_SEQUENCE          2
+             60 STORE_DEREF              2 (member_type)
+             62 STORE_FAST               7 (first_enum)
+
+191          64 LOAD_FAST                0 (metacls)
+             66 LOAD_METHOD              4 (_find_new_)
+
+192          68 LOAD_DEREF               1 (classdict)
+             70 LOAD_DEREF               2 (member_type)
+             72 LOAD_FAST                7 (first_enum)
+
+191          74 CALL_METHOD              3
+             76 UNPACK_SEQUENCE          3
+             78 STORE_FAST               8 (__new__)
+             80 STORE_FAST               9 (save_new)
+             82 STORE_FAST              10 (use_args)
+
+197          84 LOAD_CLOSURE             1 (classdict)
+             86 BUILD_TUPLE              1
+             88 LOAD_CONST               2 (<code object <dictcomp> at 0x00000236F50F5190, file "", line 197>)
+             90 LOAD_CONST               3 ('EnumMeta.__new__.<locals>.<dictcomp>')
+             92 MAKE_FUNCTION            8 (closure)
+             94 LOAD_DEREF               1 (classdict)
+             96 LOAD_ATTR                5 (_member_names)
+             98 GET_ITER
+            100 CALL_FUNCTION            1
+            102 STORE_FAST              11 (enum_members)
+
+198         104 LOAD_DEREF               1 (classdict)
+            106 LOAD_ATTR                5 (_member_names)
+            108 GET_ITER
+        >>  110 FOR_ITER                10 (to 122)
+            112 STORE_FAST              12 (name)
+
+199         114 LOAD_DEREF               1 (classdict)
+            116 LOAD_FAST               12 (name)
+            118 DELETE_SUBSCR
+            120 JUMP_ABSOLUTE          110
+
+202     >>  122 LOAD_DEREF               1 (classdict)
+            124 LOAD_METHOD              2 (pop)
+            126 LOAD_CONST               4 ('_order_')
+            128 LOAD_CONST               0 (None)
+            130 CALL_METHOD              2
+            132 STORE_FAST              13 (_order_)
+
+205         134 LOAD_GLOBAL              6 (set)
+            136 LOAD_FAST               11 (enum_members)
+            138 CALL_FUNCTION            1
+            140 LOAD_CONST               5 ('mro')
+            142 LOAD_CONST               6 ('')
+            144 BUILD_SET                2
+            146 BINARY_AND
+            148 STORE_FAST              14 (invalid_names)
+
+206         150 LOAD_FAST               14 (invalid_names)
+            152 POP_JUMP_IF_FALSE      174
+
+207         154 LOAD_GLOBAL              7 (ValueError)
+            156 LOAD_CONST               7 ('Invalid enum member name: {0}')
+            158 LOAD_METHOD              8 (format)
+
+208         160 LOAD_CONST               8 (',')
+            162 LOAD_METHOD              9 (join)
+            164 LOAD_FAST               14 (invalid_names)
+            166 CALL_METHOD              1
+
+207         168 CALL_METHOD              1
+            170 CALL_FUNCTION            1
+            172 RAISE_VARARGS            1
+
+211     >>  174 LOAD_CONST               9 ('__doc__')
+            176 LOAD_DEREF               1 (classdict)
+            178 CONTAINS_OP              1
+            180 POP_JUMP_IF_FALSE      190
+
+212         182 LOAD_CONST              10 ('An enumeration.')
+            184 LOAD_DEREF               1 (classdict)
+            186 LOAD_CONST               9 ('__doc__')
+            188 STORE_SUBSCR
+
+214     >>  190 LOAD_GLOBAL             10 (super)
+            192 CALL_FUNCTION            0
+            194 LOAD_ATTR               11 (__new__)
+            196 LOAD_FAST                0 (metacls)
+            198 LOAD_FAST                1 (cls)
+            200 LOAD_FAST                2 (bases)
+            202 LOAD_DEREF               1 (classdict)
+            204 BUILD_TUPLE              4
+            206 BUILD_MAP                0
+            208 LOAD_FAST                4 (kwds)
+            210 DICT_MERGE               1
+            212 CALL_FUNCTION_EX         1
+            214 STORE_FAST              15 (enum_class)
+
+215         216 BUILD_LIST               0
+            218 LOAD_FAST               15 (enum_class)
+            220 STORE_ATTR              12 (_member_names_)
+
+216         222 BUILD_MAP                0
+            224 LOAD_FAST               15 (enum_class)
+            226 STORE_ATTR              13 (_member_map_)
+
+217         228 LOAD_DEREF               2 (member_type)
+            230 LOAD_FAST               15 (enum_class)
+            232 STORE_ATTR              14 (_member_type_)
+
+221         234 LOAD_CONST              11 (<code object <setcomp> at 0x00000236F50F5240, file "", line 221>)
+            236 LOAD_CONST              12 ('EnumMeta.__new__.<locals>.<setcomp>')
+            238 MAKE_FUNCTION            0
+
+222         240 LOAD_FAST               15 (enum_class)
+            242 LOAD_METHOD             15 (mro)
+            244 CALL_METHOD              0
+
+221         246 GET_ITER
+            248 CALL_FUNCTION            1
+            250 STORE_FAST              16 (dynamic_attributes)
+
+228         252 BUILD_MAP                0
+            254 LOAD_FAST               15 (enum_class)
+            256 STORE_ATTR              16 (_value2member_map_)
+
+240         258 LOAD_CONST              13 ('__reduce_ex__')
+            260 LOAD_DEREF               1 (classdict)
+            262 CONTAINS_OP              1
+            264 EXTENDED_ARG             1
+            266 POP_JUMP_IF_FALSE      460
+
+241         268 LOAD_DEREF               2 (member_type)
+            270 LOAD_GLOBAL             17 (object)
+            272 IS_OP                    1
+            274 EXTENDED_ARG             1
+            276 POP_JUMP_IF_FALSE      460
+
+242         278 LOAD_CONST              14 (('__getnewargs_ex__', '__getnewargs__', '__reduce_ex__', '__reduce__'))
+            280 STORE_FAST              17 (methods)
+
+244         282 LOAD_GLOBAL             18 (any)
+            284 LOAD_CLOSURE             2 (member_type)
+            286 BUILD_TUPLE              1
+            288 LOAD_CONST              15 (<code object <genexpr> at 0x00000236F50F52F0, file "", line 244>)
+            290 LOAD_CONST              16 ('EnumMeta.__new__.<locals>.<genexpr>')
+            292 MAKE_FUNCTION            8 (closure)
+            294 LOAD_FAST               17 (methods)
+            296 GET_ITER
+            298 CALL_FUNCTION            1
+            300 CALL_FUNCTION            1
+            302 EXTENDED_ARG             1
+            304 POP_JUMP_IF_TRUE       460
+
+245         306 LOAD_CONST              17 ('__new__')
+            308 LOAD_DEREF               1 (classdict)
+            310 CONTAINS_OP              0
+            312 EXTENDED_ARG             1
+            314 POP_JUMP_IF_FALSE      326
+
+247         316 LOAD_GLOBAL             19 (_make_class_unpicklable)
+            318 LOAD_FAST               15 (enum_class)
+            320 CALL_FUNCTION            1
+            322 POP_TOP
+            324 JUMP_FORWARD           134 (to 460)
+
+254     >>  326 LOAD_CONST               0 (None)
+            328 STORE_FAST              18 (sabotage)
+
+255         330 LOAD_FAST                2 (bases)
+            332 GET_ITER
+        >>  334 FOR_ITER               110 (to 446)
+            336 STORE_FAST              19 (chain)
+
+256         338 LOAD_FAST               19 (chain)
+            340 LOAD_ATTR               20 (__mro__)
+            342 GET_ITER
+        >>  344 FOR_ITER                80 (to 426)
+            346 STORE_DEREF              0 (base)
+
+257         348 LOAD_DEREF               0 (base)
+            350 LOAD_GLOBAL             17 (object)
+            352 IS_OP                    0
+            354 EXTENDED_ARG             1
+            356 POP_JUMP_IF_FALSE      364
+
+258         358 EXTENDED_ARG             1
+            360 JUMP_ABSOLUTE          344
+            362 JUMP_FORWARD            58 (to 422)
+
+259     >>  364 LOAD_GLOBAL             18 (any)
+            366 LOAD_CLOSURE             0 (base)
+            368 BUILD_TUPLE              1
+            370 LOAD_CONST              18 (<code object <genexpr> at 0x00000236F50F53A0, file "", line 259>)
+            372 LOAD_CONST              16 ('EnumMeta.__new__.<locals>.<genexpr>')
+            374 MAKE_FUNCTION            8 (closure)
+            376 LOAD_FAST               17 (methods)
+            378 GET_ITER
+            380 CALL_FUNCTION            1
+            382 CALL_FUNCTION            1
+            384 EXTENDED_ARG             1
+            386 POP_JUMP_IF_FALSE      400
+
+261         388 LOAD_CONST              19 (False)
+            390 STORE_FAST              18 (sabotage)
+
+262         392 POP_TOP
+            394 EXTENDED_ARG             1
+            396 JUMP_ABSOLUTE          426
+            398 JUMP_FORWARD            22 (to 422)
+
+263     >>  400 LOAD_CONST              17 ('__new__')
+            402 LOAD_DEREF               0 (base)
+            404 LOAD_ATTR               21 (__dict__)
+            406 CONTAINS_OP              0
+            408 EXTENDED_ARG             1
+            410 POP_JUMP_IF_FALSE      344
+
+265         412 LOAD_CONST              20 (True)
+            414 STORE_FAST              18 (sabotage)
+
+266         416 POP_TOP
+            418 EXTENDED_ARG             1
+            420 JUMP_ABSOLUTE          426
+        >>  422 EXTENDED_ARG             1
+            424 JUMP_ABSOLUTE          344
+
+267     >>  426 LOAD_FAST               18 (sabotage)
+            428 LOAD_CONST               0 (None)
+            430 IS_OP                    1
+            432 EXTENDED_ARG             1
+            434 POP_JUMP_IF_FALSE      334
+
+268         436 POP_TOP
+            438 EXTENDED_ARG             1
+            440 JUMP_ABSOLUTE          446
+            442 EXTENDED_ARG             1
+            444 JUMP_ABSOLUTE          334
+
+269     >>  446 LOAD_FAST               18 (sabotage)
+            448 EXTENDED_ARG             1
+            450 POP_JUMP_IF_FALSE      460
+
+270         452 LOAD_GLOBAL             19 (_make_class_unpicklable)
+            454 LOAD_FAST               15 (enum_class)
+            456 CALL_FUNCTION            1
+            458 POP_TOP
+
+275     >>  460 LOAD_DEREF               1 (classdict)
+            462 LOAD_ATTR                5 (_member_names)
+            464 GET_ITER
+        >>  466 EXTENDED_ARG             1
+            468 FOR_ITER               298 (to 768)
+            470 STORE_FAST              20 (member_name)
+
+276         472 LOAD_FAST               11 (enum_members)
+            474 LOAD_FAST               20 (member_name)
+            476 BINARY_SUBSCR
+            478 STORE_FAST              21 (value)
+
+277         480 LOAD_GLOBAL             22 (isinstance)
+            482 LOAD_FAST               21 (value)
+            484 LOAD_GLOBAL             23 (tuple)
+            486 CALL_FUNCTION            2
+            488 EXTENDED_ARG             1
+            490 POP_JUMP_IF_TRUE       500
+
+278         492 LOAD_FAST               21 (value)
+            494 BUILD_TUPLE              1
+            496 STORE_FAST              22 (args)
+            498 JUMP_FORWARD             4 (to 504)
+
+280     >>  500 LOAD_FAST               21 (value)
+            502 STORE_FAST              22 (args)
+
+281     >>  504 LOAD_DEREF               2 (member_type)
+            506 LOAD_GLOBAL             23 (tuple)
+            508 IS_OP                    0
+            510 EXTENDED_ARG             2
+            512 POP_JUMP_IF_FALSE      520
+
+282         514 LOAD_FAST               22 (args)
+            516 BUILD_TUPLE              1
+            518 STORE_FAST              22 (args)
+
+283     >>  520 LOAD_FAST               10 (use_args)
+            522 EXTENDED_ARG             2
+            524 POP_JUMP_IF_TRUE       554
+
+284         526 LOAD_FAST                8 (__new__)
+            528 LOAD_FAST               15 (enum_class)
+            530 CALL_FUNCTION            1
+            532 STORE_FAST              23 (enum_member)
+
+285         534 LOAD_GLOBAL             24 (hasattr)
+            536 LOAD_FAST               23 (enum_member)
+            538 LOAD_CONST              21 ('_value_')
+            540 CALL_FUNCTION            2
+            542 EXTENDED_ARG             2
+            544 POP_JUMP_IF_TRUE       610
+
+286         546 LOAD_FAST               21 (value)
+            548 LOAD_FAST               23 (enum_member)
+            550 STORE_ATTR              25 (_value_)
+            552 JUMP_FORWARD            56 (to 610)
+
+288     >>  554 LOAD_FAST                8 (__new__)
+            556 LOAD_FAST               15 (enum_class)
+            558 BUILD_LIST               1
+            560 LOAD_FAST               22 (args)
+            562 LIST_EXTEND              1
+            564 LIST_TO_TUPLE
+            566 CALL_FUNCTION_EX         0
+            568 STORE_FAST              23 (enum_member)
+
+289         570 LOAD_GLOBAL             24 (hasattr)
+            572 LOAD_FAST               23 (enum_member)
+            574 LOAD_CONST              21 ('_value_')
+            576 CALL_FUNCTION            2
+            578 EXTENDED_ARG             2
+            580 POP_JUMP_IF_TRUE       610
+
+290         582 LOAD_DEREF               2 (member_type)
+            584 LOAD_GLOBAL             17 (object)
+            586 IS_OP                    0
+            588 EXTENDED_ARG             2
+            590 POP_JUMP_IF_FALSE      600
+
+291         592 LOAD_FAST               21 (value)
+            594 LOAD_FAST               23 (enum_member)
+            596 STORE_ATTR              25 (_value_)
+            598 JUMP_FORWARD            10 (to 610)
+
+293     >>  600 LOAD_DEREF               2 (member_type)
+            602 LOAD_FAST               22 (args)
+            604 CALL_FUNCTION_EX         0
+            606 LOAD_FAST               23 (enum_member)
+            608 STORE_ATTR              25 (_value_)
+
+294     >>  610 LOAD_FAST               23 (enum_member)
+            612 LOAD_ATTR               25 (_value_)
+            614 STORE_FAST              21 (value)
+
+295         616 LOAD_FAST               20 (member_name)
+            618 LOAD_FAST               23 (enum_member)
+            620 STORE_ATTR              26 (_name_)
+
+296         622 LOAD_FAST               15 (enum_class)
+            624 LOAD_FAST               23 (enum_member)
+            626 STORE_ATTR              27 (__objclass__)
+
+297         628 LOAD_FAST               23 (enum_member)
+            630 LOAD_ATTR               28 (__init__)
+            632 LOAD_FAST               22 (args)
+            634 CALL_FUNCTION_EX         0
+            636 POP_TOP
+
+300         638 LOAD_FAST               15 (enum_class)
+            640 LOAD_ATTR               13 (_member_map_)
+            642 LOAD_METHOD             29 (items)
+            644 CALL_METHOD              0
+            646 GET_ITER
+        >>  648 FOR_ITER                34 (to 684)
+            650 UNPACK_SEQUENCE          2
+            652 STORE_FAST              12 (name)
+            654 STORE_FAST              24 (canonical_member)
+
+301         656 LOAD_FAST               24 (canonical_member)
+            658 LOAD_ATTR               25 (_value_)
+            660 LOAD_FAST               23 (enum_member)
+            662 LOAD_ATTR               25 (_value_)
+            664 COMPARE_OP               2 (==)
+            666 EXTENDED_ARG             2
+            668 POP_JUMP_IF_FALSE      648
+
+302         670 LOAD_FAST               24 (canonical_member)
+            672 STORE_FAST              23 (enum_member)
+
+303         674 POP_TOP
+            676 EXTENDED_ARG             2
+            678 JUMP_ABSOLUTE          696
+            680 EXTENDED_ARG             2
+            682 JUMP_ABSOLUTE          648
+
+306     >>  684 LOAD_FAST               15 (enum_class)
+            686 LOAD_ATTR               12 (_member_names_)
+            688 LOAD_METHOD              1 (append)
+            690 LOAD_FAST               20 (member_name)
+            692 CALL_METHOD              1
+            694 POP_TOP
+
+309     >>  696 LOAD_FAST               20 (member_name)
+            698 LOAD_FAST               16 (dynamic_attributes)
+            700 CONTAINS_OP              1
+            702 EXTENDED_ARG             2
+            704 POP_JUMP_IF_FALSE      718
+
+310         706 LOAD_GLOBAL             30 (setattr)
+            708 LOAD_FAST               15 (enum_class)
+            710 LOAD_FAST               20 (member_name)
+            712 LOAD_FAST               23 (enum_member)
+            714 CALL_FUNCTION            3
+            716 POP_TOP
+
+312     >>  718 LOAD_FAST               23 (enum_member)
+            720 LOAD_FAST               15 (enum_class)
+            722 LOAD_ATTR               13 (_member_map_)
+            724 LOAD_FAST               20 (member_name)
+            726 STORE_SUBSCR
+
+313         728 SETUP_FINALLY           14 (to 744)
+
+317         730 LOAD_FAST               23 (enum_member)
+            732 LOAD_FAST               15 (enum_class)
+            734 LOAD_ATTR               16 (_value2member_map_)
+            736 LOAD_FAST               21 (value)
+            738 STORE_SUBSCR
+            740 POP_BLOCK
+            742 JUMP_FORWARD            20 (to 764)
+
+318     >>  744 DUP_TOP
+            746 LOAD_GLOBAL             31 (TypeError)
+            748 EXTENDED_ARG             2
+            750 JUMP_IF_NOT_EXC_MATCH   762
+            752 POP_TOP
+            754 POP_TOP
+            756 POP_TOP
+
+319         758 POP_EXCEPT
+            760 JUMP_FORWARD             2 (to 764)
+        >>  762 RERAISE
+        >>  764 EXTENDED_ARG             1
+            766 JUMP_ABSOLUTE          466
+
+325     >>  768 LOAD_CONST              22 (('__repr__', '__str__', '__format__', '__reduce_ex__'))
+            770 GET_ITER
+        >>  772 FOR_ITER                86 (to 860)
+            774 STORE_FAST              12 (name)
+
+326         776 LOAD_FAST               12 (name)
+            778 LOAD_DEREF               1 (classdict)
+            780 CONTAINS_OP              0
+            782 EXTENDED_ARG             3
+            784 POP_JUMP_IF_FALSE      790
+
+327         786 EXTENDED_ARG             3
+            788 JUMP_ABSOLUTE          772
+
+328     >>  790 LOAD_GLOBAL             32 (getattr)
+            792 LOAD_FAST               15 (enum_class)
+            794 LOAD_FAST               12 (name)
+            796 CALL_FUNCTION            2
+            798 STORE_FAST              25 (class_method)
+
+329         800 LOAD_GLOBAL             32 (getattr)
+            802 LOAD_DEREF               2 (member_type)
+            804 LOAD_FAST               12 (name)
+            806 LOAD_CONST               0 (None)
+            808 CALL_FUNCTION            3
+            810 STORE_FAST              26 (obj_method)
+
+330         812 LOAD_GLOBAL             32 (getattr)
+            814 LOAD_FAST                7 (first_enum)
+            816 LOAD_FAST               12 (name)
+            818 LOAD_CONST               0 (None)
+            820 CALL_FUNCTION            3
+            822 STORE_FAST              27 (enum_method)
+
+331         824 LOAD_FAST               26 (obj_method)
+            826 LOAD_CONST               0 (None)
+            828 IS_OP                    1
+            830 EXTENDED_ARG             3
+            832 POP_JUMP_IF_FALSE      772
+            834 LOAD_FAST               26 (obj_method)
+            836 LOAD_FAST               25 (class_method)
+            838 IS_OP                    0
+            840 EXTENDED_ARG             3
+            842 POP_JUMP_IF_FALSE      772
+
+332         844 LOAD_GLOBAL             30 (setattr)
+            846 LOAD_FAST               15 (enum_class)
+            848 LOAD_FAST               12 (name)
+            850 LOAD_FAST               27 (enum_method)
+            852 CALL_FUNCTION            3
+            854 POP_TOP
+            856 EXTENDED_ARG             3
+            858 JUMP_ABSOLUTE          772
+
+336     >>  860 LOAD_GLOBAL             33 (Enum)
+            862 LOAD_CONST               0 (None)
+            864 IS_OP                    1
+            866 EXTENDED_ARG             3
+            868 POP_JUMP_IF_FALSE      890
+
+339         870 LOAD_FAST                9 (save_new)
+            872 EXTENDED_ARG             3
+            874 POP_JUMP_IF_FALSE      882
+
+340         876 LOAD_FAST                8 (__new__)
+            878 LOAD_FAST               15 (enum_class)
+            880 STORE_ATTR              34 (__new_member__)
+
+341     >>  882 LOAD_GLOBAL             33 (Enum)
+            884 LOAD_ATTR               11 (__new__)
+            886 LOAD_FAST               15 (enum_class)
+            888 STORE_ATTR              11 (__new__)
+
+344     >>  890 LOAD_FAST               13 (_order_)
+            892 LOAD_CONST               0 (None)
+            894 IS_OP                    1
+            896 EXTENDED_ARG             3
+            898 POP_JUMP_IF_FALSE      948
+
+345         900 LOAD_GLOBAL             22 (isinstance)
+            902 LOAD_FAST               13 (_order_)
+            904 LOAD_GLOBAL             35 (str)
+            906 CALL_FUNCTION            2
+            908 EXTENDED_ARG             3
+            910 POP_JUMP_IF_FALSE      928
+
+346         912 LOAD_FAST               13 (_order_)
+            914 LOAD_METHOD             36 (replace)
+            916 LOAD_CONST               8 (',')
+            918 LOAD_CONST              23 (' ')
+            920 CALL_METHOD              2
+            922 LOAD_METHOD             37 (split)
+            924 CALL_METHOD              0
+            926 STORE_FAST              13 (_order_)
+
+347     >>  928 LOAD_FAST               13 (_order_)
+            930 LOAD_FAST               15 (enum_class)
+            932 LOAD_ATTR               12 (_member_names_)
+            934 COMPARE_OP               3 (!=)
+            936 EXTENDED_ARG             3
+            938 POP_JUMP_IF_FALSE      948
+
+348         940 LOAD_GLOBAL             31 (TypeError)
+            942 LOAD_CONST              24 ('member order does not match _order_')
+            944 CALL_FUNCTION            1
+            946 RAISE_VARARGS            1
+
+350     >>  948 LOAD_FAST               15 (enum_class)
+            950 RETURN_VALUE
+
+Disassembly of <code object <dictcomp> at 0x00000236F50F5190, file "", line 197>:
+197           0 BUILD_MAP                0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                14 (to 20)
+              6 STORE_FAST               1 (k)
+              8 LOAD_FAST                1 (k)
+             10 LOAD_DEREF               0 (classdict)
+             12 LOAD_FAST                1 (k)
+             14 BINARY_SUBSCR
+             16 MAP_ADD                  2
+             18 JUMP_ABSOLUTE            4
+        >>   20 RETURN_VALUE
+
+Disassembly of <code object <setcomp> at 0x00000236F50F5240, file "", line 221>:
+221           0 BUILD_SET                0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                38 (to 44)
+
+222           6 STORE_FAST               1 (c)
+
+223           8 LOAD_FAST                1 (c)
+             10 LOAD_ATTR                0 (__dict__)
+             12 LOAD_METHOD              1 (items)
+             14 CALL_METHOD              0
+             16 GET_ITER
+        >>   18 FOR_ITER                22 (to 42)
+             20 UNPACK_SEQUENCE          2
+             22 STORE_FAST               2 (k)
+             24 STORE_FAST               3 (v)
+
+224          26 LOAD_GLOBAL              2 (isinstance)
+             28 LOAD_FAST                3 (v)
+             30 LOAD_GLOBAL              3 (DynamicClassAttribute)
+             32 CALL_FUNCTION            2
+             34 POP_JUMP_IF_FALSE       18
+
+222          36 LOAD_FAST                2 (k)
+             38 SET_ADD                  3
+             40 JUMP_ABSOLUTE           18
+        >>   42 JUMP_ABSOLUTE            4
+        >>   44 RETURN_VALUE
+
+Disassembly of <code object <genexpr> at 0x00000236F50F52F0, file "", line 244>:
+244           0 LOAD_FAST                0 (.0)
+        >>    2 FOR_ITER                16 (to 20)
+              4 STORE_FAST               1 (m)
+              6 LOAD_FAST                1 (m)
+              8 LOAD_DEREF               0 (member_type)
+             10 LOAD_ATTR                0 (__dict__)
+             12 CONTAINS_OP              0
+             14 YIELD_VALUE
+             16 POP_TOP
+             18 JUMP_ABSOLUTE            2
+        >>   20 LOAD_CONST               0 (None)
+             22 RETURN_VALUE
+
+Disassembly of <code object <genexpr> at 0x00000236F50F53A0, file "", line 259>:
+259           0 LOAD_FAST                0 (.0)
+        >>    2 FOR_ITER                16 (to 20)
+              4 STORE_FAST               1 (m)
+              6 LOAD_FAST                1 (m)
+              8 LOAD_DEREF               0 (base)
+             10 LOAD_ATTR                0 (__dict__)
+             12 CONTAINS_OP              0
+             14 YIELD_VALUE
+             16 POP_TOP
+             18 JUMP_ABSOLUTE            2
+        >>   20 LOAD_CONST               0 (None)
+             22 RETURN_VALUE
+
+Disassembly of <code object __bool__ at 0x00000236F50F5500, file "", line 352>:
+356           0 LOAD_CONST               1 (True)
+              2 RETURN_VALUE
+
+Disassembly of <code object __call__ at 0x00000236F50F55B0, file "", line 358>:
+383           0 LOAD_FAST                2 (names)
+              2 LOAD_CONST               1 (None)
+              4 IS_OP                    0
+              6 POP_JUMP_IF_FALSE       20
+
+384           8 LOAD_FAST                0 (cls)
+             10 LOAD_METHOD              0 (__new__)
+             12 LOAD_FAST                0 (cls)
+             14 LOAD_FAST                1 (value)
+             16 CALL_METHOD              2
+             18 RETURN_VALUE
+
+386     >>   20 LOAD_FAST                0 (cls)
+             22 LOAD_ATTR                1 (_create_)
+
+387          24 LOAD_FAST                1 (value)
+
+388          26 LOAD_FAST                2 (names)
+
+389          28 LOAD_FAST                3 (module)
+
+390          30 LOAD_FAST                4 (qualname)
+
+391          32 LOAD_FAST                5 (type)
+
+392          34 LOAD_FAST                6 (start)
+
+386          36 LOAD_CONST               2 (('module', 'qualname', 'type', 'start'))
+             38 CALL_FUNCTION_KW         6
+             40 RETURN_VALUE
+
+Disassembly of <code object __contains__ at 0x00000236F50F5660, file "", line 395>:
+396           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (member)
+              4 LOAD_GLOBAL              1 (Enum)
+              6 CALL_FUNCTION            2
+              8 POP_JUMP_IF_TRUE        36
+
+397          10 LOAD_GLOBAL              2 (TypeError)
+
+398          12 LOAD_CONST               1 ("unsupported operand type(s) for 'in': '%s' and '%s'")
+
+399          14 LOAD_GLOBAL              3 (type)
+             16 LOAD_FAST                1 (member)
+             18 CALL_FUNCTION            1
+             20 LOAD_ATTR                4 (__qualname__)
+             22 LOAD_FAST                0 (cls)
+             24 LOAD_ATTR                5 (__class__)
+             26 LOAD_ATTR                4 (__qualname__)
+
+398          28 BUILD_TUPLE              2
+             30 BINARY_MODULO
+
+397          32 CALL_FUNCTION            1
+             34 RAISE_VARARGS            1
+
+400     >>   36 LOAD_GLOBAL              0 (isinstance)
+             38 LOAD_FAST                1 (member)
+             40 LOAD_FAST                0 (cls)
+             42 CALL_FUNCTION            2
+             44 JUMP_IF_FALSE_OR_POP    56
+             46 LOAD_FAST                1 (member)
+             48 LOAD_ATTR                6 (_name_)
+             50 LOAD_FAST                0 (cls)
+             52 LOAD_ATTR                7 (_member_map_)
+             54 CONTAINS_OP              0
+        >>   56 RETURN_VALUE
+
+Disassembly of <code object __delattr__ at 0x00000236F50F5710, file "", line 402>:
+405           0 LOAD_FAST                1 (attr)
+              2 LOAD_FAST                0 (cls)
+              4 LOAD_ATTR                0 (_member_map_)
+              6 CONTAINS_OP              0
+              8 POP_JUMP_IF_FALSE       24
+
+406          10 LOAD_GLOBAL              1 (AttributeError)
+             12 LOAD_CONST               1 ('%s: cannot delete Enum member.')
+             14 LOAD_FAST                0 (cls)
+             16 LOAD_ATTR                2 (__name__)
+             18 BINARY_MODULO
+             20 CALL_FUNCTION            1
+             22 RAISE_VARARGS            1
+
+407     >>   24 LOAD_GLOBAL              3 (super)
+             26 CALL_FUNCTION            0
+             28 LOAD_METHOD              4 (__delattr__)
+             30 LOAD_FAST                1 (attr)
+             32 CALL_METHOD              1
+             34 POP_TOP
+             36 LOAD_CONST               0 (None)
+             38 RETURN_VALUE
+
+Disassembly of <code object __dir__ at 0x00000236F50F57C0, file "", line 409>:
+411           0 BUILD_LIST               0
+              2 LOAD_CONST               1 (('__class__', '__doc__', '__members__', '__module__'))
+              4 LIST_EXTEND              1
+
+412           6 LOAD_FAST                0 (self)
+              8 LOAD_ATTR                0 (_member_names_)
+
+411          10 BINARY_ADD
+
+410          12 RETURN_VALUE
+
+Disassembly of <code object __getattr__ at 0x00000236F50F5870, file "", line 415>:
+424           0 LOAD_GLOBAL              0 (_is_dunder)
+              2 LOAD_FAST                1 (name)
+              4 CALL_FUNCTION            1
+              6 POP_JUMP_IF_FALSE       16
+
+425           8 LOAD_GLOBAL              1 (AttributeError)
+             10 LOAD_FAST                1 (name)
+             12 CALL_FUNCTION            1
+             14 RAISE_VARARGS            1
+
+426     >>   16 SETUP_FINALLY           12 (to 30)
+
+427          18 LOAD_FAST                0 (cls)
+             20 LOAD_ATTR                2 (_member_map_)
+             22 LOAD_FAST                1 (name)
+             24 BINARY_SUBSCR
+             26 POP_BLOCK
+             28 RETURN_VALUE
+
+428     >>   30 DUP_TOP
+             32 LOAD_GLOBAL              3 (KeyError)
+             34 JUMP_IF_NOT_EXC_MATCH    56
+             36 POP_TOP
+             38 POP_TOP
+             40 POP_TOP
+
+429          42 LOAD_GLOBAL              1 (AttributeError)
+             44 LOAD_FAST                1 (name)
+             46 CALL_FUNCTION            1
+             48 LOAD_CONST               1 (None)
+             50 RAISE_VARARGS            2
+             52 POP_EXCEPT
+             54 JUMP_FORWARD             2 (to 58)
+        >>   56 RERAISE
+        >>   58 LOAD_CONST               1 (None)
+             60 RETURN_VALUE
+
+Disassembly of <code object __getitem__ at 0x00000236F50F5920, file "", line 431>:
+432           0 LOAD_FAST                0 (cls)
+              2 LOAD_ATTR                0 (_member_map_)
+              4 LOAD_FAST                1 (name)
+              6 BINARY_SUBSCR
+              8 RETURN_VALUE
+
+Disassembly of <code object __iter__ at 0x00000236F50F5A80, file "", line 434>:
+438           0 LOAD_CLOSURE             0 (cls)
+              2 BUILD_TUPLE              1
+              4 LOAD_CONST               1 (<code object <genexpr> at 0x00000236F50F59D0, file "", line 438>)
+              6 LOAD_CONST               2 ('EnumMeta.__iter__.<locals>.<genexpr>')
+              8 MAKE_FUNCTION            8 (closure)
+             10 LOAD_DEREF               0 (cls)
+             12 LOAD_ATTR                0 (_member_names_)
+             14 GET_ITER
+             16 CALL_FUNCTION            1
+             18 RETURN_VALUE
+
+Disassembly of <code object <genexpr> at 0x00000236F50F59D0, file "", line 438>:
+438           0 LOAD_FAST                0 (.0)
+        >>    2 FOR_ITER                16 (to 20)
+              4 STORE_FAST               1 (name)
+              6 LOAD_DEREF               0 (cls)
+              8 LOAD_ATTR                0 (_member_map_)
+             10 LOAD_FAST                1 (name)
+             12 BINARY_SUBSCR
+             14 YIELD_VALUE
+             16 POP_TOP
+             18 JUMP_ABSOLUTE            2
+        >>   20 LOAD_CONST               0 (None)
+             22 RETURN_VALUE
+
+Disassembly of <code object __len__ at 0x00000236F50F5B30, file "", line 440>:
+441           0 LOAD_GLOBAL              0 (len)
+              2 LOAD_FAST                0 (cls)
+              4 LOAD_ATTR                1 (_member_names_)
+              6 CALL_FUNCTION            1
+              8 RETURN_VALUE
+
+Disassembly of <code object __members__ at 0x00000236F50F5BE0, file "", line 443>:
+451           0 LOAD_GLOBAL              0 (MappingProxyType)
+              2 LOAD_FAST                0 (cls)
+              4 LOAD_ATTR                1 (_member_map_)
+              6 CALL_FUNCTION            1
+              8 RETURN_VALUE
+
+Disassembly of <code object __repr__ at 0x00000236F50F5C90, file "", line 453>:
+454           0 LOAD_CONST               1 ('<enum %r>')
+              2 LOAD_FAST                0 (cls)
+              4 LOAD_ATTR                0 (__name__)
+              6 BINARY_MODULO
+              8 RETURN_VALUE
+
+Disassembly of <code object __reversed__ at 0x00000236F50F5DF0, file "", line 456>:
+460           0 LOAD_CLOSURE             0 (cls)
+              2 BUILD_TUPLE              1
+              4 LOAD_CONST               1 (<code object <genexpr> at 0x00000236F50F5D40, file "", line 460>)
+              6 LOAD_CONST               2 ('EnumMeta.__reversed__.<locals>.<genexpr>')
+              8 MAKE_FUNCTION            8 (closure)
+             10 LOAD_GLOBAL              0 (reversed)
+             12 LOAD_DEREF               0 (cls)
+             14 LOAD_ATTR                1 (_member_names_)
+             16 CALL_FUNCTION            1
+             18 GET_ITER
+             20 CALL_FUNCTION            1
+             22 RETURN_VALUE
+
+Disassembly of <code object <genexpr> at 0x00000236F50F5D40, file "", line 460>:
+460           0 LOAD_FAST                0 (.0)
+        >>    2 FOR_ITER                16 (to 20)
+              4 STORE_FAST               1 (name)
+              6 LOAD_DEREF               0 (cls)
+              8 LOAD_ATTR                0 (_member_map_)
+             10 LOAD_FAST                1 (name)
+             12 BINARY_SUBSCR
+             14 YIELD_VALUE
+             16 POP_TOP
+             18 JUMP_ABSOLUTE            2
+        >>   20 LOAD_CONST               0 (None)
+             22 RETURN_VALUE
+
+Disassembly of <code object __setattr__ at 0x00000236F50F5EA0, file "", line 462>:
+470           0 LOAD_FAST                0 (cls)
+              2 LOAD_ATTR                0 (__dict__)
+              4 LOAD_METHOD              1 (get)
+              6 LOAD_CONST               1 ('_member_map_')
+              8 BUILD_MAP                0
+             10 CALL_METHOD              2
+             12 STORE_FAST               3 (member_map)
+
+471          14 LOAD_FAST                1 (name)
+             16 LOAD_FAST                3 (member_map)
+             18 CONTAINS_OP              0
+             20 POP_JUMP_IF_FALSE       30
+
+472          22 LOAD_GLOBAL              2 (AttributeError)
+             24 LOAD_CONST               2 ('Cannot reassign members.')
+             26 CALL_FUNCTION            1
+             28 RAISE_VARARGS            1
+
+473     >>   30 LOAD_GLOBAL              3 (super)
+             32 CALL_FUNCTION            0
+             34 LOAD_METHOD              4 (__setattr__)
+             36 LOAD_FAST                1 (name)
+             38 LOAD_FAST                2 (value)
+             40 CALL_METHOD              2
+             42 POP_TOP
+             44 LOAD_CONST               3 (None)
+             46 RETURN_VALUE
+
+Disassembly of <code object _create_ at 0x00000236F50F5F50, file "", line 475>:
+487           0 LOAD_FAST                0 (cls)
+              2 LOAD_ATTR                0 (__class__)
+              4 STORE_FAST               7 (metacls)
+
+488           6 LOAD_FAST                5 (type)
+              8 LOAD_CONST               1 (None)
+             10 IS_OP                    0
+             12 POP_JUMP_IF_FALSE       20
+             14 LOAD_FAST                0 (cls)
+             16 BUILD_TUPLE              1
+             18 JUMP_FORWARD             6 (to 26)
+        >>   20 LOAD_FAST                5 (type)
+             22 LOAD_FAST                0 (cls)
+             24 BUILD_TUPLE              2
+        >>   26 STORE_FAST               8 (bases)
+
+489          28 LOAD_FAST                0 (cls)
+             30 LOAD_METHOD              1 (_get_mixins_)
+             32 LOAD_FAST                0 (cls)
+             34 LOAD_FAST                8 (bases)
+             36 CALL_METHOD              2
+             38 UNPACK_SEQUENCE          2
+             40 STORE_FAST               9 (_)
+             42 STORE_FAST              10 (first_enum)
+
+490          44 LOAD_FAST                7 (metacls)
+             46 LOAD_METHOD              2 (__prepare__)
+             48 LOAD_FAST                1 (class_name)
+             50 LOAD_FAST                8 (bases)
+             52 CALL_METHOD              2
+             54 STORE_FAST              11 (classdict)
+
+493          56 LOAD_GLOBAL              3 (isinstance)
+             58 LOAD_FAST                2 (names)
+             60 LOAD_GLOBAL              4 (str)
+             62 CALL_FUNCTION            2
+             64 POP_JUMP_IF_FALSE       82
+
+494          66 LOAD_FAST                2 (names)
+             68 LOAD_METHOD              5 (replace)
+             70 LOAD_CONST               2 (',')
+             72 LOAD_CONST               3 (' ')
+             74 CALL_METHOD              2
+             76 LOAD_METHOD              6 (split)
+             78 CALL_METHOD              0
+             80 STORE_FAST               2 (names)
+
+495     >>   82 LOAD_GLOBAL              3 (isinstance)
+             84 LOAD_FAST                2 (names)
+             86 LOAD_GLOBAL              7 (tuple)
+             88 LOAD_GLOBAL              8 (list)
+             90 BUILD_TUPLE              2
+             92 CALL_FUNCTION            2
+             94 POP_JUMP_IF_FALSE      194
+             96 LOAD_FAST                2 (names)
+             98 POP_JUMP_IF_FALSE      194
+            100 LOAD_GLOBAL              3 (isinstance)
+            102 LOAD_FAST                2 (names)
+            104 LOAD_CONST               4 (0)
+            106 BINARY_SUBSCR
+            108 LOAD_GLOBAL              4 (str)
+            110 CALL_FUNCTION            2
+            112 POP_JUMP_IF_FALSE      194
+
+496         114 LOAD_FAST                2 (names)
+            116 BUILD_LIST               0
+            118 ROT_TWO
+            120 STORE_FAST              12 (original_names)
+            122 STORE_FAST               2 (names)
+
+497         124 BUILD_LIST               0
+            126 STORE_FAST              13 (last_values)
+
+498         128 LOAD_GLOBAL              9 (enumerate)
+            130 LOAD_FAST               12 (original_names)
+            132 CALL_FUNCTION            1
+            134 GET_ITER
+        >>  136 FOR_ITER                56 (to 194)
+            138 UNPACK_SEQUENCE          2
+            140 STORE_FAST              14 (count)
+            142 STORE_FAST              15 (name)
+
+499         144 LOAD_FAST               10 (first_enum)
+            146 LOAD_METHOD             10 (_generate_next_value_)
+            148 LOAD_FAST               15 (name)
+            150 LOAD_FAST                6 (start)
+            152 LOAD_FAST               14 (count)
+            154 LOAD_FAST               13 (last_values)
+            156 LOAD_CONST               1 (None)
+            158 LOAD_CONST               1 (None)
+            160 BUILD_SLICE              2
+            162 BINARY_SUBSCR
+            164 CALL_METHOD              4
+            166 STORE_FAST              16 (value)
+
+500         168 LOAD_FAST               13 (last_values)
+            170 LOAD_METHOD             11 (append)
+            172 LOAD_FAST               16 (value)
+            174 CALL_METHOD              1
+            176 POP_TOP
+
+501         178 LOAD_FAST                2 (names)
+            180 LOAD_METHOD             11 (append)
+            182 LOAD_FAST               15 (name)
+            184 LOAD_FAST               16 (value)
+            186 BUILD_TUPLE              2
+            188 CALL_METHOD              1
+            190 POP_TOP
+            192 JUMP_ABSOLUTE          136
+
+504     >>  194 LOAD_FAST                2 (names)
+            196 GET_ITER
+        >>  198 FOR_ITER                46 (to 246)
+            200 STORE_FAST              17 (item)
+
+505         202 LOAD_GLOBAL              3 (isinstance)
+            204 LOAD_FAST               17 (item)
+            206 LOAD_GLOBAL              4 (str)
+            208 CALL_FUNCTION            2
+            210 POP_JUMP_IF_FALSE      228
+
+506         212 LOAD_FAST               17 (item)
+            214 LOAD_FAST                2 (names)
+            216 LOAD_FAST               17 (item)
+            218 BINARY_SUBSCR
+            220 ROT_TWO
+            222 STORE_FAST              18 (member_name)
+            224 STORE_FAST              19 (member_value)
+            226 JUMP_FORWARD             8 (to 236)
+
+508     >>  228 LOAD_FAST               17 (item)
+            230 UNPACK_SEQUENCE          2
+            232 STORE_FAST              18 (member_name)
+            234 STORE_FAST              19 (member_value)
+
+509     >>  236 LOAD_FAST               19 (member_value)
+            238 LOAD_FAST               11 (classdict)
+            240 LOAD_FAST               18 (member_name)
+            242 STORE_SUBSCR
+            244 JUMP_ABSOLUTE          198
+
+510     >>  246 LOAD_FAST                7 (metacls)
+            248 LOAD_METHOD             12 (__new__)
+            250 LOAD_FAST                7 (metacls)
+            252 LOAD_FAST                1 (class_name)
+            254 LOAD_FAST                8 (bases)
+            256 LOAD_FAST               11 (classdict)
+            258 CALL_METHOD              4
+            260 STORE_FAST              20 (enum_class)
+
+514         262 LOAD_FAST                3 (module)
+            264 LOAD_CONST               1 (None)
+            266 IS_OP                    0
+            268 EXTENDED_ARG             1
+            270 POP_JUMP_IF_FALSE      320
+
+515         272 SETUP_FINALLY           20 (to 294)
+
+516         274 LOAD_GLOBAL             13 (sys)
+            276 LOAD_METHOD             14 (_getframe)
+            278 LOAD_CONST               5 (2)
+            280 CALL_METHOD              1
+            282 LOAD_ATTR               15 (f_globals)
+            284 LOAD_CONST               6 ('__name__')
+            286 BINARY_SUBSCR
+            288 STORE_FAST               3 (module)
+            290 POP_BLOCK
+            292 JUMP_FORWARD            26 (to 320)
+
+517     >>  294 DUP_TOP
+            296 LOAD_GLOBAL             16 (AttributeError)
+            298 LOAD_GLOBAL             17 (ValueError)
+            300 LOAD_GLOBAL             18 (KeyError)
+            302 BUILD_TUPLE              3
+            304 EXTENDED_ARG             1
+            306 JUMP_IF_NOT_EXC_MATCH   318
+            308 POP_TOP
+            310 POP_TOP
+            312 POP_TOP
+
+518         314 POP_EXCEPT
+            316 JUMP_FORWARD             2 (to 320)
+        >>  318 RERAISE
+
+519     >>  320 LOAD_FAST                3 (module)
+            322 LOAD_CONST               1 (None)
+            324 IS_OP                    0
+            326 EXTENDED_ARG             1
+            328 POP_JUMP_IF_FALSE      340
+
+520         330 LOAD_GLOBAL             19 (_make_class_unpicklable)
+            332 LOAD_FAST               20 (enum_class)
+            334 CALL_FUNCTION            1
+            336 POP_TOP
+            338 JUMP_FORWARD             6 (to 346)
+
+522     >>  340 LOAD_FAST                3 (module)
+            342 LOAD_FAST               20 (enum_class)
+            344 STORE_ATTR              20 (__module__)
+
+523     >>  346 LOAD_FAST                4 (qualname)
+            348 LOAD_CONST               1 (None)
+            350 IS_OP                    1
+            352 EXTENDED_ARG             1
+            354 POP_JUMP_IF_FALSE      362
+
+524         356 LOAD_FAST                4 (qualname)
+            358 LOAD_FAST               20 (enum_class)
+            360 STORE_ATTR              21 (__qualname__)
+
+526     >>  362 LOAD_FAST               20 (enum_class)
+            364 RETURN_VALUE
+
+Disassembly of <code object _convert_ at 0x00000236F50E4240, file "", line 528>:
+537           0 LOAD_GLOBAL              0 (vars)
+              2 LOAD_GLOBAL              1 (sys)
+              4 LOAD_ATTR                2 (modules)
+              6 LOAD_FAST                2 (module)
+              8 BINARY_SUBSCR
+             10 CALL_FUNCTION            1
+             12 STORE_FAST               5 (module_globals)
+
+538          14 LOAD_FAST                4 (source)
+             16 POP_JUMP_IF_FALSE       28
+
+539          18 LOAD_GLOBAL              0 (vars)
+             20 LOAD_FAST                4 (source)
+             22 CALL_FUNCTION            1
+             24 STORE_FAST               4 (source)
+             26 JUMP_FORWARD             4 (to 32)
+
+541     >>   28 LOAD_FAST                5 (module_globals)
+             30 STORE_FAST               4 (source)
+
+545     >>   32 LOAD_CLOSURE             0 (filter)
+             34 BUILD_TUPLE              1
+             36 LOAD_CONST               1 (<code object <listcomp> at 0x00000236F50E4030, file "", line 545>)
+             38 LOAD_CONST               2 ('EnumMeta._convert_.<locals>.<listcomp>')
+             40 MAKE_FUNCTION            8 (closure)
+
+547          42 LOAD_FAST                4 (source)
+             44 LOAD_METHOD              3 (items)
+             46 CALL_METHOD              0
+
+545          48 GET_ITER
+             50 CALL_FUNCTION            1
+             52 STORE_FAST               6 (members)
+
+549          54 SETUP_FINALLY           20 (to 76)
+
+551          56 LOAD_FAST                6 (members)
+             58 LOAD_ATTR                4 (sort)
+             60 LOAD_CONST               3 (<code object <lambda> at 0x00000236F50E40E0, file "", line 551>)
+             62 LOAD_CONST               4 ('EnumMeta._convert_.<locals>.<lambda>')
+             64 MAKE_FUNCTION            0
+             66 LOAD_CONST               5 (('key',))
+             68 CALL_FUNCTION_KW         1
+             70 POP_TOP
+             72 POP_BLOCK
+             74 JUMP_FORWARD            34 (to 110)
+
+552     >>   76 DUP_TOP
+             78 LOAD_GLOBAL              5 (TypeError)
+             80 JUMP_IF_NOT_EXC_MATCH   108
+             82 POP_TOP
+             84 POP_TOP
+             86 POP_TOP
+
+554          88 LOAD_FAST                6 (members)
+             90 LOAD_ATTR                4 (sort)
+             92 LOAD_CONST               6 (<code object <lambda> at 0x00000236F50E4190, file "", line 554>)
+             94 LOAD_CONST               4 ('EnumMeta._convert_.<locals>.<lambda>')
+             96 MAKE_FUNCTION            0
+             98 LOAD_CONST               5 (('key',))
+            100 CALL_FUNCTION_KW         1
+            102 POP_TOP
+            104 POP_EXCEPT
+            106 JUMP_FORWARD             2 (to 110)
+        >>  108 RERAISE
+
+555     >>  110 LOAD_FAST                0 (cls)
+            112 LOAD_FAST                1 (name)
+            114 LOAD_FAST                6 (members)
+            116 LOAD_FAST                2 (module)
+            118 LOAD_CONST               7 (('module',))
+            120 CALL_FUNCTION_KW         3
+            122 STORE_FAST               0 (cls)
+
+556         124 LOAD_GLOBAL              6 (_reduce_ex_by_name)
+            126 LOAD_FAST                0 (cls)
+            128 STORE_ATTR               7 (__reduce_ex__)
+
+557         130 LOAD_FAST                5 (module_globals)
+            132 LOAD_METHOD              8 (update)
+            134 LOAD_FAST                0 (cls)
+            136 LOAD_ATTR                9 (__members__)
+            138 CALL_METHOD              1
+            140 POP_TOP
+
+558         142 LOAD_FAST                0 (cls)
+            144 LOAD_FAST                5 (module_globals)
+            146 LOAD_FAST                1 (name)
+            148 STORE_SUBSCR
+
+559         150 LOAD_FAST                0 (cls)
+            152 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50E4030, file "", line 545>:
+545           0 BUILD_LIST               0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                24 (to 30)
+
+547           6 UNPACK_SEQUENCE          2
+              8 STORE_FAST               1 (name)
+             10 STORE_FAST               2 (value)
+
+548          12 LOAD_DEREF               0 (filter)
+             14 LOAD_FAST                1 (name)
+             16 CALL_FUNCTION            1
+             18 POP_JUMP_IF_FALSE        4
+
+546          20 LOAD_FAST                1 (name)
+             22 LOAD_FAST                2 (value)
+             24 BUILD_TUPLE              2
+             26 LIST_APPEND              2
+             28 JUMP_ABSOLUTE            4
+        >>   30 RETURN_VALUE
+
+Disassembly of <code object <lambda> at 0x00000236F50E40E0, file "", line 551>:
+551           0 LOAD_FAST                0 (t)
+              2 LOAD_CONST               1 (1)
+              4 BINARY_SUBSCR
+              6 LOAD_FAST                0 (t)
+              8 LOAD_CONST               2 (0)
+             10 BINARY_SUBSCR
+             12 BUILD_TUPLE              2
+             14 RETURN_VALUE
+
+Disassembly of <code object <lambda> at 0x00000236F50E4190, file "", line 554>:
+554           0 LOAD_FAST                0 (t)
+              2 LOAD_CONST               1 (0)
+              4 BINARY_SUBSCR
+              6 RETURN_VALUE
+
+Disassembly of <code object _check_for_existing_members at 0x00000236F50E42F0, file "", line 561>:
+563           0 LOAD_FAST                1 (bases)
+              2 GET_ITER
+        >>    4 FOR_ITER                50 (to 56)
+              6 STORE_FAST               2 (chain)
+
+564           8 LOAD_FAST                2 (chain)
+             10 LOAD_ATTR                0 (__mro__)
+             12 GET_ITER
+        >>   14 FOR_ITER                38 (to 54)
+             16 STORE_FAST               3 (base)
+
+565          18 LOAD_GLOBAL              1 (issubclass)
+             20 LOAD_FAST                3 (base)
+             22 LOAD_GLOBAL              2 (Enum)
+             24 CALL_FUNCTION            2
+             26 POP_JUMP_IF_FALSE       14
+             28 LOAD_FAST                3 (base)
+             30 LOAD_ATTR                3 (_member_names_)
+             32 POP_JUMP_IF_FALSE       14
+
+566          34 LOAD_GLOBAL              4 (TypeError)
+
+567          36 LOAD_CONST               1 ('%s: cannot extend enumeration %r')
+
+568          38 LOAD_FAST                0 (class_name)
+             40 LOAD_FAST                3 (base)
+             42 LOAD_ATTR                5 (__name__)
+             44 BUILD_TUPLE              2
+
+567          46 BINARY_MODULO
+
+566          48 CALL_FUNCTION            1
+             50 RAISE_VARARGS            1
+             52 JUMP_ABSOLUTE           14
+        >>   54 JUMP_ABSOLUTE            4
+        >>   56 LOAD_CONST               0 (None)
+             58 RETURN_VALUE
+
+Disassembly of <code object _get_mixins_ at 0x00000236F50E4500, file "", line 571>:
+579           0 LOAD_FAST                1 (bases)
+              2 POP_JUMP_IF_TRUE        12
+
+580           4 LOAD_GLOBAL              0 (object)
+              6 LOAD_GLOBAL              1 (Enum)
+              8 BUILD_TUPLE              2
+             10 RETURN_VALUE
+
+582     >>   12 LOAD_CLOSURE             0 (class_name)
+             14 BUILD_TUPLE              1
+             16 LOAD_CONST               1 (<code object _find_data_type at 0x00000236F50E4450, file "", line 582>)
+             18 LOAD_CONST               2 ('EnumMeta._get_mixins_.<locals>._find_data_type')
+             20 MAKE_FUNCTION            8 (closure)
+             22 STORE_FAST               2 (_find_data_type)
+
+609          24 LOAD_FAST                1 (bases)
+             26 LOAD_CONST               3 (-1)
+             28 BINARY_SUBSCR
+             30 STORE_FAST               3 (first_enum)
+
+610          32 LOAD_GLOBAL              2 (issubclass)
+             34 LOAD_FAST                3 (first_enum)
+             36 LOAD_GLOBAL              1 (Enum)
+             38 CALL_FUNCTION            2
+             40 POP_JUMP_IF_TRUE        50
+
+611          42 LOAD_GLOBAL              3 (TypeError)
+             44 LOAD_CONST               4 ('new enumerations should be created as `EnumName([mixin_type, ...] [data_type,] enum_type)`')
+             46 CALL_FUNCTION            1
+             48 RAISE_VARARGS            1
+
+613     >>   50 LOAD_FAST                2 (_find_data_type)
+             52 LOAD_FAST                1 (bases)
+             54 CALL_FUNCTION            1
+             56 JUMP_IF_TRUE_OR_POP     60
+             58 LOAD_GLOBAL              0 (object)
+        >>   60 STORE_FAST               4 (member_type)
+
+614          62 LOAD_FAST                3 (first_enum)
+             64 LOAD_ATTR                4 (_member_names_)
+             66 POP_JUMP_IF_FALSE       76
+
+615          68 LOAD_GLOBAL              3 (TypeError)
+             70 LOAD_CONST               5 ('Cannot extend enumerations')
+             72 CALL_FUNCTION            1
+             74 RAISE_VARARGS            1
+
+616     >>   76 LOAD_FAST                4 (member_type)
+             78 LOAD_FAST                3 (first_enum)
+             80 BUILD_TUPLE              2
+             82 RETURN_VALUE
+
+Disassembly of <code object _find_data_type at 0x00000236F50E4450, file "", line 582>:
+583           0 LOAD_GLOBAL              0 (set)
+              2 CALL_FUNCTION            0
+              4 STORE_FAST               1 (data_types)
+
+584           6 LOAD_FAST                0 (bases)
+              8 GET_ITER
+        >>   10 FOR_ITER               120 (to 132)
+             12 STORE_FAST               2 (chain)
+
+585          14 LOAD_CONST               0 (None)
+             16 STORE_FAST               3 (candidate)
+
+586          18 LOAD_FAST                2 (chain)
+             20 LOAD_ATTR                1 (__mro__)
+             22 GET_ITER
+        >>   24 FOR_ITER               104 (to 130)
+             26 STORE_FAST               4 (base)
+
+587          28 LOAD_FAST                4 (base)
+             30 LOAD_GLOBAL              2 (object)
+             32 IS_OP                    0
+             34 POP_JUMP_IF_FALSE       40
+
+588          36 JUMP_ABSOLUTE           24
+             38 JUMP_ABSOLUTE           24
+
+589     >>   40 LOAD_GLOBAL              3 (issubclass)
+             42 LOAD_FAST                4 (base)
+             44 LOAD_GLOBAL              4 (Enum)
+             46 CALL_FUNCTION            2
+             48 POP_JUMP_IF_FALSE       78
+
+590          50 LOAD_FAST                4 (base)
+             52 LOAD_ATTR                5 (_member_type_)
+             54 LOAD_GLOBAL              2 (object)
+             56 IS_OP                    1
+             58 POP_JUMP_IF_FALSE      128
+
+591          60 LOAD_FAST                1 (data_types)
+             62 LOAD_METHOD              6 (add)
+             64 LOAD_FAST                4 (base)
+             66 LOAD_ATTR                5 (_member_type_)
+             68 CALL_METHOD              1
+             70 POP_TOP
+
+592          72 POP_TOP
+             74 JUMP_ABSOLUTE           10
+             76 JUMP_ABSOLUTE           24
+
+593     >>   78 LOAD_CONST               1 ('__new__')
+             80 LOAD_FAST                4 (base)
+             82 LOAD_ATTR                7 (__dict__)
+             84 CONTAINS_OP              0
+             86 POP_JUMP_IF_FALSE      120
+
+594          88 LOAD_GLOBAL              3 (issubclass)
+             90 LOAD_FAST                4 (base)
+             92 LOAD_GLOBAL              4 (Enum)
+             94 CALL_FUNCTION            2
+             96 POP_JUMP_IF_FALSE      100
+
+595          98 JUMP_ABSOLUTE           24
+
+596     >>  100 LOAD_FAST                1 (data_types)
+            102 LOAD_METHOD              6 (add)
+            104 LOAD_FAST                3 (candidate)
+            106 JUMP_IF_TRUE_OR_POP    110
+            108 LOAD_FAST                4 (base)
+        >>  110 CALL_METHOD              1
+            112 POP_TOP
+
+597         114 POP_TOP
+            116 JUMP_ABSOLUTE           10
+            118 JUMP_ABSOLUTE           24
+
+599     >>  120 LOAD_FAST                3 (candidate)
+            122 JUMP_IF_TRUE_OR_POP    126
+            124 LOAD_FAST                4 (base)
+        >>  126 STORE_FAST               3 (candidate)
+        >>  128 JUMP_ABSOLUTE           24
+        >>  130 JUMP_ABSOLUTE           10
+
+600     >>  132 LOAD_GLOBAL              8 (len)
+            134 LOAD_FAST                1 (data_types)
+            136 CALL_FUNCTION            1
+            138 LOAD_CONST               2 (1)
+            140 COMPARE_OP               4 (>)
+            142 POP_JUMP_IF_FALSE      162
+
+601         144 LOAD_GLOBAL              9 (TypeError)
+            146 LOAD_CONST               3 ('%r: too many data types: %r')
+            148 LOAD_DEREF               0 (class_name)
+            150 LOAD_FAST                1 (data_types)
+            152 BUILD_TUPLE              2
+            154 BINARY_MODULO
+            156 CALL_FUNCTION            1
+            158 RAISE_VARARGS            1
+            160 JUMP_FORWARD            16 (to 178)
+
+602     >>  162 LOAD_FAST                1 (data_types)
+            164 POP_JUMP_IF_FALSE      174
+
+603         166 LOAD_FAST                1 (data_types)
+            168 LOAD_METHOD             10 (pop)
+            170 CALL_METHOD              0
+            172 RETURN_VALUE
+
+605     >>  174 LOAD_CONST               0 (None)
+            176 RETURN_VALUE
+        >>  178 LOAD_CONST               0 (None)
+            180 RETURN_VALUE
+
+Disassembly of <code object _find_new_ at 0x00000236F50E4710, file "", line 618>:
+630           0 LOAD_FAST                0 (classdict)
+              2 LOAD_METHOD              0 (get)
+              4 LOAD_CONST               1 ('__new__')
+              6 LOAD_CONST               2 (None)
+              8 CALL_METHOD              2
+             10 STORE_FAST               3 (__new__)
+
+633          12 LOAD_FAST                3 (__new__)
+             14 LOAD_CONST               2 (None)
+             16 IS_OP                    1
+             18 STORE_FAST               4 (save_new)
+
+635          20 LOAD_FAST                3 (__new__)
+             22 LOAD_CONST               2 (None)
+             24 IS_OP                    0
+             26 POP_JUMP_IF_FALSE      112
+
+638          28 LOAD_CONST               3 (('__new_member__', '__new__'))
+             30 GET_ITER
+        >>   32 FOR_ITER                72 (to 106)
+             34 STORE_FAST               5 (method)
+
+639          36 LOAD_FAST                1 (member_type)
+             38 LOAD_FAST                2 (first_enum)
+             40 BUILD_TUPLE              2
+             42 GET_ITER
+        >>   44 FOR_ITER                46 (to 92)
+             46 STORE_FAST               6 (possible)
+
+640          48 LOAD_GLOBAL              1 (getattr)
+             50 LOAD_FAST                6 (possible)
+             52 LOAD_FAST                5 (method)
+             54 LOAD_CONST               2 (None)
+             56 CALL_FUNCTION            3
+             58 STORE_FAST               7 (target)
+
+641          60 LOAD_FAST                7 (target)
+
+642          62 LOAD_CONST               2 (None)
+
+643          64 LOAD_CONST               2 (None)
+             66 LOAD_ATTR                2 (__new__)
+
+644          68 LOAD_GLOBAL              3 (object)
+             70 LOAD_ATTR                2 (__new__)
+
+645          72 LOAD_GLOBAL              4 (Enum)
+             74 LOAD_ATTR                2 (__new__)
+
+641          76 BUILD_SET                4
+             78 CONTAINS_OP              1
+             80 POP_JUMP_IF_FALSE       44
+
+647          82 LOAD_FAST                7 (target)
+             84 STORE_FAST               3 (__new__)
+
+648          86 POP_TOP
+             88 JUMP_ABSOLUTE           92
+             90 JUMP_ABSOLUTE           44
+
+649     >>   92 LOAD_FAST                3 (__new__)
+             94 LOAD_CONST               2 (None)
+             96 IS_OP                    1
+             98 POP_JUMP_IF_FALSE       32
+
+650         100 POP_TOP
+            102 JUMP_ABSOLUTE          112
+            104 JUMP_ABSOLUTE           32
+
+652     >>  106 LOAD_GLOBAL              3 (object)
+            108 LOAD_ATTR                2 (__new__)
+            110 STORE_FAST               3 (__new__)
+
+657     >>  112 LOAD_FAST                3 (__new__)
+            114 LOAD_GLOBAL              3 (object)
+            116 LOAD_ATTR                2 (__new__)
+            118 IS_OP                    0
+            120 POP_JUMP_IF_FALSE      128
+
+658         122 LOAD_CONST               4 (False)
+            124 STORE_FAST               8 (use_args)
+            126 JUMP_FORWARD             4 (to 132)
+
+660     >>  128 LOAD_CONST               5 (True)
+            130 STORE_FAST               8 (use_args)
+
+661     >>  132 LOAD_FAST                3 (__new__)
+            134 LOAD_FAST                4 (save_new)
+            136 LOAD_FAST                8 (use_args)
+            138 BUILD_TUPLE              3
+            140 RETURN_VALUE
+
+Disassembly of <code object Enum at 0x00000236F50E7240, file "", line 664>:
+664           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('Enum')
+              6 STORE_NAME               2 (__qualname__)
+
+665           8 LOAD_CONST               1 ('\n    Generic enumeration.\n\n    Derive from this class to define new enumerations.\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+670          12 LOAD_CONST               2 (<code object __new__ at 0x00000236F50E47C0, file "", line 670>)
+             14 LOAD_CONST               3 ('Enum.__new__')
+             16 MAKE_FUNCTION            0
+             18 STORE_NAME               4 (__new__)
+
+715          20 LOAD_CONST               4 (<code object _generate_next_value_ at 0x00000236F50E4870, file "", line 715>)
+             22 LOAD_CONST               5 ('Enum._generate_next_value_')
+             24 MAKE_FUNCTION            0
+             26 STORE_NAME               5 (_generate_next_value_)
+
+732          28 LOAD_NAME                6 (classmethod)
+
+733          30 LOAD_CONST               6 (<code object _missing_ at 0x00000236F50E4920, file "", line 732>)
+             32 LOAD_CONST               7 ('Enum._missing_')
+             34 MAKE_FUNCTION            0
+             36 CALL_FUNCTION            1
+             38 STORE_NAME               7 (_missing_)
+
+736          40 LOAD_CONST               8 (<code object __repr__ at 0x00000236F50E49D0, file "", line 736>)
+             42 LOAD_CONST               9 ('Enum.__repr__')
+             44 MAKE_FUNCTION            0
+             46 STORE_NAME               8 (__repr__)
+
+740          48 LOAD_CONST              10 (<code object __str__ at 0x00000236F50E4A80, file "", line 740>)
+             50 LOAD_CONST              11 ('Enum.__str__')
+             52 MAKE_FUNCTION            0
+             54 STORE_NAME               9 (__str__)
+
+743          56 LOAD_CONST              12 (<code object __dir__ at 0x00000236F50E4C90, file "", line 743>)
+             58 LOAD_CONST              13 ('Enum.__dir__')
+             60 MAKE_FUNCTION            0
+             62 STORE_NAME              10 (__dir__)
+
+755          64 LOAD_CONST              14 (<code object __format__ at 0x00000236F50E4D40, file "", line 755>)
+             66 LOAD_CONST              15 ('Enum.__format__')
+             68 MAKE_FUNCTION            0
+             70 STORE_NAME              11 (__format__)
+
+774          72 LOAD_CONST              16 (<code object __hash__ at 0x00000236F50E4DF0, file "", line 774>)
+             74 LOAD_CONST              17 ('Enum.__hash__')
+             76 MAKE_FUNCTION            0
+             78 STORE_NAME              12 (__hash__)
+
+777          80 LOAD_CONST              18 (<code object __reduce_ex__ at 0x00000236F50E4EA0, file "", line 777>)
+             82 LOAD_CONST              19 ('Enum.__reduce_ex__')
+             84 MAKE_FUNCTION            0
+             86 STORE_NAME              13 (__reduce_ex__)
+
+787          88 LOAD_NAME               14 (DynamicClassAttribute)
+
+788          90 LOAD_CONST              20 (<code object name at 0x00000236F50E4F50, file "", line 787>)
+             92 LOAD_CONST              21 ('Enum.name')
+             94 MAKE_FUNCTION            0
+             96 CALL_FUNCTION            1
+             98 STORE_NAME              15 (name)
+
+792         100 LOAD_NAME               14 (DynamicClassAttribute)
+
+793         102 LOAD_CONST              22 (<code object value at 0x00000236F50E7030, file "", line 792>)
+            104 LOAD_CONST              23 ('Enum.value')
+            106 MAKE_FUNCTION            0
+            108 CALL_FUNCTION            1
+            110 STORE_NAME              16 (value)
+            112 LOAD_CONST              24 (None)
+            114 RETURN_VALUE
+
+Disassembly of <code object __new__ at 0x00000236F50E47C0, file "", line 670>:
+674           0 LOAD_GLOBAL              0 (type)
+              2 LOAD_FAST                1 (value)
+              4 CALL_FUNCTION            1
+              6 LOAD_FAST                0 (cls)
+              8 IS_OP                    0
+             10 POP_JUMP_IF_FALSE       16
+
+676          12 LOAD_FAST                1 (value)
+             14 RETURN_VALUE
+
+679     >>   16 SETUP_FINALLY           12 (to 30)
+
+680          18 LOAD_FAST                0 (cls)
+             20 LOAD_ATTR                1 (_value2member_map_)
+             22 LOAD_FAST                1 (value)
+             24 BINARY_SUBSCR
+             26 POP_BLOCK
+             28 RETURN_VALUE
+
+681     >>   30 DUP_TOP
+             32 LOAD_GLOBAL              2 (KeyError)
+             34 JUMP_IF_NOT_EXC_MATCH    46
+             36 POP_TOP
+             38 POP_TOP
+             40 POP_TOP
+
+683          42 POP_EXCEPT
+             44 JUMP_FORWARD            56 (to 102)
+
+684     >>   46 DUP_TOP
+             48 LOAD_GLOBAL              3 (TypeError)
+             50 JUMP_IF_NOT_EXC_MATCH   100
+             52 POP_TOP
+             54 POP_TOP
+             56 POP_TOP
+
+686          58 LOAD_FAST                0 (cls)
+             60 LOAD_ATTR                4 (_member_map_)
+             62 LOAD_METHOD              5 (values)
+             64 CALL_METHOD              0
+             66 GET_ITER
+        >>   68 FOR_ITER                26 (to 96)
+             70 STORE_FAST               2 (member)
+
+687          72 LOAD_FAST                2 (member)
+             74 LOAD_ATTR                6 (_value_)
+             76 LOAD_FAST                1 (value)
+             78 COMPARE_OP               2 (==)
+             80 POP_JUMP_IF_FALSE       68
+
+688          82 LOAD_FAST                2 (member)
+             84 ROT_TWO
+             86 POP_TOP
+             88 ROT_FOUR
+             90 POP_EXCEPT
+             92 RETURN_VALUE
+             94 JUMP_ABSOLUTE           68
+        >>   96 POP_EXCEPT
+             98 JUMP_FORWARD             2 (to 102)
+        >>  100 RERAISE
+
+690     >>  102 SETUP_FINALLY           18 (to 122)
+
+691         104 LOAD_CONST               0 (None)
+            106 STORE_FAST               3 (exc)
+
+692         108 LOAD_FAST                0 (cls)
+            110 LOAD_METHOD              7 (_missing_)
+            112 LOAD_FAST                1 (value)
+            114 CALL_METHOD              1
+            116 STORE_FAST               4 (result)
+            118 POP_BLOCK
+            120 JUMP_FORWARD            44 (to 166)
+
+693     >>  122 DUP_TOP
+            124 LOAD_GLOBAL              8 (Exception)
+            126 JUMP_IF_NOT_EXC_MATCH   164
+            128 POP_TOP
+            130 STORE_FAST               5 (e)
+            132 POP_TOP
+            134 SETUP_FINALLY           20 (to 156)
+
+694         136 LOAD_FAST                5 (e)
+            138 STORE_FAST               3 (exc)
+
+695         140 LOAD_CONST               0 (None)
+            142 STORE_FAST               4 (result)
+            144 POP_BLOCK
+            146 POP_EXCEPT
+            148 LOAD_CONST               0 (None)
+            150 STORE_FAST               5 (e)
+            152 DELETE_FAST              5 (e)
+            154 JUMP_FORWARD            10 (to 166)
+        >>  156 LOAD_CONST               0 (None)
+            158 STORE_FAST               5 (e)
+            160 DELETE_FAST              5 (e)
+            162 RERAISE
+        >>  164 RERAISE
+
+696     >>  166 SETUP_FINALLY          114 (to 282)
+
+697         168 LOAD_GLOBAL              9 (isinstance)
+            170 LOAD_FAST                4 (result)
+            172 LOAD_FAST                0 (cls)
+            174 CALL_FUNCTION            2
+            176 POP_JUMP_IF_FALSE      192
+
+698         178 LOAD_FAST                4 (result)
+            180 POP_BLOCK
+
+712         182 LOAD_CONST               0 (None)
+            184 STORE_FAST               3 (exc)
+
+713         186 LOAD_CONST               0 (None)
+            188 STORE_FAST               6 (ve_exc)
+
+698         190 RETURN_VALUE
+
+700     >>  192 LOAD_GLOBAL             10 (ValueError)
+            194 LOAD_CONST               1 ('%r is not a valid %s')
+            196 LOAD_FAST                1 (value)
+            198 LOAD_FAST                0 (cls)
+            200 LOAD_ATTR               11 (__qualname__)
+            202 BUILD_TUPLE              2
+            204 BINARY_MODULO
+            206 CALL_FUNCTION            1
+            208 STORE_FAST               6 (ve_exc)
+
+701         210 LOAD_FAST                4 (result)
+            212 LOAD_CONST               0 (None)
+            214 IS_OP                    0
+            216 POP_JUMP_IF_FALSE      232
+            218 LOAD_FAST                3 (exc)
+            220 LOAD_CONST               0 (None)
+            222 IS_OP                    0
+            224 POP_JUMP_IF_FALSE      232
+
+702         226 LOAD_FAST                6 (ve_exc)
+            228 RAISE_VARARGS            1
+            230 JUMP_FORWARD            28 (to 260)
+
+703     >>  232 LOAD_FAST                3 (exc)
+            234 LOAD_CONST               0 (None)
+            236 IS_OP                    0
+            238 EXTENDED_ARG             1
+            240 POP_JUMP_IF_FALSE      260
+
+704         242 LOAD_GLOBAL              3 (TypeError)
+
+705         244 LOAD_CONST               2 ('error in %s._missing_: returned %r instead of None or a valid member')
+
+706         246 LOAD_FAST                0 (cls)
+            248 LOAD_ATTR               12 (__name__)
+            250 LOAD_FAST                4 (result)
+            252 BUILD_TUPLE              2
+
+705         254 BINARY_MODULO
+
+704         256 CALL_FUNCTION            1
+            258 STORE_FAST               3 (exc)
+
+708     >>  260 LOAD_FAST                6 (ve_exc)
+            262 LOAD_FAST                3 (exc)
+            264 STORE_ATTR              13 (__context__)
+
+709         266 LOAD_FAST                3 (exc)
+            268 RAISE_VARARGS            1
+            270 POP_BLOCK
+
+712         272 LOAD_CONST               0 (None)
+            274 STORE_FAST               3 (exc)
+
+713         276 LOAD_CONST               0 (None)
+            278 STORE_FAST               6 (ve_exc)
+            280 JUMP_FORWARD            10 (to 292)
+
+712     >>  282 LOAD_CONST               0 (None)
+            284 STORE_FAST               3 (exc)
+
+713         286 LOAD_CONST               0 (None)
+            288 STORE_FAST               6 (ve_exc)
+            290 RERAISE
+        >>  292 LOAD_CONST               0 (None)
+            294 RETURN_VALUE
+
+Disassembly of <code object _generate_next_value_ at 0x00000236F50E4870, file "", line 715>:
+724           0 LOAD_GLOBAL              0 (reversed)
+              2 LOAD_FAST                3 (last_values)
+              4 CALL_FUNCTION            1
+              6 GET_ITER
+        >>    8 FOR_ITER                38 (to 48)
+             10 STORE_FAST               4 (last_value)
+
+725          12 SETUP_FINALLY           14 (to 28)
+
+726          14 LOAD_FAST                4 (last_value)
+             16 LOAD_CONST               1 (1)
+             18 BINARY_ADD
+             20 POP_BLOCK
+             22 ROT_TWO
+             24 POP_TOP
+             26 RETURN_VALUE
+
+727     >>   28 DUP_TOP
+             30 LOAD_GLOBAL              1 (TypeError)
+             32 JUMP_IF_NOT_EXC_MATCH    44
+             34 POP_TOP
+             36 POP_TOP
+             38 POP_TOP
+
+728          40 POP_EXCEPT
+             42 JUMP_ABSOLUTE            8
+        >>   44 RERAISE
+             46 JUMP_ABSOLUTE            8
+
+730     >>   48 LOAD_FAST                1 (start)
+             50 RETURN_VALUE
+
+Disassembly of <code object _missing_ at 0x00000236F50E4920, file "", line 732>:
+734           0 LOAD_CONST               0 (None)
+              2 RETURN_VALUE
+
+Disassembly of <code object __repr__ at 0x00000236F50E49D0, file "", line 736>:
+737           0 LOAD_CONST               1 ('<%s.%s: %r>')
+
+738           2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                0 (__class__)
+              6 LOAD_ATTR                1 (__name__)
+              8 LOAD_FAST                0 (self)
+             10 LOAD_ATTR                2 (_name_)
+             12 LOAD_FAST                0 (self)
+             14 LOAD_ATTR                3 (_value_)
+
+737          16 BUILD_TUPLE              3
+             18 BINARY_MODULO
+             20 RETURN_VALUE
+
+Disassembly of <code object __str__ at 0x00000236F50E4A80, file "", line 740>:
+741           0 LOAD_CONST               1 ('%s.%s')
+              2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                0 (__class__)
+              6 LOAD_ATTR                1 (__name__)
+              8 LOAD_FAST                0 (self)
+             10 LOAD_ATTR                2 (_name_)
+             12 BUILD_TUPLE              2
+             14 BINARY_MODULO
+             16 RETURN_VALUE
+
+Disassembly of <code object __dir__ at 0x00000236F50E4C90, file "", line 743>:
+747           0 LOAD_CLOSURE             0 (self)
+              2 BUILD_TUPLE              1
+              4 LOAD_CONST               1 (<code object <listcomp> at 0x00000236F50E4B30, file "", line 747>)
+              6 LOAD_CONST               2 ('Enum.__dir__.<locals>.<listcomp>')
+              8 MAKE_FUNCTION            8 (closure)
+
+749          10 LOAD_DEREF               0 (self)
+             12 LOAD_ATTR                0 (__class__)
+             14 LOAD_METHOD              1 (mro)
+             16 CALL_METHOD              0
+
+747          18 GET_ITER
+             20 CALL_FUNCTION            1
+
+752          22 LOAD_CONST               3 (<code object <listcomp> at 0x00000236F50E4BE0, file "", line 752>)
+             24 LOAD_CONST               2 ('Enum.__dir__.<locals>.<listcomp>')
+             26 MAKE_FUNCTION            0
+             28 LOAD_DEREF               0 (self)
+             30 LOAD_ATTR                2 (__dict__)
+             32 GET_ITER
+             34 CALL_FUNCTION            1
+
+747          36 BINARY_ADD
+             38 STORE_FAST               1 (added_behavior)
+
+753          40 BUILD_LIST               0
+             42 LOAD_CONST               4 (('__class__', '__doc__', '__module__'))
+             44 LIST_EXTEND              1
+             46 LOAD_FAST                1 (added_behavior)
+             48 BINARY_ADD
+             50 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50E4B30, file "", line 747>:
+747           0 BUILD_LIST               0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                42 (to 48)
+
+749           6 STORE_FAST               1 (cls)
+
+750           8 LOAD_FAST                1 (cls)
+             10 LOAD_ATTR                0 (__dict__)
+             12 GET_ITER
+        >>   14 FOR_ITER                30 (to 46)
+             16 STORE_FAST               2 (m)
+
+751          18 LOAD_FAST                2 (m)
+             20 LOAD_CONST               0 (0)
+             22 BINARY_SUBSCR
+             24 LOAD_CONST               1 ('_')
+             26 COMPARE_OP               3 (!=)
+             28 POP_JUMP_IF_FALSE       14
+             30 LOAD_FAST                2 (m)
+             32 LOAD_DEREF               0 (self)
+             34 LOAD_ATTR                1 (_member_map_)
+             36 CONTAINS_OP              1
+             38 POP_JUMP_IF_FALSE       14
+
+748          40 LOAD_FAST                2 (m)
+             42 LIST_APPEND              3
+             44 JUMP_ABSOLUTE           14
+        >>   46 JUMP_ABSOLUTE            4
+        >>   48 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50E4BE0, file "", line 752>:
+752           0 BUILD_LIST               0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                20 (to 26)
+              6 STORE_FAST               1 (m)
+              8 LOAD_FAST                1 (m)
+             10 LOAD_CONST               0 (0)
+             12 BINARY_SUBSCR
+             14 LOAD_CONST               1 ('_')
+             16 COMPARE_OP               3 (!=)
+             18 POP_JUMP_IF_FALSE        4
+             20 LOAD_FAST                1 (m)
+             22 LIST_APPEND              2
+             24 JUMP_ABSOLUTE            4
+        >>   26 RETURN_VALUE
+
+Disassembly of <code object __format__ at 0x00000236F50E4D40, file "", line 755>:
+764           0 LOAD_GLOBAL              0 (type)
+              2 LOAD_FAST                0 (self)
+              4 CALL_FUNCTION            1
+              6 LOAD_ATTR                1 (__str__)
+              8 LOAD_GLOBAL              2 (Enum)
+             10 LOAD_ATTR                1 (__str__)
+             12 LOAD_GLOBAL              3 (Flag)
+             14 LOAD_ATTR                1 (__str__)
+             16 BUILD_TUPLE              2
+             18 CONTAINS_OP              1
+             20 STORE_FAST               2 (str_overridden)
+
+765          22 LOAD_FAST                0 (self)
+             24 LOAD_ATTR                4 (_member_type_)
+             26 LOAD_GLOBAL              5 (object)
+             28 IS_OP                    0
+             30 POP_JUMP_IF_TRUE        36
+             32 LOAD_FAST                2 (str_overridden)
+             34 POP_JUMP_IF_FALSE       50
+
+766     >>   36 LOAD_GLOBAL              6 (str)
+             38 STORE_FAST               3 (cls)
+
+767          40 LOAD_GLOBAL              6 (str)
+             42 LOAD_FAST                0 (self)
+             44 CALL_FUNCTION            1
+             46 STORE_FAST               4 (val)
+             48 JUMP_FORWARD            12 (to 62)
+
+770     >>   50 LOAD_FAST                0 (self)
+             52 LOAD_ATTR                4 (_member_type_)
+             54 STORE_FAST               3 (cls)
+
+771          56 LOAD_FAST                0 (self)
+             58 LOAD_ATTR                7 (_value_)
+             60 STORE_FAST               4 (val)
+
+772     >>   62 LOAD_FAST                3 (cls)
+             64 LOAD_METHOD              8 (__format__)
+             66 LOAD_FAST                4 (val)
+             68 LOAD_FAST                1 (format_spec)
+             70 CALL_METHOD              2
+             72 RETURN_VALUE
+
+Disassembly of <code object __hash__ at 0x00000236F50E4DF0, file "", line 774>:
+775           0 LOAD_GLOBAL              0 (hash)
+              2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                1 (_name_)
+              6 CALL_FUNCTION            1
+              8 RETURN_VALUE
+
+Disassembly of <code object __reduce_ex__ at 0x00000236F50E4EA0, file "", line 777>:
+778           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (__class__)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (_value_)
+              8 BUILD_TUPLE              1
+             10 BUILD_TUPLE              2
+             12 RETURN_VALUE
+
+Disassembly of <code object name at 0x00000236F50E4F50, file "", line 787>:
+790           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (_name_)
+              4 RETURN_VALUE
+
+Disassembly of <code object value at 0x00000236F50E7030, file "", line 792>:
+795           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (_value_)
+              4 RETURN_VALUE
+
+Disassembly of <code object IntEnum at 0x00000236F50E70E0, file "", line 798>:
+798           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('IntEnum')
+              6 STORE_NAME               2 (__qualname__)
+
+799           8 LOAD_CONST               1 ('Enum where members are also (and must be) ints')
+             10 STORE_NAME               3 (__doc__)
+             12 LOAD_CONST               2 (None)
+             14 RETURN_VALUE
+
+Disassembly of <code object _reduce_ex_by_name at 0x00000236F50E72F0, file "", line 802>:
+803           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (name)
+              4 RETURN_VALUE
+
+Disassembly of <code object Flag at 0x00000236F50E7DF0, file "", line 805>:
+805           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('Flag')
+              6 STORE_NAME               2 (__qualname__)
+
+806           8 LOAD_CONST               1 ('\n    Support for flags\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+810          12 LOAD_CONST               2 (<code object _generate_next_value_ at 0x00000236F50E73A0, file "", line 810>)
+             14 LOAD_CONST               3 ('Flag._generate_next_value_')
+             16 MAKE_FUNCTION            0
+             18 STORE_NAME               4 (_generate_next_value_)
+
+829          20 LOAD_NAME                5 (classmethod)
+
+830          22 LOAD_CONST               4 (<code object _missing_ at 0x00000236F50E7450, file "", line 829>)
+             24 LOAD_CONST               5 ('Flag._missing_')
+             26 MAKE_FUNCTION            0
+             28 CALL_FUNCTION            1
+             30 STORE_NAME               6 (_missing_)
+
+842          32 LOAD_NAME                5 (classmethod)
+
+843          34 LOAD_CONST               6 (<code object _create_pseudo_member_ at 0x00000236F50E7500, file "", line 842>)
+             36 LOAD_CONST               7 ('Flag._create_pseudo_member_')
+             38 MAKE_FUNCTION            0
+             40 CALL_FUNCTION            1
+             42 STORE_NAME               7 (_create_pseudo_member_)
+
+862          44 LOAD_CONST               8 (<code object __contains__ at 0x00000236F50E75B0, file "", line 862>)
+             46 LOAD_CONST               9 ('Flag.__contains__')
+             48 MAKE_FUNCTION            0
+             50 STORE_NAME               8 (__contains__)
+
+872          52 LOAD_CONST              10 (<code object __repr__ at 0x00000236F50E7710, file "", line 872>)
+             54 LOAD_CONST              11 ('Flag.__repr__')
+             56 MAKE_FUNCTION            0
+             58 STORE_NAME               9 (__repr__)
+
+883          60 LOAD_CONST              12 (<code object __str__ at 0x00000236F50E79D0, file "", line 883>)
+             62 LOAD_CONST              13 ('Flag.__str__')
+             64 MAKE_FUNCTION            0
+             66 STORE_NAME              10 (__str__)
+
+896          68 LOAD_CONST              14 (<code object __bool__ at 0x00000236F50E7870, file "", line 896>)
+             70 LOAD_CONST              15 ('Flag.__bool__')
+             72 MAKE_FUNCTION            0
+             74 STORE_NAME              11 (__bool__)
+
+899          76 LOAD_CONST              16 (<code object __or__ at 0x00000236F50E7A80, file "", line 899>)
+             78 LOAD_CONST              17 ('Flag.__or__')
+             80 MAKE_FUNCTION            0
+             82 STORE_NAME              12 (__or__)
+
+904          84 LOAD_CONST              18 (<code object __and__ at 0x00000236F50E7B30, file "", line 904>)
+             86 LOAD_CONST              19 ('Flag.__and__')
+             88 MAKE_FUNCTION            0
+             90 STORE_NAME              13 (__and__)
+
+909          92 LOAD_CONST              20 (<code object __xor__ at 0x00000236F50E7BE0, file "", line 909>)
+             94 LOAD_CONST              21 ('Flag.__xor__')
+             96 MAKE_FUNCTION            0
+             98 STORE_NAME              14 (__xor__)
+
+914         100 LOAD_CONST              22 (<code object __invert__ at 0x00000236F50E7C90, file "", line 914>)
+            102 LOAD_CONST              23 ('Flag.__invert__')
+            104 MAKE_FUNCTION            0
+            106 STORE_NAME              15 (__invert__)
+            108 LOAD_CONST              24 (None)
+            110 RETURN_VALUE
+
+Disassembly of <code object _generate_next_value_ at 0x00000236F50E73A0, file "", line 810>:
+819           0 LOAD_FAST                2 (count)
+              2 POP_JUMP_IF_TRUE        20
+
+820           4 LOAD_FAST                1 (start)
+              6 LOAD_CONST               1 (None)
+              8 IS_OP                    1
+             10 POP_JUMP_IF_FALSE       16
+             12 LOAD_FAST                1 (start)
+             14 RETURN_VALUE
+        >>   16 LOAD_CONST               2 (1)
+             18 RETURN_VALUE
+
+821     >>   20 LOAD_GLOBAL              0 (reversed)
+             22 LOAD_FAST                3 (last_values)
+             24 CALL_FUNCTION            1
+             26 GET_ITER
+        >>   28 FOR_ITER                56 (to 86)
+             30 STORE_FAST               4 (last_value)
+
+822          32 SETUP_FINALLY           18 (to 52)
+
+823          34 LOAD_GLOBAL              1 (_high_bit)
+             36 LOAD_FAST                4 (last_value)
+             38 CALL_FUNCTION            1
+             40 STORE_FAST               5 (high_bit)
+
+824          42 POP_BLOCK
+             44 POP_TOP
+             46 JUMP_ABSOLUTE           86
+             48 POP_BLOCK
+             50 JUMP_ABSOLUTE           28
+
+825     >>   52 DUP_TOP
+             54 LOAD_GLOBAL              2 (Exception)
+             56 JUMP_IF_NOT_EXC_MATCH    82
+             58 POP_TOP
+             60 POP_TOP
+             62 POP_TOP
+
+826          64 LOAD_GLOBAL              3 (TypeError)
+             66 LOAD_CONST               3 ('Invalid Flag value: %r')
+             68 LOAD_FAST                4 (last_value)
+             70 BINARY_MODULO
+             72 CALL_FUNCTION            1
+             74 LOAD_CONST               1 (None)
+             76 RAISE_VARARGS            2
+             78 POP_EXCEPT
+             80 JUMP_ABSOLUTE           28
+        >>   82 RERAISE
+             84 JUMP_ABSOLUTE           28
+
+827     >>   86 LOAD_CONST               4 (2)
+             88 LOAD_FAST                5 (high_bit)
+             90 LOAD_CONST               2 (1)
+             92 BINARY_ADD
+             94 BINARY_POWER
+             96 RETURN_VALUE
+
+Disassembly of <code object _missing_ at 0x00000236F50E7450, file "", line 829>:
+834           0 LOAD_FAST                1 (value)
+              2 STORE_FAST               2 (original_value)
+
+835           4 LOAD_FAST                1 (value)
+              6 LOAD_CONST               1 (0)
+              8 COMPARE_OP               0 (<)
+             10 POP_JUMP_IF_FALSE       18
+
+836          12 LOAD_FAST                1 (value)
+             14 UNARY_INVERT
+             16 STORE_FAST               1 (value)
+
+837     >>   18 LOAD_FAST                0 (cls)
+             20 LOAD_METHOD              0 (_create_pseudo_member_)
+             22 LOAD_FAST                1 (value)
+             24 CALL_METHOD              1
+             26 STORE_FAST               3 (possible_member)
+
+838          28 LOAD_FAST                2 (original_value)
+             30 LOAD_CONST               1 (0)
+             32 COMPARE_OP               0 (<)
+             34 POP_JUMP_IF_FALSE       42
+
+839          36 LOAD_FAST                3 (possible_member)
+             38 UNARY_INVERT
+             40 STORE_FAST               3 (possible_member)
+
+840     >>   42 LOAD_FAST                3 (possible_member)
+             44 RETURN_VALUE
+
+Disassembly of <code object _create_pseudo_member_ at 0x00000236F50E7500, file "", line 842>:
+847           0 LOAD_FAST                0 (cls)
+              2 LOAD_ATTR                0 (_value2member_map_)
+              4 LOAD_METHOD              1 (get)
+              6 LOAD_FAST                1 (value)
+              8 LOAD_CONST               1 (None)
+             10 CALL_METHOD              2
+             12 STORE_FAST               2 (pseudo_member)
+
+848          14 LOAD_FAST                2 (pseudo_member)
+             16 LOAD_CONST               1 (None)
+             18 IS_OP                    0
+             20 POP_JUMP_IF_FALSE       94
+
+850          22 LOAD_GLOBAL              2 (_decompose)
+             24 LOAD_FAST                0 (cls)
+             26 LOAD_FAST                1 (value)
+             28 CALL_FUNCTION            2
+             30 UNPACK_SEQUENCE          2
+             32 STORE_FAST               3 (_)
+             34 STORE_FAST               4 (extra_flags)
+
+851          36 LOAD_FAST                4 (extra_flags)
+             38 POP_JUMP_IF_FALSE       58
+
+852          40 LOAD_GLOBAL              3 (ValueError)
+             42 LOAD_CONST               2 ('%r is not a valid %s')
+             44 LOAD_FAST                1 (value)
+             46 LOAD_FAST                0 (cls)
+             48 LOAD_ATTR                4 (__qualname__)
+             50 BUILD_TUPLE              2
+             52 BINARY_MODULO
+             54 CALL_FUNCTION            1
+             56 RAISE_VARARGS            1
+
+854     >>   58 LOAD_GLOBAL              5 (object)
+             60 LOAD_METHOD              6 (__new__)
+             62 LOAD_FAST                0 (cls)
+             64 CALL_METHOD              1
+             66 STORE_FAST               2 (pseudo_member)
+
+855          68 LOAD_CONST               1 (None)
+             70 LOAD_FAST                2 (pseudo_member)
+             72 STORE_ATTR               7 (_name_)
+
+856          74 LOAD_FAST                1 (value)
+             76 LOAD_FAST                2 (pseudo_member)
+             78 STORE_ATTR               8 (_value_)
+
+859          80 LOAD_FAST                0 (cls)
+             82 LOAD_ATTR                0 (_value2member_map_)
+             84 LOAD_METHOD              9 (setdefault)
+             86 LOAD_FAST                1 (value)
+             88 LOAD_FAST                2 (pseudo_member)
+             90 CALL_METHOD              2
+             92 STORE_FAST               2 (pseudo_member)
+
+860     >>   94 LOAD_FAST                2 (pseudo_member)
+             96 RETURN_VALUE
+
+Disassembly of <code object __contains__ at 0x00000236F50E75B0, file "", line 862>:
+866           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 CALL_FUNCTION            2
+             10 POP_JUMP_IF_TRUE        38
+
+867          12 LOAD_GLOBAL              2 (TypeError)
+
+868          14 LOAD_CONST               1 ("unsupported operand type(s) for 'in': '%s' and '%s'")
+
+869          16 LOAD_GLOBAL              3 (type)
+             18 LOAD_FAST                1 (other)
+             20 CALL_FUNCTION            1
+             22 LOAD_ATTR                4 (__qualname__)
+             24 LOAD_FAST                0 (self)
+             26 LOAD_ATTR                1 (__class__)
+             28 LOAD_ATTR                4 (__qualname__)
+
+868          30 BUILD_TUPLE              2
+             32 BINARY_MODULO
+
+867          34 CALL_FUNCTION            1
+             36 RAISE_VARARGS            1
+
+870     >>   38 LOAD_FAST                1 (other)
+             40 LOAD_ATTR                5 (_value_)
+             42 LOAD_FAST                0 (self)
+             44 LOAD_ATTR                5 (_value_)
+             46 BINARY_AND
+             48 LOAD_FAST                1 (other)
+             50 LOAD_ATTR                5 (_value_)
+             52 COMPARE_OP               2 (==)
+             54 RETURN_VALUE
+
+Disassembly of <code object __repr__ at 0x00000236F50E7710, file "", line 872>:
+873           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (__class__)
+              4 STORE_FAST               1 (cls)
+
+874           6 LOAD_FAST                0 (self)
+              8 LOAD_ATTR                1 (_name_)
+             10 LOAD_CONST               0 (None)
+             12 IS_OP                    1
+             14 POP_JUMP_IF_FALSE       36
+
+875          16 LOAD_CONST               1 ('<%s.%s: %r>')
+             18 LOAD_FAST                1 (cls)
+             20 LOAD_ATTR                2 (__name__)
+             22 LOAD_FAST                0 (self)
+             24 LOAD_ATTR                1 (_name_)
+             26 LOAD_FAST                0 (self)
+             28 LOAD_ATTR                3 (_value_)
+             30 BUILD_TUPLE              3
+             32 BINARY_MODULO
+             34 RETURN_VALUE
+
+876     >>   36 LOAD_GLOBAL              4 (_decompose)
+             38 LOAD_FAST                1 (cls)
+             40 LOAD_FAST                0 (self)
+             42 LOAD_ATTR                3 (_value_)
+             44 CALL_FUNCTION            2
+             46 UNPACK_SEQUENCE          2
+             48 STORE_FAST               2 (members)
+             50 STORE_FAST               3 (uncovered)
+
+877          52 LOAD_CONST               1 ('<%s.%s: %r>')
+
+878          54 LOAD_FAST                1 (cls)
+             56 LOAD_ATTR                2 (__name__)
+
+879          58 LOAD_CONST               2 ('|')
+             60 LOAD_METHOD              5 (join)
+             62 LOAD_CONST               3 (<code object <listcomp> at 0x00000236F50E7660, file "", line 879>)
+             64 LOAD_CONST               4 ('Flag.__repr__.<locals>.<listcomp>')
+             66 MAKE_FUNCTION            0
+             68 LOAD_FAST                2 (members)
+             70 GET_ITER
+             72 CALL_FUNCTION            1
+             74 CALL_METHOD              1
+
+880          76 LOAD_FAST                0 (self)
+             78 LOAD_ATTR                3 (_value_)
+
+877          80 BUILD_TUPLE              3
+             82 BINARY_MODULO
+             84 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50E7660, file "", line 879>:
+879           0 BUILD_LIST               0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                20 (to 26)
+              6 STORE_FAST               1 (m)
+              8 LOAD_GLOBAL              0 (str)
+             10 LOAD_FAST                1 (m)
+             12 LOAD_ATTR                1 (_name_)
+             14 JUMP_IF_TRUE_OR_POP     20
+             16 LOAD_FAST                1 (m)
+             18 LOAD_ATTR                2 (_value_)
+        >>   20 CALL_FUNCTION            1
+             22 LIST_APPEND              2
+             24 JUMP_ABSOLUTE            4
+        >>   26 RETURN_VALUE
+
+Disassembly of <code object __str__ at 0x00000236F50E79D0, file "", line 883>:
+884           0 LOAD_FAST                0 (self)
+              2 LOAD_ATTR                0 (__class__)
+              4 STORE_FAST               1 (cls)
+
+885           6 LOAD_FAST                0 (self)
+              8 LOAD_ATTR                1 (_name_)
+             10 LOAD_CONST               0 (None)
+             12 IS_OP                    1
+             14 POP_JUMP_IF_FALSE       32
+
+886          16 LOAD_CONST               1 ('%s.%s')
+             18 LOAD_FAST                1 (cls)
+             20 LOAD_ATTR                2 (__name__)
+             22 LOAD_FAST                0 (self)
+             24 LOAD_ATTR                1 (_name_)
+             26 BUILD_TUPLE              2
+             28 BINARY_MODULO
+             30 RETURN_VALUE
+
+887     >>   32 LOAD_GLOBAL              3 (_decompose)
+             34 LOAD_FAST                1 (cls)
+             36 LOAD_FAST                0 (self)
+             38 LOAD_ATTR                4 (_value_)
+             40 CALL_FUNCTION            2
+             42 UNPACK_SEQUENCE          2
+             44 STORE_FAST               2 (members)
+             46 STORE_FAST               3 (uncovered)
+
+888          48 LOAD_GLOBAL              5 (len)
+             50 LOAD_FAST                2 (members)
+             52 CALL_FUNCTION            1
+             54 LOAD_CONST               2 (1)
+             56 COMPARE_OP               2 (==)
+             58 POP_JUMP_IF_FALSE       94
+             60 LOAD_FAST                2 (members)
+             62 LOAD_CONST               3 (0)
+             64 BINARY_SUBSCR
+             66 LOAD_ATTR                1 (_name_)
+             68 LOAD_CONST               0 (None)
+             70 IS_OP                    0
+             72 POP_JUMP_IF_FALSE       94
+
+889          74 LOAD_CONST               4 ('%s.%r')
+             76 LOAD_FAST                1 (cls)
+             78 LOAD_ATTR                2 (__name__)
+             80 LOAD_FAST                2 (members)
+             82 LOAD_CONST               3 (0)
+             84 BINARY_SUBSCR
+             86 LOAD_ATTR                4 (_value_)
+             88 BUILD_TUPLE              2
+             90 BINARY_MODULO
+             92 RETURN_VALUE
+
+891     >>   94 LOAD_CONST               1 ('%s.%s')
+
+892          96 LOAD_FAST                1 (cls)
+             98 LOAD_ATTR                2 (__name__)
+
+893         100 LOAD_CONST               5 ('|')
+            102 LOAD_METHOD              6 (join)
+            104 LOAD_CONST               6 (<code object <listcomp> at 0x00000236F50E77C0, file "", line 893>)
+            106 LOAD_CONST               7 ('Flag.__str__.<locals>.<listcomp>')
+            108 MAKE_FUNCTION            0
+            110 LOAD_FAST                2 (members)
+            112 GET_ITER
+            114 CALL_FUNCTION            1
+            116 CALL_METHOD              1
+
+891         118 BUILD_TUPLE              2
+            120 BINARY_MODULO
+            122 RETURN_VALUE
+            124 LOAD_CONST               0 (None)
+            126 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50E77C0, file "", line 893>:
+893           0 BUILD_LIST               0
+              2 LOAD_FAST                0 (.0)
+        >>    4 FOR_ITER                20 (to 26)
+              6 STORE_FAST               1 (m)
+              8 LOAD_GLOBAL              0 (str)
+             10 LOAD_FAST                1 (m)
+             12 LOAD_ATTR                1 (_name_)
+             14 JUMP_IF_TRUE_OR_POP     20
+             16 LOAD_FAST                1 (m)
+             18 LOAD_ATTR                2 (_value_)
+        >>   20 CALL_FUNCTION            1
+             22 LIST_APPEND              2
+             24 JUMP_ABSOLUTE            4
+        >>   26 RETURN_VALUE
+
+Disassembly of <code object __bool__ at 0x00000236F50E7870, file "", line 896>:
+897           0 LOAD_GLOBAL              0 (bool)
+              2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                1 (_value_)
+              6 CALL_FUNCTION            1
+              8 RETURN_VALUE
+
+Disassembly of <code object __or__ at 0x00000236F50E7A80, file "", line 899>:
+900           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 CALL_FUNCTION            2
+             10 POP_JUMP_IF_TRUE        16
+
+901          12 LOAD_GLOBAL              2 (NotImplemented)
+             14 RETURN_VALUE
+
+902     >>   16 LOAD_FAST                0 (self)
+             18 LOAD_METHOD              1 (__class__)
+             20 LOAD_FAST                0 (self)
+             22 LOAD_ATTR                3 (_value_)
+             24 LOAD_FAST                1 (other)
+             26 LOAD_ATTR                3 (_value_)
+             28 BINARY_OR
+             30 CALL_METHOD              1
+             32 RETURN_VALUE
+
+Disassembly of <code object __and__ at 0x00000236F50E7B30, file "", line 904>:
+905           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 CALL_FUNCTION            2
+             10 POP_JUMP_IF_TRUE        16
+
+906          12 LOAD_GLOBAL              2 (NotImplemented)
+             14 RETURN_VALUE
+
+907     >>   16 LOAD_FAST                0 (self)
+             18 LOAD_METHOD              1 (__class__)
+             20 LOAD_FAST                0 (self)
+             22 LOAD_ATTR                3 (_value_)
+             24 LOAD_FAST                1 (other)
+             26 LOAD_ATTR                3 (_value_)
+             28 BINARY_AND
+             30 CALL_METHOD              1
+             32 RETURN_VALUE
+
+Disassembly of <code object __xor__ at 0x00000236F50E7BE0, file "", line 909>:
+910           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 CALL_FUNCTION            2
+             10 POP_JUMP_IF_TRUE        16
+
+911          12 LOAD_GLOBAL              2 (NotImplemented)
+             14 RETURN_VALUE
+
+912     >>   16 LOAD_FAST                0 (self)
+             18 LOAD_METHOD              1 (__class__)
+             20 LOAD_FAST                0 (self)
+             22 LOAD_ATTR                3 (_value_)
+             24 LOAD_FAST                1 (other)
+             26 LOAD_ATTR                3 (_value_)
+             28 BINARY_XOR
+             30 CALL_METHOD              1
+             32 RETURN_VALUE
+
+Disassembly of <code object __invert__ at 0x00000236F50E7C90, file "", line 914>:
+915           0 LOAD_GLOBAL              0 (_decompose)
+              2 LOAD_FAST                0 (self)
+              4 LOAD_ATTR                1 (__class__)
+              6 LOAD_FAST                0 (self)
+              8 LOAD_ATTR                2 (_value_)
+             10 CALL_FUNCTION            2
+             12 UNPACK_SEQUENCE          2
+             14 STORE_FAST               1 (members)
+             16 STORE_FAST               2 (uncovered)
+
+916          18 LOAD_FAST                0 (self)
+             20 LOAD_METHOD              1 (__class__)
+             22 LOAD_CONST               1 (0)
+             24 CALL_METHOD              1
+             26 STORE_FAST               3 (inverted)
+
+917          28 LOAD_FAST                0 (self)
+             30 LOAD_ATTR                1 (__class__)
+             32 GET_ITER
+        >>   34 FOR_ITER                32 (to 68)
+             36 STORE_FAST               4 (m)
+
+918          38 LOAD_FAST                4 (m)
+             40 LOAD_FAST                1 (members)
+             42 CONTAINS_OP              1
+             44 POP_JUMP_IF_FALSE       34
+             46 LOAD_FAST                4 (m)
+             48 LOAD_ATTR                2 (_value_)
+             50 LOAD_FAST                0 (self)
+             52 LOAD_ATTR                2 (_value_)
+             54 BINARY_AND
+             56 POP_JUMP_IF_TRUE        34
+
+919          58 LOAD_FAST                3 (inverted)
+             60 LOAD_FAST                4 (m)
+             62 BINARY_OR
+             64 STORE_FAST               3 (inverted)
+             66 JUMP_ABSOLUTE           34
+
+920     >>   68 LOAD_FAST                0 (self)
+             70 LOAD_METHOD              1 (__class__)
+             72 LOAD_FAST                3 (inverted)
+             74 CALL_METHOD              1
+             76 RETURN_VALUE
+
+Disassembly of <code object IntFlag at 0x00000236F50DD240, file "", line 923>:
+923           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('IntFlag')
+              6 STORE_NAME               2 (__qualname__)
+
+924           8 LOAD_CONST               1 ('\n    Support for integer-based Flags\n    ')
+             10 STORE_NAME               3 (__doc__)
+
+928          12 LOAD_NAME                4 (classmethod)
+
+929          14 LOAD_CONST               2 (<code object _missing_ at 0x00000236F50E7D40, file "", line 928>)
+             16 LOAD_CONST               3 ('IntFlag._missing_')
+             18 MAKE_FUNCTION            0
+             20 CALL_FUNCTION            1
+             22 STORE_NAME               5 (_missing_)
+
+938          24 LOAD_NAME                4 (classmethod)
+
+939          26 LOAD_CONST               4 (<code object _create_pseudo_member_ at 0x00000236F50E7EA0, file "", line 938>)
+             28 LOAD_CONST               5 ('IntFlag._create_pseudo_member_')
+             30 MAKE_FUNCTION            0
+             32 CALL_FUNCTION            1
+             34 STORE_NAME               6 (_create_pseudo_member_)
+
+971          36 LOAD_CONST               6 (<code object __or__ at 0x00000236F50E7F50, file "", line 971>)
+             38 LOAD_CONST               7 ('IntFlag.__or__')
+             40 MAKE_FUNCTION            0
+             42 STORE_NAME               7 (__or__)
+
+977          44 LOAD_CONST               8 (<code object __and__ at 0x00000236F50DD030, file "", line 977>)
+             46 LOAD_CONST               9 ('IntFlag.__and__')
+             48 MAKE_FUNCTION            0
+             50 STORE_NAME               8 (__and__)
+
+982          52 LOAD_CONST              10 (<code object __xor__ at 0x00000236F50DD0E0, file "", line 982>)
+             54 LOAD_CONST              11 ('IntFlag.__xor__')
+             56 MAKE_FUNCTION            0
+             58 STORE_NAME               9 (__xor__)
+
+987          60 LOAD_NAME                7 (__or__)
+             62 STORE_NAME              10 (__ror__)
+
+988          64 LOAD_NAME                8 (__and__)
+             66 STORE_NAME              11 (__rand__)
+
+989          68 LOAD_NAME                9 (__xor__)
+             70 STORE_NAME              12 (__rxor__)
+
+991          72 LOAD_CONST              12 (<code object __invert__ at 0x00000236F50DD190, file "", line 991>)
+             74 LOAD_CONST              13 ('IntFlag.__invert__')
+             76 MAKE_FUNCTION            0
+             78 STORE_NAME              13 (__invert__)
+             80 LOAD_CONST              14 (None)
+             82 RETURN_VALUE
+
+Disassembly of <code object _missing_ at 0x00000236F50E7D40, file "", line 928>:
+933           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (value)
+              4 LOAD_GLOBAL              1 (int)
+              6 CALL_FUNCTION            2
+              8 POP_JUMP_IF_TRUE        28
+
+934          10 LOAD_GLOBAL              2 (ValueError)
+             12 LOAD_CONST               1 ('%r is not a valid %s')
+             14 LOAD_FAST                1 (value)
+             16 LOAD_FAST                0 (cls)
+             18 LOAD_ATTR                3 (__qualname__)
+             20 BUILD_TUPLE              2
+             22 BINARY_MODULO
+             24 CALL_FUNCTION            1
+             26 RAISE_VARARGS            1
+
+935     >>   28 LOAD_FAST                0 (cls)
+             30 LOAD_METHOD              4 (_create_pseudo_member_)
+             32 LOAD_FAST                1 (value)
+             34 CALL_METHOD              1
+             36 STORE_FAST               2 (new_member)
+
+936          38 LOAD_FAST                2 (new_member)
+             40 RETURN_VALUE
+
+Disassembly of <code object _create_pseudo_member_ at 0x00000236F50E7EA0, file "", line 938>:
+943           0 LOAD_FAST                0 (cls)
+              2 LOAD_ATTR                0 (_value2member_map_)
+              4 LOAD_METHOD              1 (get)
+              6 LOAD_FAST                1 (value)
+              8 LOAD_CONST               1 (None)
+             10 CALL_METHOD              2
+             12 STORE_FAST               2 (pseudo_member)
+
+944          14 LOAD_FAST                2 (pseudo_member)
+             16 LOAD_CONST               1 (None)
+             18 IS_OP                    0
+             20 POP_JUMP_IF_FALSE      168
+
+945          22 LOAD_FAST                1 (value)
+             24 BUILD_LIST               1
+             26 STORE_FAST               3 (need_to_create)
+
+947          28 LOAD_GLOBAL              2 (_decompose)
+             30 LOAD_FAST                0 (cls)
+             32 LOAD_FAST                1 (value)
+             34 CALL_FUNCTION            2
+             36 UNPACK_SEQUENCE          2
+             38 STORE_FAST               4 (_)
+             40 STORE_FAST               5 (extra_flags)
+
+949     >>   42 LOAD_FAST                5 (extra_flags)
+             44 POP_JUMP_IF_FALSE      116
+
+951          46 LOAD_GLOBAL              3 (_high_bit)
+             48 LOAD_FAST                5 (extra_flags)
+             50 CALL_FUNCTION            1
+             52 STORE_FAST               6 (bit)
+
+952          54 LOAD_CONST               2 (2)
+             56 LOAD_FAST                6 (bit)
+             58 BINARY_POWER
+             60 STORE_FAST               7 (flag_value)
+
+953          62 LOAD_FAST                7 (flag_value)
+             64 LOAD_FAST                0 (cls)
+             66 LOAD_ATTR                0 (_value2member_map_)
+             68 CONTAINS_OP              1
+             70 POP_JUMP_IF_FALSE       90
+
+954          72 LOAD_FAST                7 (flag_value)
+             74 LOAD_FAST                3 (need_to_create)
+             76 CONTAINS_OP              1
+
+953          78 POP_JUMP_IF_FALSE       90
+
+956          80 LOAD_FAST                3 (need_to_create)
+             82 LOAD_METHOD              4 (append)
+             84 LOAD_FAST                7 (flag_value)
+             86 CALL_METHOD              1
+             88 POP_TOP
+
+957     >>   90 LOAD_FAST                5 (extra_flags)
+             92 LOAD_FAST                7 (flag_value)
+             94 UNARY_NEGATIVE
+             96 COMPARE_OP               2 (==)
+             98 POP_JUMP_IF_FALSE      106
+
+958         100 LOAD_CONST               3 (0)
+            102 STORE_FAST               5 (extra_flags)
+            104 JUMP_ABSOLUTE           42
+
+960     >>  106 LOAD_FAST                5 (extra_flags)
+            108 LOAD_FAST                7 (flag_value)
+            110 INPLACE_XOR
+            112 STORE_FAST               5 (extra_flags)
+            114 JUMP_ABSOLUTE           42
+
+961     >>  116 LOAD_GLOBAL              5 (reversed)
+            118 LOAD_FAST                3 (need_to_create)
+            120 CALL_FUNCTION            1
+            122 GET_ITER
+        >>  124 FOR_ITER                42 (to 168)
+            126 STORE_FAST               1 (value)
+
+963         128 LOAD_GLOBAL              6 (int)
+            130 LOAD_METHOD              7 (__new__)
+            132 LOAD_FAST                0 (cls)
+            134 LOAD_FAST                1 (value)
+            136 CALL_METHOD              2
+            138 STORE_FAST               2 (pseudo_member)
+
+964         140 LOAD_CONST               1 (None)
+            142 LOAD_FAST                2 (pseudo_member)
+            144 STORE_ATTR               8 (_name_)
+
+965         146 LOAD_FAST                1 (value)
+            148 LOAD_FAST                2 (pseudo_member)
+            150 STORE_ATTR               9 (_value_)
+
+968         152 LOAD_FAST                0 (cls)
+            154 LOAD_ATTR                0 (_value2member_map_)
+            156 LOAD_METHOD             10 (setdefault)
+            158 LOAD_FAST                1 (value)
+            160 LOAD_FAST                2 (pseudo_member)
+            162 CALL_METHOD              2
+            164 STORE_FAST               2 (pseudo_member)
+            166 JUMP_ABSOLUTE          124
+
+969     >>  168 LOAD_FAST                2 (pseudo_member)
+            170 RETURN_VALUE
+
+Disassembly of <code object __or__ at 0x00000236F50E7F50, file "", line 971>:
+972           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 LOAD_GLOBAL              2 (int)
+             10 BUILD_TUPLE              2
+             12 CALL_FUNCTION            2
+             14 POP_JUMP_IF_TRUE        20
+
+973          16 LOAD_GLOBAL              3 (NotImplemented)
+             18 RETURN_VALUE
+
+974     >>   20 LOAD_FAST                0 (self)
+             22 LOAD_METHOD              1 (__class__)
+             24 LOAD_FAST                0 (self)
+             26 LOAD_ATTR                4 (_value_)
+             28 LOAD_FAST                0 (self)
+             30 LOAD_METHOD              1 (__class__)
+             32 LOAD_FAST                1 (other)
+             34 CALL_METHOD              1
+             36 LOAD_ATTR                4 (_value_)
+             38 BINARY_OR
+             40 CALL_METHOD              1
+             42 STORE_FAST               2 (result)
+
+975          44 LOAD_FAST                2 (result)
+             46 RETURN_VALUE
+
+Disassembly of <code object __and__ at 0x00000236F50DD030, file "", line 977>:
+978           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 LOAD_GLOBAL              2 (int)
+             10 BUILD_TUPLE              2
+             12 CALL_FUNCTION            2
+             14 POP_JUMP_IF_TRUE        20
+
+979          16 LOAD_GLOBAL              3 (NotImplemented)
+             18 RETURN_VALUE
+
+980     >>   20 LOAD_FAST                0 (self)
+             22 LOAD_METHOD              1 (__class__)
+             24 LOAD_FAST                0 (self)
+             26 LOAD_ATTR                4 (_value_)
+             28 LOAD_FAST                0 (self)
+             30 LOAD_METHOD              1 (__class__)
+             32 LOAD_FAST                1 (other)
+             34 CALL_METHOD              1
+             36 LOAD_ATTR                4 (_value_)
+             38 BINARY_AND
+             40 CALL_METHOD              1
+             42 RETURN_VALUE
+
+Disassembly of <code object __xor__ at 0x00000236F50DD0E0, file "", line 982>:
+983           0 LOAD_GLOBAL              0 (isinstance)
+              2 LOAD_FAST                1 (other)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (__class__)
+              8 LOAD_GLOBAL              2 (int)
+             10 BUILD_TUPLE              2
+             12 CALL_FUNCTION            2
+             14 POP_JUMP_IF_TRUE        20
+
+984          16 LOAD_GLOBAL              3 (NotImplemented)
+             18 RETURN_VALUE
+
+985     >>   20 LOAD_FAST                0 (self)
+             22 LOAD_METHOD              1 (__class__)
+             24 LOAD_FAST                0 (self)
+             26 LOAD_ATTR                4 (_value_)
+             28 LOAD_FAST                0 (self)
+             30 LOAD_METHOD              1 (__class__)
+             32 LOAD_FAST                1 (other)
+             34 CALL_METHOD              1
+             36 LOAD_ATTR                4 (_value_)
+             38 BINARY_XOR
+             40 CALL_METHOD              1
+             42 RETURN_VALUE
+
+Disassembly of <code object __invert__ at 0x00000236F50DD190, file "", line 991>:
+992           0 LOAD_FAST                0 (self)
+              2 LOAD_METHOD              0 (__class__)
+              4 LOAD_FAST                0 (self)
+              6 LOAD_ATTR                1 (_value_)
+              8 UNARY_INVERT
+             10 CALL_METHOD              1
+             12 STORE_FAST               1 (result)
+
+993          14 LOAD_FAST                1 (result)
+             16 RETURN_VALUE
+
+Disassembly of <code object _high_bit at 0x00000236F50DD2F0, file "", line 996>:
+1000           0 LOAD_FAST                0 (value)
+               2 LOAD_METHOD              0 (bit_length)
+               4 CALL_METHOD              0
+               6 LOAD_CONST               1 (1)
+               8 BINARY_SUBTRACT
+              10 RETURN_VALUE
+
+Disassembly of <code object unique at 0x00000236F50DD450, file "", line 1002>:
+1006           0 BUILD_LIST               0
+               2 STORE_FAST               1 (duplicates)
+
+1007           4 LOAD_FAST                0 (enumeration)
+               6 LOAD_ATTR                0 (__members__)
+               8 LOAD_METHOD              1 (items)
+              10 CALL_METHOD              0
+              12 GET_ITER
+         >>   14 FOR_ITER                34 (to 50)
+              16 UNPACK_SEQUENCE          2
+              18 STORE_FAST               2 (name)
+              20 STORE_FAST               3 (member)
+
+1008          22 LOAD_FAST                2 (name)
+              24 LOAD_FAST                3 (member)
+              26 LOAD_ATTR                2 (name)
+              28 COMPARE_OP               3 (!=)
+              30 POP_JUMP_IF_FALSE       14
+
+1009          32 LOAD_FAST                1 (duplicates)
+              34 LOAD_METHOD              3 (append)
+              36 LOAD_FAST                2 (name)
+              38 LOAD_FAST                3 (member)
+              40 LOAD_ATTR                2 (name)
+              42 BUILD_TUPLE              2
+              44 CALL_METHOD              1
+              46 POP_TOP
+              48 JUMP_ABSOLUTE           14
+
+1010     >>   50 LOAD_FAST                1 (duplicates)
+              52 POP_JUMP_IF_FALSE       90
+
+1011          54 LOAD_CONST               1 (', ')
+              56 LOAD_METHOD              4 (join)
+
+1012          58 LOAD_CONST               2 (<code object <listcomp> at 0x00000236F50DD3A0, file "", line 1012>)
+              60 LOAD_CONST               3 ('unique.<locals>.<listcomp>')
+              62 MAKE_FUNCTION            0
+              64 LOAD_FAST                1 (duplicates)
+              66 GET_ITER
+              68 CALL_FUNCTION            1
+
+1011          70 CALL_METHOD              1
+              72 STORE_FAST               4 (alias_details)
+
+1013          74 LOAD_GLOBAL              5 (ValueError)
+              76 LOAD_CONST               4 ('duplicate values found in %r: %s')
+
+1014          78 LOAD_FAST                0 (enumeration)
+              80 LOAD_FAST                4 (alias_details)
+              82 BUILD_TUPLE              2
+
+1013          84 BINARY_MODULO
+              86 CALL_FUNCTION            1
+              88 RAISE_VARARGS            1
+
+1015     >>   90 LOAD_FAST                0 (enumeration)
+              92 RETURN_VALUE
+
+Disassembly of <code object <listcomp> at 0x00000236F50DD3A0, file "", line 1012>:
+1012           0 BUILD_LIST               0
+               2 LOAD_FAST                0 (.0)
+         >>    4 FOR_ITER                20 (to 26)
+               6 UNPACK_SEQUENCE          2
+               8 STORE_FAST               1 (alias)
+              10 STORE_FAST               2 (name)
+              12 LOAD_CONST               0 ('%s -> %s')
+              14 LOAD_FAST                1 (alias)
+              16 LOAD_FAST                2 (name)
+              18 BUILD_TUPLE              2
+              20 BINARY_MODULO
+              22 LIST_APPEND              2
+              24 JUMP_ABSOLUTE            4
+         >>   26 RETURN_VALUE
+
+Disassembly of <code object _decompose at 0x00000236F50DD5B0, file "", line 1017>:
+1022           0 LOAD_FAST                1 (value)
+               2 STORE_FAST               2 (not_covered)
+
+1023           4 LOAD_FAST                1 (value)
+               6 LOAD_CONST               1 (0)
+               8 COMPARE_OP               0 (<)
+              10 STORE_FAST               3 (negative)
+
+1024          12 BUILD_LIST               0
+              14 STORE_FAST               4 (members)
+
+1025          16 LOAD_FAST                0 (flag)
+              18 GET_ITER
+         >>   20 FOR_ITER                46 (to 68)
+              22 STORE_FAST               5 (member)
+
+1026          24 LOAD_FAST                5 (member)
+              26 LOAD_ATTR                0 (value)
+              28 STORE_FAST               6 (member_value)
+
+1027          30 LOAD_FAST                6 (member_value)
+              32 POP_JUMP_IF_FALSE       20
+              34 LOAD_FAST                6 (member_value)
+              36 LOAD_FAST                1 (value)
+              38 BINARY_AND
+              40 LOAD_FAST                6 (member_value)
+              42 COMPARE_OP               2 (==)
+              44 POP_JUMP_IF_FALSE       20
+
+1028          46 LOAD_FAST                4 (members)
+              48 LOAD_METHOD              1 (append)
+              50 LOAD_FAST                5 (member)
+              52 CALL_METHOD              1
+              54 POP_TOP
+
+1029          56 LOAD_FAST                2 (not_covered)
+              58 LOAD_FAST                6 (member_value)
+              60 UNARY_INVERT
+              62 INPLACE_AND
+              64 STORE_FAST               2 (not_covered)
+              66 JUMP_ABSOLUTE           20
+
+1030     >>   68 LOAD_FAST                3 (negative)
+              70 POP_JUMP_IF_TRUE       140
+
+1031          72 LOAD_FAST                2 (not_covered)
+              74 STORE_FAST               7 (tmp)
+
+1032     >>   76 LOAD_FAST                7 (tmp)
+              78 POP_JUMP_IF_FALSE      140
+
+1033          80 LOAD_CONST               2 (2)
+              82 LOAD_GLOBAL              2 (_high_bit)
+              84 LOAD_FAST                7 (tmp)
+              86 CALL_FUNCTION            1
+              88 BINARY_POWER
+              90 STORE_FAST               8 (flag_value)
+
+1034          92 LOAD_FAST                8 (flag_value)
+              94 LOAD_FAST                0 (flag)
+              96 LOAD_ATTR                3 (_value2member_map_)
+              98 CONTAINS_OP              0
+             100 POP_JUMP_IF_FALSE      128
+
+1035         102 LOAD_FAST                4 (members)
+             104 LOAD_METHOD              1 (append)
+             106 LOAD_FAST                0 (flag)
+             108 LOAD_ATTR                3 (_value2member_map_)
+             110 LOAD_FAST                8 (flag_value)
+             112 BINARY_SUBSCR
+             114 CALL_METHOD              1
+             116 POP_TOP
+
+1036         118 LOAD_FAST                2 (not_covered)
+             120 LOAD_FAST                8 (flag_value)
+             122 UNARY_INVERT
+             124 INPLACE_AND
+             126 STORE_FAST               2 (not_covered)
+
+1037     >>  128 LOAD_FAST                7 (tmp)
+             130 LOAD_FAST                8 (flag_value)
+             132 UNARY_INVERT
+             134 INPLACE_AND
+             136 STORE_FAST               7 (tmp)
+             138 JUMP_ABSOLUTE           76
+
+1038     >>  140 LOAD_FAST                4 (members)
+             142 POP_JUMP_IF_TRUE       170
+             144 LOAD_FAST                1 (value)
+             146 LOAD_FAST                0 (flag)
+             148 LOAD_ATTR                3 (_value2member_map_)
+             150 CONTAINS_OP              0
+             152 POP_JUMP_IF_FALSE      170
+
+1039         154 LOAD_FAST                4 (members)
+             156 LOAD_METHOD              1 (append)
+             158 LOAD_FAST                0 (flag)
+             160 LOAD_ATTR                3 (_value2member_map_)
+             162 LOAD_FAST                1 (value)
+             164 BINARY_SUBSCR
+             166 CALL_METHOD              1
+             168 POP_TOP
+
+1040     >>  170 LOAD_FAST                4 (members)
+             172 LOAD_ATTR                4 (sort)
+             174 LOAD_CONST               3 (<code object <lambda> at 0x00000236F50DD500, file "", line 1040>)
+             176 LOAD_CONST               4 ('_decompose.<locals>.<lambda>')
+             178 MAKE_FUNCTION            0
+             180 LOAD_CONST               5 (True)
+             182 LOAD_CONST               6 (('key', 'reverse'))
+             184 CALL_FUNCTION_KW         2
+             186 POP_TOP
+
+1041         188 LOAD_GLOBAL              5 (len)
+             190 LOAD_FAST                4 (members)
+             192 CALL_FUNCTION            1
+             194 LOAD_CONST               7 (1)
+             196 COMPARE_OP               4 (>)
+             198 POP_JUMP_IF_FALSE      224
+             200 LOAD_FAST                4 (members)
+             202 LOAD_CONST               1 (0)
+             204 BINARY_SUBSCR
+             206 LOAD_ATTR                0 (value)
+             208 LOAD_FAST                1 (value)
+             210 COMPARE_OP               2 (==)
+             212 POP_JUMP_IF_FALSE      224
+
+1043         214 LOAD_FAST                4 (members)
+             216 LOAD_METHOD              6 (pop)
+             218 LOAD_CONST               1 (0)
+             220 CALL_METHOD              1
+             222 POP_TOP
+
+1044     >>  224 LOAD_FAST                4 (members)
+             226 LOAD_FAST                2 (not_covered)
+             228 BUILD_TUPLE              2
+             230 RETURN_VALUE
+
+Disassembly of <code object <lambda> at 0x00000236F50DD500, file "", line 1040>:
+1040           0 LOAD_FAST                0 (m)
+               2 LOAD_ATTR                0 (_value_)
+               4 RETURN_VALUE

@@ -1,0 +1,249 @@
+  1           0 LOAD_CONST               0 ('glob')
+              2 DUP_TOP
+              4 STORE_GLOBAL             0 (a)
+              6 DUP_TOP
+              8 STORE_NAME               1 (b)
+             10 DUP_TOP
+             12 STORE_NAME               2 (c)
+             14 DUP_TOP
+             16 STORE_NAME               3 (d)
+             18 DUP_TOP
+             20 STORE_NAME               4 (e)
+             22 STORE_NAME               5 (f)
+
+  2          24 LOAD_CONST               0 ('glob')
+             26 DUP_TOP
+             28 STORE_GLOBAL             6 (a2)
+             30 DUP_TOP
+             32 STORE_NAME               7 (b2)
+             34 DUP_TOP
+             36 STORE_NAME               8 (c2)
+             38 DUP_TOP
+             40 STORE_NAME               9 (d2)
+             42 DUP_TOP
+             44 STORE_NAME              10 (e2)
+             46 STORE_NAME              11 (f2)
+
+  4          48 LOAD_CONST               5 (('param',))
+             50 LOAD_CONST               2 (<code object outer at 0x000002E9A947E190, file "foo.py", line 4>)
+             52 LOAD_CONST               3 ('outer')
+             54 MAKE_FUNCTION            1 (defaults)
+             56 STORE_NAME              12 (outer)
+             58 LOAD_CONST               4 (None)
+             60 RETURN_VALUE
+
+Disassembly of <code object outer at 0x000002E9A947E190, file "foo.py", line 4>:
+  5           0 LOAD_CONST               1 ('outer')
+              2 DUP_TOP
+              4 STORE_FAST               1 (a)
+              6 DUP_TOP
+              8 STORE_DEREF              0 (b)
+             10 DUP_TOP
+             12 STORE_FAST               2 (c)
+             14 STORE_DEREF              1 (d)
+
+  7          16 LOAD_BUILD_CLASS
+             18 LOAD_CLOSURE             0 (b)
+             20 LOAD_CLOSURE             1 (d)
+             22 LOAD_CLOSURE             2 (e)
+             24 BUILD_TUPLE              3
+             26 LOAD_CONST               2 (<code object A at 0x000002E9A9C86BE0, file "foo.py", line 7>)
+             28 LOAD_CONST               3 ('A')
+             30 MAKE_FUNCTION            8 (closure)
+             32 LOAD_CONST               3 ('A')
+             34 CALL_FUNCTION            2
+             36 STORE_FAST               3 (A)
+
+ 25          38 LOAD_CONST               7 (('inner',))
+             40 LOAD_CLOSURE             0 (b)
+             42 LOAD_CLOSURE             1 (d)
+             44 BUILD_TUPLE              2
+             46 LOAD_CONST               5 (<code object inner at 0x000002E9A947E240, file "foo.py", line 25>)
+             48 LOAD_CONST               6 ('outer.<locals>.inner')
+             50 MAKE_FUNCTION            9 (defaults, closure)
+             52 STORE_FAST               4 (inner)
+
+ 42          54 LOAD_FAST                4 (inner)
+             56 CALL_FUNCTION            0
+             58 POP_TOP
+             60 LOAD_CONST               0 (None)
+             62 RETURN_VALUE
+
+Disassembly of <code object A at 0x000002E9A9C86BE0, file "foo.py", line 7>:
+  7           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 ('outer.<locals>.A')
+              6 STORE_NAME               2 (__qualname__)
+
+  8           8 LOAD_NAME                3 (print)
+             10 LOAD_CONST               1 ('in class...')
+             12 CALL_FUNCTION            1
+             14 POP_TOP
+
+ 11          16 LOAD_CONST               2 ('A')
+             18 DUP_TOP
+             20 STORE_NAME               4 (c)
+             22 STORE_NAME               5 (c2)
+
+ 13          24 LOAD_NAME                3 (print)
+             26 LOAD_NAME                6 (locals)
+             28 CALL_FUNCTION            0
+             30 CALL_FUNCTION            1
+             32 POP_TOP
+
+ 14          34 LOAD_NAME                3 (print)
+             36 LOAD_GLOBAL              7 (a)
+             38 LOAD_CLASSDEREF          0 (b)
+             40 LOAD_NAME                4 (c)
+             42 LOAD_CLASSDEREF          1 (d)
+             44 LOAD_CLASSDEREF          2 (e)
+             46 CALL_FUNCTION            5
+             48 POP_TOP
+
+ 15          50 LOAD_NAME                3 (print)
+             52 LOAD_GLOBAL              8 (a2)
+             54 LOAD_CONST               3 ('-')
+             56 LOAD_NAME                5 (c2)
+             58 LOAD_NAME                9 (d2)
+             60 LOAD_NAME               10 (e2)
+             62 CALL_FUNCTION            5
+             64 POP_TOP
+
+ 17          66 LOAD_CONST               4 ('a b c d e')
+             68 LOAD_METHOD             11 (split)
+             70 CALL_METHOD              0
+             72 GET_ITER
+        >>   74 FOR_ITER                32 (to 108)
+             76 STORE_NAME              12 (var)
+
+ 18          78 LOAD_NAME               13 (exec)
+             80 LOAD_NAME               12 (var)
+             82 FORMAT_VALUE             0
+             84 LOAD_CONST               5 (' = "extra"')
+             86 BUILD_STRING             2
+             88 CALL_FUNCTION            1
+             90 POP_TOP
+
+ 19          92 LOAD_NAME               13 (exec)
+             94 LOAD_NAME               12 (var)
+             96 FORMAT_VALUE             0
+             98 LOAD_CONST               6 ('2 = "extra"')
+            100 BUILD_STRING             2
+            102 CALL_FUNCTION            1
+            104 POP_TOP
+            106 JUMP_ABSOLUTE           74
+
+ 20     >>  108 DELETE_NAME             12 (var)
+
+ 21         110 LOAD_NAME                3 (print)
+            112 LOAD_NAME                6 (locals)
+            114 CALL_FUNCTION            0
+            116 CALL_FUNCTION            1
+            118 POP_TOP
+
+ 22         120 LOAD_NAME                3 (print)
+            122 LOAD_GLOBAL              7 (a)
+            124 LOAD_CLASSDEREF          0 (b)
+            126 LOAD_NAME                4 (c)
+            128 LOAD_CLASSDEREF          1 (d)
+            130 LOAD_CLASSDEREF          2 (e)
+            132 CALL_FUNCTION            5
+            134 POP_TOP
+
+ 23         136 LOAD_NAME                3 (print)
+            138 LOAD_GLOBAL              8 (a2)
+            140 LOAD_CONST               3 ('-')
+            142 LOAD_NAME                5 (c2)
+            144 LOAD_NAME                9 (d2)
+            146 LOAD_NAME               10 (e2)
+            148 CALL_FUNCTION            5
+            150 POP_TOP
+            152 LOAD_CONST               7 (None)
+            154 RETURN_VALUE
+
+Disassembly of <code object inner at 0x000002E9A947E240, file "foo.py", line 25>:
+ 26           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_CONST               1 ('in function...')
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+
+ 29           8 LOAD_CONST               2 ('A')
+             10 DUP_TOP
+             12 STORE_FAST               1 (c)
+             14 STORE_FAST               2 (c2)
+
+ 31          16 LOAD_GLOBAL              0 (print)
+             18 LOAD_GLOBAL              1 (locals)
+             20 CALL_FUNCTION            0
+             22 CALL_FUNCTION            1
+             24 POP_TOP
+
+ 32          26 LOAD_GLOBAL              0 (print)
+             28 LOAD_GLOBAL              2 (a)
+             30 LOAD_DEREF               0 (b)
+             32 LOAD_FAST                1 (c)
+             34 LOAD_DEREF               1 (d)
+             36 LOAD_FAST                0 (e)
+             38 CALL_FUNCTION            5
+             40 POP_TOP
+
+ 33          42 LOAD_GLOBAL              0 (print)
+             44 LOAD_GLOBAL              3 (a2)
+             46 LOAD_CONST               3 ('-')
+             48 LOAD_FAST                2 (c2)
+             50 LOAD_GLOBAL              4 (d2)
+             52 LOAD_GLOBAL              5 (e2)
+             54 CALL_FUNCTION            5
+             56 POP_TOP
+
+ 35          58 LOAD_CONST               4 ('a b c d e')
+             60 LOAD_METHOD              6 (split)
+             62 CALL_METHOD              0
+             64 GET_ITER
+        >>   66 FOR_ITER                32 (to 100)
+             68 STORE_FAST               3 (var)
+
+ 36          70 LOAD_GLOBAL              7 (exec)
+             72 LOAD_FAST                3 (var)
+             74 FORMAT_VALUE             0
+             76 LOAD_CONST               5 (' = "extra"')
+             78 BUILD_STRING             2
+             80 CALL_FUNCTION            1
+             82 POP_TOP
+
+ 37          84 LOAD_GLOBAL              7 (exec)
+             86 LOAD_FAST                3 (var)
+             88 FORMAT_VALUE             0
+             90 LOAD_CONST               6 ('2 = "extra"')
+             92 BUILD_STRING             2
+             94 CALL_FUNCTION            1
+             96 POP_TOP
+             98 JUMP_ABSOLUTE           66
+
+ 38     >>  100 DELETE_FAST              3 (var)
+
+ 39         102 LOAD_GLOBAL              0 (print)
+            104 LOAD_GLOBAL              1 (locals)
+            106 CALL_FUNCTION            0
+            108 CALL_FUNCTION            1
+            110 POP_TOP
+
+ 40         112 LOAD_GLOBAL              0 (print)
+            114 LOAD_GLOBAL              2 (a)
+            116 LOAD_DEREF               0 (b)
+            118 LOAD_FAST                1 (c)
+            120 LOAD_DEREF               1 (d)
+            122 LOAD_FAST                0 (e)
+            124 CALL_FUNCTION            5
+            126 POP_TOP
+
+ 41         128 LOAD_GLOBAL              0 (print)
+            130 LOAD_GLOBAL              3 (a2)
+            132 LOAD_CONST               3 ('-')
+            134 LOAD_FAST                2 (c2)
+            136 LOAD_GLOBAL              4 (d2)
+            138 LOAD_GLOBAL              5 (e2)
+            140 CALL_FUNCTION            5
+            142 POP_TOP
+            144 LOAD_CONST               0 (None)
+            146 RETURN_VALUE
