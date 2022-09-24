@@ -84,7 +84,7 @@ In an **open scope**, at runtime, additional variables can be associated with th
 
 ## Scope Kinds
 
-The **kind** of a scope is denoted by an enumeration, `Scope.Kind` in [scopes.py](scopes.py).  Each kind represents a certain node class or classes, and corresponding elements of the Python program.
+The **kind** of a scope is denoted by an enumeration, `Scope.Kind` in [scopes.py](../scopetools/scopes.py).  Each kind represents a certain node class or classes, and corresponding elements of the Python program.
 
 |    kind      | closed? | AST class | Python code |
 |:-------------|:-----------|:--|:--
@@ -367,7 +367,7 @@ import foo.bar  # 'foo' is a binding reference;
 
 The **context** of a variable in a scope describes how a variable is used in the scope, and denoted as **scope.context(var)**.
 
-This is an enumeration `VarCtx` in [scopes.py](scopes.py).  It consists of several bit flags which may be combined in certain cases.
+This is an enumeration `VarCtx` in [scopes.py](../scopetools/scopes.py).  It consists of several bit flags which may be combined in certain cases.
 
 For brevity, any of these context names may be used to denote a variable with that context, *i.e.*, "var is LOCAL in scope" means scope.context(var) is LOCAL.  And the context names can be written as attributes with the same name of a Scope, *i.e.*, `scope.LOCAL`.
 
@@ -547,7 +547,7 @@ Most, but not all, operations involving `var` are performed in namespace.binder(
 
 The dynamic state of a namespace is a mapping from variable names to possible values.
 
-The state for a variable is represented by the class **Binding** in [namespaces.py](namespaces.py).  It is analogous to the internal python cell object.
+The state for a variable is represented by the class **Binding** in [namespaces.py](../scopetools/namespaces.py).  It is analogous to the internal python cell object.
 
 - A Binding is either
   - **bound**.  It has a value (any python object, including None).  It tests True.
@@ -563,7 +563,7 @@ The variable can be bound if
 
 ### Bindings
 
-**namespace.bindings** is a conceptual object, represented by the class **Bindings** in [namespaces.py](namespaces.py).  It maps var names to Binding objects
+**namespace.bindings** is a conceptual object, represented by the class **Bindings** in [namespaces.py](../scopetools/namespaces.py).  It maps var names to Binding objects
 
 Bindings has these operations:
 - **bindings[var]** -> Binding.  This is a bound Binding carrying the currently assigned value, or it is Binding.unbound.

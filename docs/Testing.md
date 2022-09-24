@@ -1,6 +1,6 @@
 # Running Tests
 
-This mostly[^othertests] describes the module [scopestest.py](scopestest.py).  This is a standalone module, to be run separately as a script.
+This mostly[^othertests] describes the module [scopestest.py](../scopetools/scopestest.py).  This is a standalone module, to be run separately as a script.
 
 Its purpose is twofold:
 - Verify that the models for scope and namespace behavior in Python are correct.
@@ -168,6 +168,6 @@ The `-d4` option is for someone who wants to run a more thoroug test.  It has so
 
 
 [^othertests]: Some other modules in the package, when run as standalone scripts, contain a few simple tests to verify that their functionality works.  You can run them as part of a test suite.  
-    - [namespaces.py](namespaces.py)
-    - [scopes.py](scopes.py)
-    - [treebuild.py](treebuild.py)
+    - [namespaces.py](../scopetools/namespaces.py)
+    - [scopes.py](../scopetools/scopes.py)
+    - [treebuild.py](../scopetools/treebuild.py)

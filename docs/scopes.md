@@ -363,7 +363,7 @@ def _closure(self, var: str) -> Scope.VarBind | None:
 
 This document started with an [essay](https://github.com/gvanrossum/gvanrossum.github.io/blob/main/formal/scopes.md) written by Guido van Rossum.
 I removed the Toplevel scope.
-I moved all the runtime discussion to a new document [namespaces.md](namespaces.md).
+I moved all the runtime discussion to a new document [namespaces.md](../scopetools/namespaces.md).
 
 Otherwise, I simplified some definitions and revised the search algorithms.
 

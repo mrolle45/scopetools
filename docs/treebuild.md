@@ -1,6 +1,6 @@
 # Building a Tree
 
-This document explains how to build a tree using functions and methods in the [treebuild](treebuild.py) module.
+This document explains how to build a tree using functions and methods in the [treebuild](../scopetools/treebuild.py) module.
 
 A tree is any instance of `ScopeTree[TreeT, SrcT]`.  `TreeT` is a base class of the tree and all its ancestors and descendants, and is a subclass of `ScopeTree`
 

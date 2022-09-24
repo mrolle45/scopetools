@@ -120,7 +120,7 @@ This concept is applicable for [private names](#private-name-mangling).
 
 # `ScopeTree[TreeT, SrcT]` Class
 
-This is defined in [scope_common.py](scope_common.py).  It is a base class for `Scope` in `scopes.py`, `Namespace` in `namespaces.py`, and any custom classes an application may define to follow the syntax tree structure.
+This is defined in [scope_common.py](../scopetools/scope_common.py).  It is a base class for `Scope` in `scopes.py`, `Namespace` in `namespaces.py`, and any custom classes an application may define to follow the syntax tree structure.
 
 The term **tree** means any `ScopeTree` instance.
 
@@ -134,7 +134,7 @@ Every tree has a **source**, stored in `tree.src`, which is sufficient to specif
 
 A source has its own tree structure.  It has some method (which varies by `SrcT`) of iterating over **child sources**.  The notation **`source` -> `child`** means that `child` is one of the child sources.
 
-When `SrcT` is `ast.AST`, then the source is the actual ast scope object.  Otherwise, it is something which is equivalent to an AST, as interpreted by an application (for example, [scopestest.py](scopestest.py).  All source objects must be distinct objects, although they may compare equal.
+When `SrcT` is `ast.AST`, then the source is the actual ast scope object.  Otherwise, it is something which is equivalent to an AST, as interpreted by an application (for example, [scopestest.py](../scopetools/scopestest.py).  All source objects must be distinct objects, although they may compare equal.
 
 ## Tree Structure
 
