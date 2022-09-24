@@ -6,7 +6,7 @@ There are three major purposes for the files in this repository.
 
 ## Define the Precise Rules for Semantics of Variable Names
 
-This is found in [Rules.md](Rules.md).
+This is found in [Rules.md](docs/Rules.md).
 
 ### Scope Rules
 
@@ -38,7 +38,7 @@ In whichever namespace the operation resolves to, the variable is looked up, or 
 
 ### Scopes
 
-This is found in [scopes.py](scopes.py).  Details are found in [scopes.md](scopes.md).
+This is found in [scopes.py](scopetools/scopes.py).  Details are found in [scopes.md](docs/scopes.md).
 
 It contains methods for recording things of interest that affect a variable in a scope, based on examination of the Python code.
 
@@ -46,7 +46,7 @@ After the *entire* top level (a module, usually) has been examined, there are me
 
 ### Namespaces
 
-This is found in [namespaces.py](namespaces.py).  Details are found in [namespaces.md](namespaces.md).
+This is found in [namespaces.py](scopetools/namespaces.py).  Details are found in [namespaces.md](docs/namespaces.md).
 
 There are methods for recording runtime operations that pertain to a variable in the namespace.  These are presumed to occur in the same order that they occur while executing the namespace.
 
@@ -54,9 +54,9 @@ After each operation, the dynamic state of the namespace which the operation res
 
 ## Verify the Rules and their Implementation
 
-This is covered in [Testing.md](Testing.md).
+This is covered in [Testing.md](docs/Testing.md).
 
-The major test is performed by running [scopestest.py](scopestest.py) as a script with the scopetools directory on the import path.  It constructs a huge number (hopefully enough to cover every possible edge case) of nested scopes and variable operations, predicts the current value of the variable, and compares it to the actual runtime value of the variable.
+The major test is performed by running [scopestest.py](scopetools/scopestest.py) as a script with the scopetools directory on the import path.  It constructs a huge number (hopefully enough to cover every possible edge case) of nested scopes and variable operations, predicts the current value of the variable, and compares it to the actual runtime value of the variable.
 
 Certain other modules in the package can be run standalone to provide simpler verifications of the implementation.
 
