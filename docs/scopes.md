@@ -1,11 +1,14 @@
-# All About Scopes
+# `scopes` Module
 
 Michael Rolle, 2022
+
+This documents the `scopes` module.  It has classes and functions for examining the scopes found in a python program.
+
+Basic information about scopes and the resolution of names is found in [Rules.md](Rules.md#scope)
 
 # Definitions
 
 ## Syntax Tree
-
 
 ### Ordering Relationship
 

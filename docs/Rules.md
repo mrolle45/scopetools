@@ -2,48 +2,30 @@
 
 This document specifies the complete set of rules for resolving a name (an identifier) at runtime in a running Python program, and getting, setting, or deleting its current value.
 
-- [Python Name Resolution Rules](#python-name-resolution-rules)
+# Table of contents
+
 - [Syntax Tree](#syntax-tree)
+- [Variable](#variable)
+  - [Private Variable Name Mangling](#private-variable-name-mangling)
 - [Scope](#scope)
-  * [Closed and open scopes](#closed-and-open-scopes)
-  * [Scope Kinds](#scope-kinds)
-  * [Scope Owned Items and Item Owner Scopes.](#scope-owned-items-and-item-owner-scopes)
-    + [Direct Items](#direct-items)
-    + [All Items](#all-items)
-  * [Items Not Owned by Scope](#items-not-owned-by-scope)
-  * [Scope Tree](#scope-tree)
-  * [Owned COMP of a Scope and COMP Owner Scope of a COMP](#owned-comp-of-a-scope-and-comp-owner-scope-of-a-comp)
-  * [Variable](#variable)
-  * [References](#references)
-    + [Binding reference](#binding-reference)
-    + [Non-binding reference](#non-binding-reference)
-      - [Walrus reference](#walrus-reference)
-    + [Examples:](#examples-)
-  * [Context of a variable](#context-of-a-variable)
-  * [Closure Scope](#closure-scope)
-  * [Binder Scope](#binder-scope)
-  * [Scope Name Resolution](#scope-name-resolution)
+  - [Closed and open scopes](#closed-and-open-scopes)
+  - [Scope Kinds](#scope-kinds)
+  - [Scope Owned Items and Item Owner Scopes.](#scope-owned-items-and-item-owner-scopes)
+  - [Items Not Owned by Scope](#items-not-owned-by-scope)
+  - [Item CLASS Owner Scope and CLASS Class Items](#item-class-owner-scope-and-class-class-items)
+  - [Scope Tree](#scope-tree)
+  - [Owned COMP of a Scope and COMP Owner Scope of a COMP](#owned-comp-of-a-scope-and-comp-owner-scope-of-a-comp)
+  - [References and Declarations](#references-and-declarations)
+  - [Context of a Variable](#context-of-a-variable)
+  - [Scope Name Resolution](#scope-name-resolution)
 - [Namespace](#namespace)
-  * [Namespace Scope](#namespace-scope)
-  * [Namespace Tree](#namespace-tree)
-  * [Ancestor for a Scope](#ancestor-for-a-scope)
-  * [Binder Namespaces](#binder-namespaces)
-  * [Dynamic State and Operations](#dynamic-state-and-operations)
-    + [locals()](#locals--)
-    + [Bindings](#bindings)
-    + [Initial State](#initial-state)
-  * [Namespace Name Resolution](#namespace-name-resolution)
-  * [Namespace Resolution Exceptions](#namespace-resolution-exceptions)
-- [Summary](#summary)
-
-
-Contents:
-- [Syntax tree for the Python program](#syntax-tree)
-- [Scope -- static state](#scope)
-  - [Name resolution rules](#scope-name-resolution)
-- [Namespace -- dynamic state](#namespace)
-  - [Operations](#dynamic-operations)
-  - [Name resolution rules](#namespace-name-resolution)
+  - [Namespace Scope](#namespace-scope)
+  - [Namespace Tree](#namespace-tree)
+  - [Ancestor for a Scope](#ancestor-for-a-scope)
+  - [Binder Namespace for Variable](#binder-namespace-for-variable)
+  - [Dynamic State and Operations](#dynamic-state-and-operations)
+  - [Namespace Name Resolution](#namespace-name-resolution)
+- [Summary of Rules](#summary-of-rules)
 
 # Syntax Tree
 
@@ -70,6 +52,72 @@ As a shorhand notation, for any `node` and `item`, **`node` > `item`**, or **`it
     | T? name | T \| None | 0 or 1 | filter(None, [value]) |
     | T* name | list[T] | 0 or more | value[:] |
 
+# Variable
+
+A **variable** is almost any occurrence of a Python identifier in a syntax tree.  The grammar determines whether an identifier is a variable or not.
+
+Identifiers that are not variables are [^non-variables]:
+[^non-variables]: Identifiers that are not variables:
+- Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
+- Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
+        ```py
+        import module as variable
+        import variable(.name)*     # Note, only the top level name is bound
+        from module import identifier
+        from module import name as variable```
+
+- A keyword in a function call, as in `function(keyword=expression)`
+
+This document is concerned only with variables.
+        
+## Private Variable Name Mangling
+
+This is described in [Language doc 6.2.1](https://docs.python.org/3.10/reference/expressions.html#atom-identifiers), in the section "**Private Name Mangling**".
+
+In a CLASS scope, `cls`, the compiler treats certain [^private-name] variable names as **private names**.  This applies to any `var` where `cls` is the CLASS owner scope of `var`, by replacing `var` with a transformed [^private-mangle] version of `var`.  This is also known as the **mangled name**, or **`var.mangled`**.
+
+The purpose is to allow a name to be used in a class to be used without conflicting with the same name in a subclass or superclass.
+
+`var.mangled` is the identifier which actually is in the ast item.  It has the same effect on the running program as though `var.mangled` itself appeared in the source text instead of `var`.  
+
+Important:
+- A name is private *solely* as a function of the name and the name of the class.  
+- A name can be private even if it is declared global or nonlocal.
+- The name is private to the CLASS in any descendant scope that is not another CLASS.
+- The name is *not mangled* in any other location in the program.  If the program needs to refer to the name (as an instance or class variable, or in the cls.binder scope), it must compute [^private-mangle] the mangled name and use that instead.  Note the exceptional cases discussed there.
+
+[^private-name]:
+A `var` is private to a CLASS owner scope `cls` based solely on `var` and `cls.name`.  The requirements are:
+- `var.startswith("__")
+- and `not var.endswith("__")`
+- and `cls.name.lstrip("_") != ""`
+
+[^private-mangle]:
+The mangled name `var.mangled` is *usually* computed by
+```
+f'_{cls.name.lstrip("_")}{var}'
+```
+**Exception**:
+The description of name transformation referenced above is *not entirely correct*, as it says:
+
+  >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
+
+    This is not a problem for program where `len(class_name) + len(name) <= 254`.  For a general code analysis tool, where arbitrary names might appear, because of this implementation-defined behavior, the only reliable way to transform the name is something like this:
+``` py
+def transform(name: str, class_name: str) -> str:
+    d = {}
+    exec(f'''class {class_name}:
+    loc = set(locals())
+    {name} = 0                  # make it a local variable
+    loc = set(locals()) - loc
+    loc.remove('loc')           # Only transformed name remains.
+    transformed = loc.pop()
+    ''',  d)
+    return d[class_name].transformed
+```
+This is implemented in the method **scopetools.mangle(cls_name: str, var_name: str) -> str**.  Also by **scopetools.ScopeTree.mangle(var_name: str) -> str**, which can be called on a tree object of any kind and any tree type.
+
+I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for cpython to provide this functionality in the language.  Please feel free to read this and comment on it.
 
 # Scope
 
@@ -224,72 +272,6 @@ def f():                        # FUNC, owner
     ]
 ```
 
-## Variable
-
-A **variable** is almost any occurrence of a Python identifier in a syntax tree.  The grammar determines whether an identifier is a variable or not.
-
-Identifiers that are not variables are [^non-variables]:
-[^non-variables]: Identifiers that are not variables:
-- Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
-- Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
-        ```py
-        import module as variable
-        import variable(.name)*     # Note, only the top level name is bound
-        from module import identifier
-        from module import name as variable```
-
-- A keyword in a function call, as in `function(keyword=expression)`
-
-This document is concerned only with variables.
-        
-### Private Variable Name Mangling
-
-This is described in [Language doc 6.2.1](https://docs.python.org/3.10/reference/expressions.html#atom-identifiers), in the section "**Private Name Mangling**".
-
-In a CLASS scope, `cls`, the compiler treats certain [^private-name] variable names as **private names**.  This applies to any `var` where `cls` is the CLASS owner scope of `var`, by replacing `var` with a transformed [^private-mangle] version of `var`.  This is also known as the **mangled name**, or **`var.mangled`**.
-
-The purpose is to allow a name to be used in a class to be used without conflicting with the same name in a subclass or superclass.
-
-`var.mangled` is the identifier which actually is in the ast item.  It has the same effect on the running program as though `var.mangled` itself appeared in the source text instead of `var`.  
-
-Important:
-- A name is private *solely* as a function of the name and the name of the class.  
-- A name can be private even if it is declared global or nonlocal.
-- The name is private to the CLASS in any descendant scope that is not another CLASS.
-- The name is *not mangled* in any other location in the program.  If the program needs to refer to the name (as an instance or class variable, or in the cls.binder scope), it must compute [^private-mangle] the mangled name and use that instead.  Note the exceptional cases discussed there.
-
-[^private-name]:
-A `var` is private to a CLASS owner scope `cls` based solely on `var` and `cls.name`.  The requirements are:
-- `var.startswith("__")
-- and `not var.endswith("__")`
-- and `cls.name.lstrip("_") != ""`
-
-[^private-mangle]:
-The mangled name `var.mangled` is *usually* computed by
-```
-f'_{cls.name.lstrip("_")}{var}'
-```
-**Exception**:
-The description of name transformation referenced above is *not entirely correct*, as it says:
-
-  >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
-
-    This is not a problem for program where `len(class_name) + len(name) <= 254`.  For a general code analysis tool, where arbitrary names might appear, because of this implementation-defined behavior, the only reliable way to transform the name is something like this:
-``` py
-def transform(name: str, class_name: str) -> str:
-    d = {}
-    exec(f'''class {class_name}:
-    loc = set(locals())
-    {name} = 0                  # make it a local variable
-    loc = set(locals()) - loc
-    loc.remove('loc')           # Only transformed name remains.
-    transformed = loc.pop()
-    ''',  d)
-    return d[class_name].transformed
-```
-This is implemented in the method **scopetools.mangle(cls_name: str, var_name: str) -> str**.  Also by **scopetools.ScopeTree.mangle(var_name: str) -> str**, which can be called on a tree object of any kind and any tree type.
-
-I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for cpython to provide this functionality in the language.  Please feel free to read this and comment on it.
 
 ## References and Declarations
 
@@ -685,7 +667,7 @@ An exception raised by `namespace.load(var)` or `namespace.delete(var)` is
 
 These occur when var is currently unbound.
 
-# Summary
+# Summary of Rules
 
 Here's how to determine the meaning of an identifier, **`var`**, in the AST tree.
 
