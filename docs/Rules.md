@@ -4,6 +4,9 @@ This document specifies the complete set of rules for resolving a name (an ident
 
 # Table of contents
 
+# Table of contents
+
+- [Python Name Resolution Rules](#python-name-resolution-rules)
 - [Syntax Tree](#syntax-tree)
 - [Variable](#variable)
   - [Private Variable Name Mangling](#private-variable-name-mangling)
@@ -20,10 +23,11 @@ This document specifies the complete set of rules for resolving a name (an ident
   - [Scope Name Resolution](#scope-name-resolution)
 - [Namespace](#namespace)
   - [Namespace Scope](#namespace-scope)
+  - [Namespace Creation](#namespace-creation)
   - [Namespace Tree](#namespace-tree)
-  - [Ancestor for a Scope](#ancestor-for-a-scope)
+  - [Finding the Namespace for a Scope](#finding-the-namespace-for-a-scope)
   - [Binder Namespace for Variable](#binder-namespace-for-variable)
-  - [Dynamic State and Operations](#dynamic-state-and-operations)
+  - [Dynamic State](#dynamic-state)
   - [Namespace Name Resolution](#namespace-name-resolution)
 - [Summary of Rules](#summary-of-rules)
 
