@@ -81,7 +81,6 @@ SrcT = TypeVar('SrcT')
 ValT = TypeVar('ValT')
 TravT: TypeAlias = 'Traverser[TreeT, SrcT]'
 BldT: TypeAlias = 'Builder[SrcT, TreeT]'
-_noarg: Final = object()				# Use as some argument default values.
 
 def build() -> TreeT:
 	pass
@@ -106,6 +105,12 @@ class Traverser(Generic[TreeT, SrcT]):
 		try: return getattr(self.builder, attr)
 		except AttributeError: return self.__getattribute__(attr)
 
+	@property
+	def curr(self) -> TreeT: return self.builder.curr
+
+	def __repr__(self) -> str:
+		return f'Traverse {self.curr.tree_type.__name__}'
+
 class Builder(TreeRef, Generic[SrcT, TreeT]):
 	""" Creates and builds a Tree starting with a given root.
 	"""
@@ -128,10 +133,9 @@ class Builder(TreeRef, Generic[SrcT, TreeT]):
 		""" A Builder to build the current scope, called if scope is not yet built. """
 		return (self.scope_builder_class or Builder)(self.curr.scope, self.trav)
 
-	def __getattr__(self, attr: str) -> Any:
-		try: return getattr(self.curr, attr)
-		except AttributeError: return self.__getattribute__(attr)
-
+	@property
+	def is_scope(self) -> bool:
+		return self.curr.is_scope
 
 class NamespaceBuilder(Builder):
 	""" Specialized builder for Namespace trees. """
@@ -148,9 +152,6 @@ class NamespaceBuilder(Builder):
 		self.nested_iter = iter(self.curr.scope.nested)
 		self.curr.add_nested()
 		self.trav.build(self)
-
-	def has_bind(self, var: str) -> bool:
-		return self.curr.has_bind(var)
 
 """ Specialized Traverser for tree of ast.Node objects. """
 
@@ -192,13 +193,16 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 			self.generic_visit(src)
 
 	def visit_GeneratorExp(self, src: ast.GeneratorExp):
-		self.visit_comp(src, src.elt)
+		self.visit_comp(src, '<genexpr>', src.elt)
 
-	visit_ListComp = visit_GeneratorExp
-	visit_SetComp = visit_GeneratorExp
+	def visit_ListComp(self, src: ast.ListComp):
+		self.visit_comp(src, '<listcomp>', src.elt)
+
+	def visit_SetComp(self, src: ast.SetComp):
+		self.visit_comp(src, '<setcomp>', src.elt)
 
 	def visit_DictComp(self, src: ast.DictComp):
-		self.visit_comp(src, src.key, src.value)
+		self.visit_comp(src, '<listcomp>', src.key, src.value)
 
 	# Simple name binding operations, with name(s) as strings in the ast node...
 
@@ -239,7 +243,8 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		self.visit(src.type)
 		name = src.name
 		if name:
-			self.store(name, src.typ)
+			self.bind(name)
+			self.store(name, src.type)
 		self.visit(src.body)
 		if name:
 			self.delete(name)
@@ -309,7 +314,6 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		if comm:
 			if anno:
 				raise SyntaxError(f'Function parameter {src.arg!r} has both annotation and type comment.')
-			anno = comm
 		if anno:
 			self.anno_store(src.arg, anno, rvalue)
 		else:
@@ -331,7 +335,7 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		else:
 			return ast.unparse(anno)
 
-	def visit_comp(self, src: ast.AST, *elements: ast.AST) -> None:
+	def visit_comp(self, src: ast.AST, name: str, *elements: ast.AST) -> None:
 		""" Common to all comprehension nodes.
 		element(s) is either src.elt or src.key and src.value.
 		The element(s) are evaluated, in order, after every iteration of the
@@ -339,7 +343,7 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		Everything is evaluated in a new COMP scope,
 			except the iterable in the first "in" clause.
 		"""
-		with self.nestCOMP(src):
+		with self.nestCOMP(src, name):
 			gen: ast.comprehension
 			for i, gen in enumerate(src.generators):
 				# gen consists of a target (Target), an iterable, and some "if" expressions.
