@@ -1,3 +1,9 @@
+This shows how to have a collapsible section with a heading and a fragment link.
+Use HTML heading tag to get the heading style.
+Use HTML id attribute to make it a fragment.  Then a link can use "(#id)"
+
+[requirements](#sys-req)
+
 # Hello.
 - x
 - x
@@ -101,4 +107,3 @@
 - x
 - x
 
-[requirements](#sys-req)
