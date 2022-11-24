@@ -22,7 +22,7 @@ This document specifies the complete set of rules for resolving a name (an ident
   - [LOCS Scope and builtin `locals()` function](#locs-scope-and-builtin-locals-function)
   - [CELL Type and Captured Variables](#cell-type-and-captured-variables)
 - [Namespace](#namespace)
-  - [<span hidden>Namespace </span>Static State](#namespace-static-state)
+  - [Static State](#namespace-static-state)
   - [Namespace Lifecycle](#namespace-lifecycle)
   - [Namespace Tree](#namespace-tree)
   - [Binder Namespace for Variable](#binder-namespace-for-variable)
