@@ -55,5 +55,49 @@
     as some form of output device is recommended.
   </p>
 </details>
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
+- x
 
 [requirements](#sys-req)
