@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
 <details open>
   <summary>System Requirements</summary>
   <p>
@@ -14,7 +6,3 @@
     as some form of output device is recommended.
   </p>
 </details>
-
-
-</body>
-</html>
