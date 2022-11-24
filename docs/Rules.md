@@ -727,7 +727,7 @@ At the module level, is_local() and is_global() are *also* True if any DEF_BOUND
 
 A **namespace** is a runtime concept, as opposed to a scope, which is a compile-time concept.  At all times, there is a **current namespace**.  Every namespace has both static and dynamic properties.
 
-## <span hidden>Namespace </span>Static State
+## <span id="namespace-static-state">Static State </span>
 
 The static properties of a namespace are those which are unchanged at runtime, once the namespace is [created](#creation).  These include:
 - [scope](#namespace-scope)
