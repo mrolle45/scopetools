@@ -16,10 +16,10 @@ from contextlib import contextmanager
 import ast
 from abc import *
 from typing import *
+#from .target import *
+from .scope_common import *
 
-from scope_common import *
-
-from scopes import *
+from .scopes import *
 #from assignable import Assignor
 
 """
@@ -111,7 +111,7 @@ class Traverser(Generic[TreeT, SrcT]):
 	def __repr__(self) -> str:
 		return f'Traverse {self.curr.tree_type.__name__}'
 
-class Builder(TreeRef, Generic[SrcT, TreeT]):
+class Builder(ScopeTreeProxy, Generic[SrcT, TreeT]):
 	""" Creates and builds a Tree starting with a given root.
 	"""
 	trav: TravT
@@ -352,7 +352,8 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 					self.visit(gen.iter)
 				else:
 					with self.use_parent(): self.visit(gen.iter)
-				target = ast_make_target(gen.target)
+				self.visit(gen.target)
+				#target = ast_make_target(gen.target)
 				self.visit_iter(*gen.ifs)
 			self.visit_iter(*elements)
 
@@ -360,13 +361,13 @@ class ASTTraverser(Traverser[ast.AST, TreeT], ast.NodeVisitor):
 		for src in srcs:
 			self.visit(src)
 
-class ASTTargetTraverser(ast.NodeVisitor):
-	""" Traverses an ast Node for an assignable object, which can be used in assignments,
-	deletes, or evaluations.  Produces an Target object.  """
-	def __call__(self, target: ast.AST) -> Target:
-		pass
+#class ASTTargetTraverser(target.ASTBuilder):
+#	""" Traverses an ast Node for an assignable object, which can be used in assignments,
+#	deletes, or evaluations.  Produces an Target object.  """
+#	def __call__(self, target: ast.AST) -> Target:
+#		pass
 
-ast_make_target = ASTTargetTraverser()
+#ast_make_target = ASTTargetTraverser()
 
 if __name__ == '__main__':
 	# Test building from module code.

@@ -12,8 +12,10 @@
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|PythonCore|3.9</InterpreterId>
-    <CommandLineArguments>-tsd3</CommandLineArguments>
+    <CommandLineArguments>-td2 --mang </CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -29,9 +31,16 @@
     <Compile Include="scopetools\scopes.py" />
     <Compile Include="scopetools\scopestest.py" />
     <Compile Include="scopetools\treebuild.py" />
+    <Compile Include="scopetools\variables.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scopetools\_symtab.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="scopetools\__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="docs\" />
     <Folder Include="scopetools" />
   </ItemGroup>
   <ItemGroup>
@@ -39,14 +48,15 @@
     <InterpreterReference Include="Global|PythonCore|3.9" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="scopetools\README.md" />
-    <Content Include="scopetools\Rules.md" />
+    <Content Include="README.md" />
+    <Content Include="docs\Rules.md" />
+    <Content Include="docs\namespaces.md" />
     <Content Include="scopetools\Sample.md" />
-    <Content Include="scopetools\scopescommon.md" />
-    <Content Include="scopetools\scopes.md" />
-    <Content Include="scopetools\Testing.md" />
-    <Content Include="scopetools\treebuild.md" />
-    <Content Include="scopetools\typing.md" />
+    <Content Include="docs\scopescommon.md" />
+    <Content Include="docs\scopes.md" />
+    <Content Include="docs\Testing.md" />
+    <Content Include="docs\treebuild.md" />
+    <Content Include="docs\typing.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

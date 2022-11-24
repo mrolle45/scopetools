@@ -26,17 +26,15 @@ else:
 
 import ast
 
-from scope_common import *
+from .scope_common import *
 
-import scopes
-from scopes import *
-from treebuild import SrcT
+from . import scopes
+from .scopes import *
+from .treebuild import SrcT
 
 NsT = TypeVar('NsT', bound='Namespace')
 ValT = TypeVar('ValT')
 BuildT = Callable[[NsT, scopes.ScopeT, scopes.SrcT, Iterator[scopes.ScopeT]], None]
-
-#def null_builder(space: NsT, scope: ScopeT, src: SrcT, nested: Iterator[ScopeT]): pass
 
 class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	""" Abstract base class.
@@ -47,127 +45,6 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	option of making an index of some or all of the children it creates.
 	"""
 
-	"""
-	Namespaces are related to Scopes, which are regions of a python source.
-	A Namespace has an associated Scope object.
-	Scopes also form a tree, and the structure of the Namespace tree matches that of
-	the Scope tree.  That is,
-
-						RootNamespace        RootScope
-							  ^                  ^
-							 ...                 ...
-	                      Namespace     -->    Scope
-							  ^                  ^
-							  |  parent          |  parent
-						  Namespace     -->    Scope
-
-	Variables and Bindings.
-
-	Every Variable (or "var") is an occurrence of an identifier in the python source.
-	It is is found in some particular Scope.
-	As the program runs, the Var can be inspected, asigned a value, or deleted.
-	When there is no value assigned to it, the Var is "unbound".
-
-	In the scopes.py module, the concept of "binding scope" is discussed.  For any var which
-	appears in a "current scope", the binding scope is that Scope or some enclosing Scope.
-	The Namespace associated with the binding scope is known as the "binding namespace",
-	and this namespace keeps track of the current value, if any, of that Var.
-
-	The Var is always Local in the binding scope.
-
-	A Namespace uses a VarTable object to manage all Vars which are local to its own scope.
-	This is found in Namespace.vars.  VarTable is a separate class so that it might be subclassed
-	with a different implementation for managing the Vars, as long as VarTable[Var] works the same.
-
-	A VarTable is a mapping from the Var name to a Binding object.
-	A Binding is simply a container which is either "bound" or "unbound".
-	If it is bound, it has a value (any python object).
-	(Note, an unbound Binding is NOT the same as a having value of None).
-	The attribute Binding.value can be inspected, set, or deleted.  If it is unbound, then
-	get and delete will raise AttributeError.  bool(Binding) is True if bound, False if unbound.
-  
-	For any Namespace, the Binding for the Var is stored its binding namespace's vars.
-	This is a runtime concept, not compile time.
-
-	The procedure for finding the binding namespace for a Var from the current namespace is to go up the
-	parent chain until finding the namespace whose scope is the binding scope.  See this diagram:
-
-						binding namespace     -->      binding scope
-						       ^                            ^
-						       | 0 or more parents          | binder(Var)
-						current namespace     -->      current scope
-
-	Assign and delete of a Var by a Namespace is delegated to the Binding for the Var in the
-	binding Namespace for the Var.
-
-	The operation of getting the value of a Var works differently, in accordance with Python's
-	name resolution rules.  The get may be delegated to the binding Namespace or possibly some
-	ancestor Namespace in the parent chain.  It depends on the type of the binding Namespace.
-
-	In a closed namespace (i.e. a function):
-		Get the Binding from the VarTable.
-		If the Binding is bound, return its value.
-		Else the exception will be UnboundLocalError if the current namespace is the binding namespace,
-		otherwise it will be NameError.
-
-	In an open namespace (i.e. a class):
-		This will always be the current namespace as well, because python's scope resolution
-		prevents it from being the binding namespace for something else.
-		Get the Binding from the VarTable.
-		If the Binding is bound, return the value.
-		Otherwise, the operation is delegated to global Namespace.
-
-	In the global namespace (i.e. a module, or delegated from a class):
-		Get the Binding from the VarTable.
-		If there is no Binding for the Var, this is because there is no binding operation
-		for that Var as a global variable anywhere in the entire program.  It is treated as unbound.
-		If the Binding is bound, return the value.
-		Otherwise, the operation is delegated to the main namespace.
-
-	In the main namespace (i.e. the entire program):
-		The VarTable maps all builtin names to their values, taken from the program-wide builtins module.
-		An alternate mapping can be provided to the main namespace constructor.
-		This mapping is read-only and the values are always bound.
-		If there a Binding for the Var, then it returns its value.
-		Otherwise, it raises NameError.
-
-	The current namespace sets the value of a Var, or unbinds the Var, by delegating this operation
-	to the binding namespace.  It is never further delegated to a different namespace.
-	In the binding namespace, the value of the binding for the Var is bound or unbound, respectively.
-
-	Getting the binding namespace can raise a SyntaxError if its scope has no binding scope.
-	This would be raised while building the Scopes tree if the Scope was set to cache the binding scopes
-	for nonlocal variables.  Without this option, the exception is raised by the Namespace.
-
-	Building a Namespace tree:
-
-	This is a recursive operation, starting from a GlobalNamespace.  It uses a builder function, which
-	will be provided by the client in constructing the GlobalNamespace.  The same builder can be used
-	for all branches of the tree, but the client may also specify a different builder for a given branch.
-
-	The tree can also be built from the RootNamespace, which will build Namespaces for all of the
-	modules in the RootScope.
-
-	Important: The Scopes tree must be entirely built first.
-
-	The build is performed by the Namespace.build() method.
-	This calls the builder function to process a namespace.  For convenience, it is also given:
-		the scope,
-		the reference object contained in the scope, and
-		the nested scopes.  These are in the form of an iterator, so that the builder can get
-			the nested scopes one at a time without needing a 'for' loop.
-			An example would be a builder which traverses a syntax tree for the scope.
-			Whenever it visits something which creates a nested scope, it can get the corresponding
-			Scope object (assuming that the Scopes tree was built in the same order,
-			such as by traversing the same syntax tree).
-
-	The Namespace.nest() method does the recursive build of a nested namespace.  It is given:
-		one of the nested scopes (or an iterator from which it gets the next scope),
-		an optional key for indexing the new nested namespace in the current namespace, and
-		an optional builder to use instead of self.builder.
-	The nested namespace is created, and its build() method is called for it immediately.
-
-	"""
 	scope: Scope
 	parent: Namespace | None
 	vars: Mapping[str, Binding[ValT]]
@@ -183,7 +60,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 			assert self.scope.parent is parent.scope
 
 		# Create bindings for local names in the scope.
-		self.vars = VarTable()
+		self.vars = Bindings()
 		self.update_vars()
 
 	def update_vars(self):
@@ -196,7 +73,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		if self.is_built:
 			raise ValueError(f'Object {self!r} is already built')
 		yield self			# perform building primitives in this context.
-		if self.kind in (self.kind.CLASS, self.kind.FUNC):
+		if self.kind in (self.CLASS, self.FUNC):
 			if self.name: self.parent.store(self.name, self)
 		del self.is_built
 
@@ -287,13 +164,12 @@ class RootNamespace(Namespace, kind=ScopeKind.ROOT):
 	""" The environment for a program and its modules.
 	Includes bindings for the builtins module.
 	"""
-	def __new__(cls, *args):
-		return super().__new__(cls, kind=ScopeKind.ROOT)
 
 	def __init__(self, scope: RootScope = None):
 		self.scope = scope or RootScope()
 		super().__init__(None, None, scope=self.scope)
 
+	## TODO: Get bindings from either the builtins module or some alternate supplied dict.
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
 		self is not a binding namespace.  There might or might not be a Binding for var.
@@ -347,13 +223,16 @@ class ClassNamespace(Namespace, kind=ScopeKind.CLASS):
 		if use.hasFREE():
 			return super()._load_binding(var)
 
-class FunctionNamespace(Namespace, kind=ScopeKind.FUNC):
+class ClosedNamespace(Namespace, kind=ScopeKind.CLOS):
 	pass
 
-class LambdaNamespace(FunctionNamespace, kind=ScopeKind.LAMB):
+class FunctionNamespace(ClosedNamespace, kind=ScopeKind.FUNC):
 	pass
 
-class ComprehensionNamespace(FunctionNamespace, kind=ScopeKind.COMP):
+class LambdaNamespace(ClosedNamespace, kind=ScopeKind.LAMB):
+	pass
+
+class ComprehensionNamespace(ClosedNamespace, kind=ScopeKind.COMP):
 	pass
 
 class LocalsNamespace(Namespace, kind=ScopeKind.LOCS):
@@ -363,21 +242,22 @@ class LocalsNamespace(Namespace, kind=ScopeKind.LOCS):
 		- has INLOCALS usage
 		- is currently bound
 		"""
-		if self.parent.kind.is_closed:
+		if self.parent.isCLOS():
 			use: VarUse | None = self.parent.scope.get_use(var)
 			if not use or not use.hasINLOCALS(): return self.parent.vars[var]
-			binding_ns = self.search_scope(use.binding.binder.scope)
+			binding_ns = self.search_scope(use.binding.bindings.scope)
 			return binding_ns._get_bind(var)
 		else:
 			try: return self.parent._get_bind(var)
 			except AttributeError: return None
 
-class ExecEvalNamespace(LocalsNamespace):
+class ExecEvalNamespace(LocalsNamespace, kind=ScopeKind.EVEX):
 	def _load_binding(self, var: str) -> Binding:
 		""" Find the Binding, if any, containing the value of Var.
 		locals() returns the binding if
 		- has INLOCALS usage
 		- is currently bound
+		Get the binding from the GLOB if this fails.
 		"""
 		binding: Binding = super()._load_binding(var)
 		if binding: return binding
@@ -426,44 +306,30 @@ class Binding(Generic[ValT]):
 		else:
 			return '<unbound>'
 
-class Bindings(dict[Binding[ValT]]):
-	""" Maps var names of bound variables to their bindings.
-	Maps everything else to Binding.unbound.
-	"""
-
-	def __getitem__(self, var: VarName) -> Binding:
-		try: return super().__getitem__(var)
-		except KeyError: return Binding.unbound()
-
-	def __setitem__(self, var: VarName, value: ValT) -> None:
-		self[var] = Binding(value)
-
-	# delete is handled by dict base class.
-	def delete(self, var: VarName) -> None:
-		try: del self[var]
-		except: pass
-
-class VarTable(dict[str, Binding[ValT]]):
+class Bindings(dict[VarName, Binding[ValT]]):
 	""" Lookup table for Var names, with missing name resulting in None.
 	Behavior can be customized by subclassing (for example, logging all operations).
 	"""
-	def __getitem__(self, var: str) -> Binding[ValT]:
+	def __getitem__(self, var: VarName) -> Binding[ValT]:
 		return self.get(var)
+
 	def insert(self, var: VarName) -> Binding[ValT]:
 		binding = self.get(var)
 		if not binding:
-			self[var] = binding = Binding()
+			self[var] = binding = Binding.unbound()
 		return binding
 
-	def bind(self, var: str, value: ValT) -> None:
+	def bind(self, var: VarName, value: ValT) -> None:
 		self.insert(var).bind(value)
 
-	def unbind(self, var: str) -> None:
+	def unbind(self, var: VarName) -> None:
 		""" Make var unbound.  Raise AttributeError if already unbound. """
 		self.insert(var).unbind()
 
-class GlobalVarTable(VarTable):
-	""" Lookup table for Var names, using supplied global dict. """
+class RootBindings(Bindings):
+	""" Lookup table for Var names, using supplied global dict.
+	TODO: use builtins module's dict if nothing else is supplied.
+	"""
 	def __init__(self, glob: dict[str, ValT]):
 		self.glob = glob
 

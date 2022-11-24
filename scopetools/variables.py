@@ -7,9 +7,20 @@ from __future__ import annotations
 
 from enum import *
 import attrs
+from typing import *
 
-ManglerT: TypeAlias = 'ScopeTree | TreeRef'
+ManglerT: TypeAlias = 'ScopeTree | ScopeTreeProxy'
 MangledT: TypeAlias = 'tuple[str, ClassScope | None]'
+
+@attrs.define(frozen=True)
+class VarRef:
+	""" Reference to a variable name in a scope. """
+	name: VarName
+	scope: Scope
+
+	@classmethod
+	def new(cls, name: str, scope: Scope):
+		return cls(VarName(name, scope), scope)
 
 class VarName(str):
 	""" Name of the variable, with built-in name mangling.
@@ -31,6 +42,9 @@ class VarName(str):
 		return str.__new__(cls, name)
 
 	def unmangle(self, mangler: ManglerT = None) -> str:
+		""" Gets the private name of a mangled name.
+		Can test if name was mangled by a given mangler.
+		"""
 		if self.mangled:
 			if not mangler or _class_owner(mangler) is self.mangled.mangler:
 				return self.mangled.private
@@ -50,7 +64,7 @@ class VarCtx(Flag):
 	# Some combinations are not allowed, or allowed in restricted sequence:
 	#	GLOB_DECL and NLOC_DECL cannot follow any of the other bits, nor each other.
 	#	BINDING | WALRUS cannot be followed by BINDING without WALRUS.
-	UNUSED = 0				# Doesn't appear anywhere.  Default result for scope.context().
+	UNUSED = auto()			# Doesn't appear anywhere.  Default result for scope.context().
 	GLOB_DECL = auto()		# Global declaration.
 							# In GLOB, includes a global declaration in any nested scope.
 	NLOC_DECL = auto()		# nonlocal declaration
@@ -69,8 +83,8 @@ class VarCtx(Flag):
 		return self & self.USAGE
 
 	def with_usage(self, usage: Self) -> Self:
-		""" New VarCtx with usage replaced by new usage. """
-		return self & ~self.USAGE | usage
+		""" New VarCtx with UNUSED cleared and new usage bits set. """
+		return self & ~self.UNUSED | usage
 
 	# Kinds of binding operations seen.  May be combined with each other.
 	# Only combined with BINDING...
@@ -97,29 +111,28 @@ class VarCtx(Flag):
 							# Runtime value is parent value if it is bound there,
 							#	otherwise unbound.
 
-	def raise_err(self, var: str, plus: VarCtx = None) -> None:
+	def raise_err(self, var: str, plus: VarCtx = None) -> NoReturn:
 		""" Raise a SyntaxError for some illegal combinations of flags. """
 		if plus: self |= plus
 		if self & self.GLOB_DECL:
 			if self & self.NLOC_DECL:
 				raise SyntaxError(f"var '{var}' is nonlocal and global")
-			s = 'global'
+			self.raise_glob_nloc_err(var, 'global')
 		elif self & self.NLOC_DECL:
-			s = 'nonlocal'
-		else:
-			s = ''
+			self.raise_glob_nloc_err(var, 'nonlocal')
 
-		if s:
-			# global or nonlocal is an error.  If annotated or parameter, this changes the message.
-			if self & self.PARAM:
-				raise SyntaxError(f"name '{var}' is parameter and {s}")
-			elif self & self.ANNO:
-				raise SyntaxError(f"annotated name '{var}' can't be {s}")
-			else:
-				raise SyntaxError(f"name '{var}' is assigned to before {s} declaration")
-
-		if plus & self.WALRUS:
+		if self & self.WALRUS:
 			raise SyntaxError(f"assignment expression cannot rebind comprehension iteration variable '{var}'")
+		assert(0)
+
+	def raise_glob_nloc_err(self, var: str, kind: Literal['nonlocal', 'global']) -> NoReturn:
+		# global or nonlocal is an error.  If annotated or parameter, this changes the message.
+		if self & self.PARAM:
+			raise SyntaxError(f"name '{var}' is parameter and {s}")
+		elif self & self.ANNO:
+			raise SyntaxError(f"annotated name '{var}' can't be {s}")
+		else:
+			raise SyntaxError(f"name '{var}' is assigned to before {s} declaration")
 
 	def __repr__(self) -> str:
 		return str(self).split('.')[1]
@@ -139,11 +152,14 @@ class VarUse:
 	# As in self.getXXX() -> new VarCtx with just the bits of XXX from self.ctx
 	#	and self.hasXXX() -> true if any the bits of XXX are in self.ctx
 	#	and self.setXXX() -> set the bits of XXX in self.ctx, return self
+	#	and self.useXXX() -> clear UNUSED and  set the bits of XXX in self.ctx, return self
 	#	and self.clrXXX() -> clear the bits of XXX in self.ctx, return self
 	for name, ctx in VarCtx.__members__.items():
 		exec(f'def get{name}(self, v = {ctx}) -> VarCtx: return self.ctx & v')
 		exec(f'def has{name}(self, v = {ctx}) -> bool: return bool(self.ctx & v)')
 		exec(f'def set{name}(self, v = {ctx}) -> VarUse: self.ctx |= v; return self')
+		if ctx & VarCtx.USAGE:
+			exec(f'def use{name}(self, v = {ctx}) -> VarUse: self.ctx = self.ctx.with_usage(v); return self')
 		exec(f'def clr{name}(self, v = {ctx}) -> VarUse: self.ctx &= ~v; return self')
 	del name
 
@@ -153,7 +169,7 @@ class VarUse:
 	@property
 	def binding_scope(self) -> Scope | None:
 		if self.binding:
-			return self.binding.binder.scope
+			return self.binding.bindings.scope
 		else:
 			return None
 
@@ -166,16 +182,16 @@ class VarUse:
 @attrs.define(frozen=True)
 class Variable:
 	""" A unique variable in the program.
-	Name (mangled, perhaps) and binder table.
-	The binder maps the unique objects by name.
+	Name (mangled, perhaps) and bindings table.
+	The bindings maps the unique objects by name.
 	"""
 	name: VarName
-	binder: VarBinder
+	bindings: VarBindings
 
 	def __repr__(self) -> str:
-		return f'{self.name} in {self.binder.scope.qualname()}'
+		return f'{self.name} in {self.bindings.scope.qualname()}'
 
-class VarBinder:
+class VarBindings:
 	""" Keeps unique Variable objects indexed by their names.
 	Used by a particular Scope to keep those Variables bound to that scope.
 	"""
@@ -208,7 +224,9 @@ def mangle(var: str, scope: ScopeTree) -> MangledT:
 	Mostly returns same name.
 	"""
 	# Most common case: the name is not private.
-	if var.startswith('__') and not var.endswith('__'):
+	if not var.startswith('__') or var.endswith('__'):
+		pass
+	else:
 		class_owner = _class_owner(scope)
 		if class_owner:
 			return _mangle(var, class_owner.name), class_owner.scope
@@ -233,32 +251,26 @@ def var_mangle(func: FuncT = None, *, var: str | int = 'name') -> FuncT:
 	which parameter is to be mangled.  By default, it is parameter 'name'.
 	Parameter 0 is always the ScopeTree which supplies the class name.
 	If the name parameter is missing, the default value will be used.
+
+	The original function is returned unchanged, except for setting func.mangler = the wrapper.
 	"""
 	def actual_decorator(f: FuncT):
 		assert callable(f)
 		from functools import wraps
-		from scope_common import ScopeTree, TreeRef
 		nonlocal var
 		if isinstance(var, str):
 			import inspect
 			sig = inspect.signature(f)
 			var = list(sig.parameters).index(var)
-		#def fix_args(args) -> list:
-		#	""" Mangles the given param in args and returns new args list. """
-		#	newargs = list(args)
-		#	try: name = newargs[var]
-		#	except IndexError: return newargs
-		#	if type(name) is VarName: return newargs
-		#	assert isinstance(name, str)
-		#	self = newargs[0]
-		#	newargs[var] = VarName(name, self)
-		#	return newargs
 
 		@wraps(func)
-		def wrapper(*args, **kwargs):
+		def mangler(*args, **kwargs):
 			newargs: list = _mangle_args(args, var)
 			return func(*newargs, **kwargs)
-		return wrapper
+
+		func.mangler = mangler
+		#return mangler
+		return func
 
 	if func:
 		return actual_decorator(func)
@@ -267,7 +279,7 @@ def var_mangle(func: FuncT = None, *, var: str | int = 'name') -> FuncT:
 def _class_owner(scope: Scope) -> ClassScope | None:
 	class_owner = scope
 	while class_owner:
-		if class_owner.kind.is_class:
+		if class_owner.isCLASS():
 			return class_owner
 		class_owner = class_owner.parent
 	return None
