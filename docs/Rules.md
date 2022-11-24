@@ -28,7 +28,8 @@ This document specifies the complete set of rules for resolving a name (an ident
   - [Binder Namespace for Variable](#binder-namespace-for-variable)
   - [Dynamic State](#dynamic-state)
   - [Namespace Name Resolution](#namespace-name-resolution)
-- [Summary of Rules](#summary-of-rules)# Syntax Tree
+- [Summary of Rules](#summary-of-rules)
+# Syntax Tree
 
 When a program is compiled, it is first converted to a **syntax tree**, which is described in the [ast](https://docs.python.org/3.10/library/ast.html) module.  This is an `ast.Module` object.  It is then converted to a binary format which can be executed by the interpreter at the time the module is imported.  The syntax tree can be obtained directly with the `ast.parse()` function.
 
