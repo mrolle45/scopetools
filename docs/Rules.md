@@ -735,7 +735,7 @@ The static properties of a namespace are those which are unchanged at runtime, o
 - [caller](#calling-namespace)
 - [ancestors](#namespace-tree)
 
-### <span hidden>Namespace </span>Scope
+### <span id=namespace-scope>Scope</span>
 
 A namespace is associated with an AST scope.  There is a corresponding `Scope` object, designated as **namespace.scope**.  At runtime, the scope can be executed.  To enable the execution, the scope is compiled into a **code object**, designated as **namespace.code**, at some earlier time.
 
