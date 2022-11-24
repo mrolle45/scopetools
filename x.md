@@ -1,7 +1,7 @@
 # Hello.
 <details>
   
- <summary>System Requirements</summary>
+ <h2> <summary>System Requirements</summary> </h2>
   <p>
     Requires a computer running an operating system. The computer must have some
     memory and ideally some kind of long-term storage. An input device as well
