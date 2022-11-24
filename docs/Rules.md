@@ -1,13 +1,3 @@
-<details open>
-  <summary>System Requirements</summary>
-  <p>
-    Requires a computer running an operating system. The computer must have some
-    memory and ideally some kind of long-term storage. An input device as well
-    as some form of output device is recommended.
-  </p>
-</details>
-
-
 # Python Name Resolution Rules
 
 This document specifies the complete set of rules for resolving a name (an identifier) at runtime in a running Python program, and getting, setting, or deleting its current value.
