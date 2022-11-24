@@ -1,4 +1,4 @@
-<details open>
+<details>
   <summary>System Requirements</summary>
   <p>
     Requires a computer running an operating system. The computer must have some
