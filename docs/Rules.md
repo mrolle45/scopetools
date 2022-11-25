@@ -43,7 +43,7 @@ An **item**, or **AST item**, is either a node or a leaf.
 
 Each item represents a single contiguous section of the parsed text.  Children of a node represent nonoverlapping subsets of that section of text.  Some node classes have attributes [^other-ast-attrs] (which are not child items) showing the location of the text within the root's text.
 
-[^other-ast-attrs]: ### Text span attributes of AST node
+[^other-ast-attrs]: **Text span attributes of AST node**
 Refer to the [`ast` module documentation](https://docs.python.org/library/ast.html#node-classes) for the `lineno`, `end_lineno`, `col_offset` and `end_col_offset` attributes of `ast.expr` and `ast.stmt` subclasses.
 
 ## Inclusion Relationships
@@ -153,7 +153,7 @@ Certain items in a scope AST are classified as **direct items**, and notated as 
 | EVAL [^exec-and-eval] | expression | scope.body[:]
 | Not COMP | COMP walrus[^scope-comp-walrus] target | walrus.id
 
-[^exec-and-eval]: EXEC and EVAL scopes.  
+[^exec-and-eval]: **EXEC and EVAL scopes.**  
 Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]])` results in an EXEC or EVAL scope.
 
     Its parent is
@@ -164,7 +164,7 @@ Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]]
 
     At runtime, the call, as with any other call, immediately executes the code in a new ns.  If GLOB.initial exists, it is used to populate GLOB's initial bindings.  If `scope.locals` exists, this will be the initial local bindings, otherwise a copy of GLOB's bindings will be used.
 
-[^FUNC-and-LAMB-arguments]:
+[^FUNC-and-LAMB-arguments]: **FUNC and LAMB arguments**
 In this table, **scope.args.*various*** means a collection of items, which comprise all the arguments to a function or a lambda.  They include the argument name.  In a function, they also include any annotations or type comments.
 The items are, in this order:
 - scope.args.posonlyargs[:]
@@ -174,7 +174,7 @@ The items are, in this order:
 - scope.args.kwarg
 
     This comprises all of scope.args except scope.args.defaults and scope.args.kw__defaults.
-[^scope-comp-walrus]:
+[^scope-comp-walrus]: **COMP walrus**
 In this table, **COMP walrus** of `scope` means the target name of an assignment expression in the COMP subtree of `scope.  
 
     Note that *only* the target name, `wal.id`, is the direct item of `scope`.  The assigned value, `wal.value` *is not*.
@@ -254,7 +254,7 @@ During execution of the program, the state of the variable can change, by bindin
 A **variable** is almost any occurrence of a Python identifier in a syntax tree.  The grammar determines whether an identifier is a variable or not.
 
 Identifiers in the ast tree that are *not* variables are shown here [^non-variables]:
-[^non-variables]: ### Identifiers that are not variables
+[^non-variables]: **Identifiers that are not variables**
 - Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
 - Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
          ```py
@@ -293,7 +293,7 @@ Important:
 
     I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for python/cpython on GitHub to provide functionality in the language which computes the mangled name as a classmethod of the mangler class, without exceptional cases.  Please feel free to read this and comment on it.
 
-[^private-name]:
+[^private-name]: **Private Name Mangling**
 A `name` is private to a mangler scope based solely on `name` and `mangler.name`.  The requirements are:
 - `name.startswith("__")`
 - and `not name.endswith("__")`
