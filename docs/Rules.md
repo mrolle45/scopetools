@@ -694,7 +694,10 @@ then this is *implicitly also a value reference of '\_\_class__'* in `s`.
 ### Compiler Symbol Table
 
 <details>
+<summary>
+This information is for people familiar with the interpreter code
 Most of the flags in the scope context are modeled closely, but not exactly, after the internal symbol table used by the compiler.
+</summary>
 
 The library [**symtable**](https://docs.python.org/library/symtable.html) module is an implementation-independent view of the compiler symbol table hierarchy for a module, starting from the python text of the module.  This hierarchy consists of `SymbolTable` objects, and is parallel to the `Scope` hierarchy starting with a GLOB scope.  
 `SymbolTable.get_children()` is a list of child `SymbolTable` objects in the hierarchy.  It is possible for several of these to have the same name.
