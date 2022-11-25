@@ -157,21 +157,21 @@ Certain items in a scope AST are classified as **direct items**, and notated as 
 Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]])` results in an EXEC or EVAL scope.
 
     Its parent is  
-  - The owner scope of the call, if no `globals` is given, or is given the same as the builtin globals().
-  - A new GLOB scope, otherwise.  The property **GLOB.initial** designates this `globals` dict.  At runtime, the GLOB ns will be initially populated with the contents of `globals`.  If several scopes are created with the same `globals` argument, then their parents should be the same GLOB.
+    - The owner scope of the call, if no `globals` is given, or is given the same as the builtin globals().
+    - A new GLOB scope, otherwise.  The property **GLOB.initial** designates this `globals` dict.  At runtime, the GLOB ns will be initially populated with the contents of `globals`.  If several scopes are created with the same `globals` argument, then their parents should be the same GLOB.
 
     The property **scope.locals** designates the `locals` argument, if provided and is not the same as the builtin `globals()`, or None otherwise. 
 
     At runtime, the call, as with any other call, immediately executes the code in a new ns.  If GLOB.initial exists, it is used to populate GLOB's initial bindings.  If `scope.locals` exists, this will be the initial local bindings, otherwise a copy of GLOB's bindings will be used.
 
 [^func-and-lamb-arguments]: **FUNC and LAMB arguments**
-In this table, **scope.args.*various*** means a collection of items, which comprise all the arguments to a function or a lambda.  They include the argument name.  In a function, they also include any annotations or type comments.
-The items are, in this order:
-- scope.args.posonlyargs[:]
-- scope.args.args[:]
-- scope.args.vararg
-- scope.args.kwonlyargs[:]
-- scope.args.kwarg
+    In this table, **scope.args.*various*** means a collection of items, which comprise all the arguments to a function or a lambda.  They include the argument name.  In a function, they also include any annotations or type comments.
+    The items are, in this order:
+    - scope.args.posonlyargs[:]
+    - scope.args.args[:]
+    - scope.args.vararg
+    - scope.args.kwonlyargs[:]
+    - scope.args.kwarg
 
     This comprises all of scope.args except scope.args.defaults and scope.args.kw__defaults.
 [^scope-comp-walrus]: **COMP walrus**
@@ -255,15 +255,15 @@ A **variable** is almost any occurrence of a Python identifier in a syntax tree.
 
 Identifiers in the ast tree that are *not* variables are shown here [^non-variables]:
 [^non-variables]: **Identifiers that are not variables**
-  - Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
-  - Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
+    - Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
+    - Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
          ```py
         import module as variable
         import variable(.name)*     # Note, only the top level identifier is bound
         from module import variable
         from module import name as variable
         ```
-  - A keyword in a function call, as in `function(keyword=expression)`
+    - A keyword in a function call, as in `function(keyword=expression)`
 
 This document is concerned only with variables.
         
@@ -295,9 +295,9 @@ Important:
 
 [^private-name]: **Private Name Mangling**
     A `name` is private to a mangler scope based solely on `name` and `mangler.name`.  The requirements are:
-  - `name.startswith("__")`
-  - and `not name.endswith("__")`
-  - and `mangler.name.lstrip("_") != ""` (i.e., anything other than all '_' characters)
+    - `name.startswith("__")`
+    - and `not name.endswith("__")`
+    - and `mangler.name.lstrip("_") != ""` (i.e., anything other than all '_' characters)
 
 [^private-mangle]:
     The mangled name `name.mangled` is *usually* computed by
@@ -308,25 +308,25 @@ Important:
 
     **Exception with very long names** [^very-long-names].
 
-[^very-long-names]:
-The description of name transformation referenced above is *not entirely correct*, as it says:
+[^very-long-names]: **Mangling very long names**
+    The description of name transformation referenced above is *not entirely correct*, as it says:
 
   >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
 
-   This is not a problem for program where `len(class_name) + len(name) <= 254`.  For a general code analysis tool, where arbitrary names might appear, because of this implementation-defined behavior, the only reliable way to transform the name is something like this:
-``` py
-def transform(name: str, class_name: str) -> str:
-    d = {}
-    exec(f'''class {class_name}:
-    loc = set(locals())
-    {name} = 0                  # make it a local variable
-    loc = set(locals()) - loc
-    loc.remove('loc')           # Only transformed name remains.
-    transformed = loc.pop()
-    ''',  d)
-    return d[class_name].transformed
-```
-This is implemented in the method **scopetools.mangle(cls_name: str, var_name: str) -> str**.  Also by **scopetools.ScopeTree.mangle(var_name: str) -> str**, which can be called on a tree object of any kind and any tree type.
+    This is not a problem for program where `len(class_name) + len(name) <= 254`.  For a general code analysis tool, where arbitrary names might appear, because of this implementation-defined behavior, the only reliable way to transform the name is something like this:
+    ``` py
+    def transform(name: str, class_name: str) -> str:
+        d = {}
+        exec(f'''class {class_name}:
+        loc = set(locals())
+        {name} = 0                  # make it a local variable
+        loc = set(locals()) - loc
+        loc.remove('loc')           # Only transformed name remains.
+        transformed = loc.pop()
+        ''',  d)
+        return d[class_name].transformed
+    ```
+    This is implemented in the method **scopetools.mangle(cls_name: str, var_name: str) -> str**.  Also by **scopetools.ScopeTree.mangle(var_name: str) -> str**, which can be called on a tree object of any kind and any tree type.
 
 ## References
 
@@ -581,7 +581,7 @@ The binder depends on the scope kind and the usage of `name` in each scope.
   - Otherwise, move to `scope.parent`.
 
 [^binder-algo]: **Algorithm for scope.binder(name).**  
-```py
+    ```py
     class Modes:
         skipclass: bool = False
         closure: bool = False
@@ -621,7 +621,7 @@ The binder depends on the scope kind and the usage of `name` in each scope.
             if not result:
                 result = self.glob._binding(name, modes)
             return result
-```
+    ```
 
 ## LOCS Scope and builtin `locals()` function
 
@@ -989,13 +989,13 @@ However, there are obscure ways [^extra-bindings] that a local binding can be ch
 For this reason, name resolution involves looking in ns.bindings, even for a var that is not LOCAL.
 
 [^extra-bindings]: **Obscure ways that local bindings can be changed:**
-- A CLASS metaclass \_\_prepare__ method provides some initial bindings.
-- A call to `exec()` with an assignment statement and default namespace arguments.  Only in CLOS `ns`.
-- A dict of the current local bindings is obtained, and is at some later time modified.  It is obtained by
+    - A CLASS metaclass \_\_prepare__ method provides some initial bindings.
+    - A call to `exec()` with an assignment statement and default namespace arguments.  Only in CLOS `ns`.
+    - A dict of the current local bindings is obtained, and is at some later time modified.  It is obtained by
       - Calling the builtin locals() function, or
       - Getting the current frame object, via `sys._getframe()` or `inspect.stack()`, and using the frame.f_locals.  
 
-  The result is implementation dependent behavior, but is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
+    The result is implementation dependent behavior, but is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
           With this convergence, the behavior will (presumably) be:
       - locals() in a closed ns will be a **copy** of the local bindings at the time of call.  Changes to locals() **will not** affect ns.bindings, and *vice versa*.
       - locals() in an open ns is identical to the ns.bindings, and all updates to either are reflected immediately in the other.
@@ -1107,17 +1107,17 @@ and at the end of the CLASS code, this is copied into the class dict.
     Examples [^closed-locals-examples].
 
 [^closed-locals-implementation]: **CPython behavior in a CLOS ns**:
-  - `locals()` always returns the same dict object, `d`, in the same ns.  Therefore, `d` will always be the same as that returned by the most recent `locals()` call.
-  - `d` is updated by each `locals()` call to reflect the bindings of all CELL vars in the ns.  It maps `var` to `(b := ns.binding[var]).value` if `b` is bound. The key `var` is absent if `b` is unbound.  Thus a `var` can be added, or its value changed, or deleted.
-  - Any changes to `d` made by the caller (regarding CELL vars) are lost as a result of a subsequent `locals()`.
-  - Any other keys added to `d` by the caller will remain there after a subsequent `locals()`.
-  - Changes to `d` are not visible in the ns.
+    - `locals()` always returns the same dict object, `d`, in the same ns.  Therefore, `d` will always be the same as that returned by the most recent `locals()` call.
+    - `d` is updated by each `locals()` call to reflect the bindings of all CELL vars in the ns.  It maps `var` to `(b := ns.binding[var]).value` if `b` is bound. The key `var` is absent if `b` is unbound.  Thus a `var` can be added, or its value changed, or deleted.
+    - Any changes to `d` made by the caller (regarding CELL vars) are lost as a result of a subsequent `locals()`.
+    - Any other keys added to `d` by the caller will remain there after a subsequent `locals()`.
+    - Changes to `d` are not visible in the ns.
 
-  The behavior is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
-  With this convergence, the behavior will (presumably) be that
-  - locals() produces a *copy*, `d` of `ns.locals_bindings()` at the time of the `locals()` call.  This is the sme as current CPython behavior,  except that the contents of `d` are not affected by later `locals()` in the ns.
-  - Any changes to `d` made by the caller not visible in the ns, nor in any other dict returned by `locals()`.
-  - Any changes in the ns are not visible in `d`.
+    The behavior is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
+    With this convergence, the behavior will (presumably) be that
+    - locals() produces a *copy*, `d` of `ns.locals_bindings()` at the time of the `locals()` call.  This is the sme as current CPython behavior,  except that the contents of `d` are not affected by later `locals()` in the ns.
+    - Any changes to `d` made by the caller not visible in the ns, nor in any other dict returned by `locals()`.
+    - Any changes in the ns are not visible in `d`.
 
 [^closed-locals-examples]:
     locals() in a FUNC has all LOCAL and FREE variables that are currently bound.  Changes to it are not copied back to the ns.
@@ -1170,9 +1170,9 @@ Helper properties and methods:
 The algorithm is here[^binding-algo].
 
 [^binding-algo]: Algorithm for ns.load_binding(var):
-- if a CLOS ns:
+  - if a CLOS ns:
       - return ns.binder(var)[var].
-- If a CLASS or EVEX ns, this depends on which context the variable is.
+  - If a CLASS or EVEX ns, this depends on which context the variable is.
       - if usage is GLOB_DECL, return ns.global_binding(var).  Note, type can be GLOB without usage being GLOB_DECL.
       - check ns[var].  If this is bound, return it.  
         Note that if var is not LOCAL, it is still possible for var to be bound, in special circumstances [^extra-bindings].
@@ -1180,7 +1180,7 @@ The algorithm is here[^binding-algo].
         - return ns.global_binding(var).
       - if type is FREE,
         - return ns.free_binding(var).
-- If the GLOB ns:
+  - If the GLOB ns:
       - return ns.global_binding(var).
 
 - **ns.global_bindings** -> Bindings.  Used for lookup of  `var` as a global variable.  Same as `ns.glob.bindings` except in an EVEX.
