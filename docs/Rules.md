@@ -53,7 +53,7 @@ Refer to the [`ast` module documentation](https://docs.python.org/library/ast.ht
 There is a chain `node` [ >> `another node` ]... >> `item`.  
 - **node >= item**, or **item <= node** -- `node` >> `item` or `node` is `item`.  
 
-[^ast-child]: ### AST node child items.
+[^ast-child]: **AST node child items.**
 The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
     
     The [ast grammar](https://docs.python.org/library/ast.html#abstract-grammar) shows the names and types of fields of each AST node class, in the form `class(field, ...)`.  
@@ -459,7 +459,7 @@ In a COMP, combinations of BINDING and WALRUS are:
 - WALRUS.  A walrus target in the COMP subtree, but not a binding reference.
 - WALRUS | BINDING. A walrus target in this COMP.  Can also be a walrus target in some descendant in the COMP subtree.
 
-[^comp-walrus]: ### Walrus Items in a COMP
+[^comp-walrus]: **Walrus Items in a COMP**  
 Any COMP has a [COMP owner](#scope-tree), or `COMP.comp_owner`.
 Example.  
 ``` py
@@ -580,7 +580,7 @@ The binder depends on the scope kind and the usage of `name` in each scope.
   - If usage is BINDING, binder is this scope.
   - Otherwise, move to `scope.parent`.
 
-[^binder-algo]: ### Algorithm for scope.binder(name).  
+[^binder-algo]: **Algorithm for scope.binder(name).**  
 ```py
     class Modes:
         skipclass: bool = False
