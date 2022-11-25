@@ -73,7 +73,7 @@ Env class:
 
 This is needed to perform any operation on any Target.  It has a reference to the abstract environment.
 Typically, the client application needs only one Env object.  The Env can be modified by
-target operations, and also by the client itself (such as switching to use a different namespace).
+target operations, and also by the client itself (such as switching to use a different ns).
 
 Through subclassing, the behavior can be customized:
 
@@ -121,8 +121,7 @@ from operator import *
 from itertools import chain
 from contextlib import contextmanager
 
-#from namespaces import *
-import treebuild
+from . import treebuild
 
 TargT = TypeVar('TargT')
 KeyT = TypeVar('KeyT')
@@ -415,7 +414,7 @@ class ASTBuilder(Builder, ast.NodeVisitor):
 		self.add_name()
 
 
-import namespaces
+from . import namespaces
 
 bld = Builder()
 root = namespaces.GlobalNamespace()

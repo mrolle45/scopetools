@@ -514,7 +514,7 @@ else:
 
 		@var_mangle
 		def maketest(self, name: VarName):
-			""" Generate code to verify expected value of name in current namespace at current time. """
+			""" Generate code to verify expected value of name in current ns at current time. """
 			space: Namespace = self.curr
 			self.num_tests += 1
 

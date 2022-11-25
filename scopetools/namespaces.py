@@ -109,7 +109,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		return bool(b.vars[name])
 		
 	def store(self, var: str, value: ValT, **kwds) -> None:
-		""" Set the value of the var in the binding namespace.
+		""" Set the value of the var in the binding ns.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
 		self.binder(var).vars.bind(var, value)
@@ -118,7 +118,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	store_walrus = store
 
 	def delete(self, var: str) -> None:
-		""" Unbind the var in the binding namespace, if it is now bound.
+		""" Unbind the var in the binding ns, if it is now bound.
 		Raise NameError if it is not bound.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
@@ -130,7 +130,7 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 	# Helper methods...
 
 	def binder(self, var: str) -> Namespace | None:
-		""" Find the binding namespace for var.
+		""" Find the binding ns for var.
 		Return None if there is no binding scope.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
@@ -142,15 +142,15 @@ class Namespace(ScopeTree, Generic[scopes.SrcT, ValT]):
 		return None
 
 	def _get_bind(self, var: str) -> Binding | None:
-		""" Binding object, if any, in this namespace. """
+		""" Binding object, if any, in this ns. """
 		return self.vars.get(var)
 
 	@abstractmethod
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
-		self is a binding namespace for Var, but the result might not always
+		self is a binding ns for Var, but the result might not always
 		be the binding stored here.
-		The RootNamespace is not a binding namespace, and is handled differently.
+		The RootNamespace is not a binding ns, and is handled differently.
 		"""
 		binding_ns = self.binder(var)
 		if binding_ns is self:
@@ -172,7 +172,7 @@ class RootNamespace(Namespace, kind=ScopeKind.ROOT):
 	## TODO: Get bindings from either the builtins module or some alternate supplied dict.
 	def _load_binding(self, var: str) -> Binding | None:
 		""" Find the Binding, if any, containing the value of Var.
-		self is not a binding namespace.  There might or might not be a Binding for var.
+		self is not a binding ns.  There might or might not be a Binding for var.
 		"""
 		return self._get_bind(var)
 
@@ -190,7 +190,7 @@ class GlobalNamespace(Namespace, kind=ScopeKind.GLOB):
 		super().__init__(src, parent, name, scope=scope, index=index, **kwds)
 
 	def store(self, var: str, value: ValT) -> None:
-		""" Set the value of the var in the binding namespace.
+		""" Set the value of the var in the binding ns.
 		Raise SyntaxError if var is unresolved in the scope.
 		"""
 		binding = self.vars[var]
@@ -202,7 +202,7 @@ class GlobalNamespace(Namespace, kind=ScopeKind.GLOB):
 		"""
 		binding = self._get_bind(var)
 		if binding: return binding				# Binding exists and is bound.
-		# Else try the root namespace.
+		# Else try the root ns.
 		return self.root._load_binding(var)
 
 class ClassNamespace(Namespace, kind=ScopeKind.CLASS):
@@ -351,7 +351,7 @@ class RootBindings(Bindings):
 This is an extension of the idea of resolving a named variable in the Namespace environment.
 
 An Evaluator is an object which will operate on a Namespace and compute the result of an
-arbitrary expression in the context of that namespace.
+arbitrary expression in the context of that ns.
 
 The expression has a type SrcT, and the result of the computation is a ValT.
 
@@ -388,7 +388,7 @@ class ASTPyObjectEval(Evaluator[ast.AST, object]):
 		else:
 			return lambda ns: lit
 
-		# 1. Transform the source tree by replacing name references with calls to the namespace.
+		# 1. Transform the source tree by replacing name references with calls to the ns.
 		expr = self.Transformer().visit(expr)
 		expr = ast.fix_missing_locations(expr)
 		# 2. Compile it

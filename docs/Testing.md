@@ -3,7 +3,7 @@
 This mostly[^othertests] describes the module [scopestest.py](../scopetools/scopestest.py).  This is a standalone module, to be run separately as a script.
 
 Its purpose is twofold:
-- Verify that the models for scope and namespace behavior in Python are correct.
+- Verify that the models for scope and ns behavior in Python are correct.
 - Check that the code implementing those models is correct.
 
 Performing the test has these steps:
@@ -112,7 +112,7 @@ These are called while building the Namespace tree.
 
 As it is generating code to store or delete `var`, it calls the corresponding methods on the current tree.  
 Each time a test is generated, the builder gets the expected value using `tree.has(name) and tree.load(name) or None`.  
-To support the proper sequence of stores and deletes, the builder calls `tree.has_bind(var)`.  This simply checks whether the binding namespace has a binding or not, and does not look elsewhere if not.
+To support the proper sequence of stores and deletes, the builder calls `tree.has_bind(var)`.  This simply checks whether the binding ns has a binding or not, and does not look elsewhere if not.
 
 ## Executing the Python Module
 

@@ -12,9 +12,9 @@ Contents:
 - [Syntax tree for the Python program](#syntax-tree)
 - [Scope -- static state](#scope)
   - [Name resolution rules](#scope-name-resolution)
-- [Namespace -- dynamic state](#namespace)
+- [Namespace -- dynamic state](#ns)
   - [Operations](#dynamic-operations)
-  - [Name resolution rules](#namespace-name-resolution)
+  - [Name resolution rules](#ns-name-resolution)
 
 # Syntax Tree
 

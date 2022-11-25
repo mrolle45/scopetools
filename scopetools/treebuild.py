@@ -381,7 +381,6 @@ if __name__ == '__main__':
 		foo
 
 	'''
-	#b = Builder(RootNamespace())
 	b = Builder(RootScope())
 	t = ASTTraverser()
 	t.builder = b

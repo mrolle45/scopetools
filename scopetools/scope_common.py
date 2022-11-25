@@ -20,11 +20,11 @@ class ScopeMeta(type):
 	Sets up kind-to-class lookup for new trees.
 	"""
 
-	def __new__(mcls, name, bases, namespace, **kwds):
-		cls = type.__new__(mcls, name, bases, namespace)
+	def __new__(mcls, name, bases, ns, **kwds):
+		cls = type.__new__(mcls, name, bases, ns)
 		return cls
 
-	def __init__(cls, name, bases, namespace, _root: bool = False, kind: ScopeTree.Kind = None, **kwds):
+	def __init__(cls, name, bases, ns, _root: bool = False, kind: ScopeTree.Kind = None, **kwds):
 		""" Add kind => class mapping to the class. """
 		# Do nothing for the root class
 		if _root: return
@@ -356,12 +356,12 @@ class ProxyMeta(type):
 	Switches all methods with a method.mangler to call method.mangler instead.
 	"""
 
-	def __new__(mcls, name, bases, namespace, **kwds):
+	def __new__(mcls, name, bases, ns, **kwds):
 		""" Change methods to their mangler versions where they exist. """
-		for key, func in namespace.items():
-			try: namespace[key] = func.mangler
+		for key, func in ns.items():
+			try: ns[key] = func.mangler
 			except AttributeError: pass
-		return super().__new__(mcls, name, bases, namespace, **kwds)
+		return super().__new__(mcls, name, bases, ns, **kwds)
 
 class ScopeTreeProxy(_NestMixin, metaclass=ProxyMeta):
 	""" Movable pointer to a tree or subtree.
