@@ -143,9 +143,9 @@ Certain items in a scope AST are classified as **direct items**, and notated as 
 | GLOB | statement | scope.body[:]
 | CLASS | statement | scope.body[:]
 | FUNC | statement | scope.body[:]
-| | argument | scope.args.*various* [^FUNC-and-LAMB-arguments]
+| | argument | scope.args.*various* [^func-and-lamb-arguments]
 | LAMB | expression | scope.body
-| | argument | scope.args.*various* [^FUNC-and-LAMB-arguments]
+| | argument | scope.args.*various* [^func-and-lamb-arguments]
 | COMP | everything **except** | 
 | | first iterable | scope.generators[0].iter
 | LOCS | none | 
@@ -156,15 +156,15 @@ Certain items in a scope AST are classified as **direct items**, and notated as 
 [^exec-and-eval]: **EXEC and EVAL scopes.**  
 Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]])` results in an EXEC or EVAL scope.
 
-    Its parent is
-- The owner scope of the call, if no `globals` is given, or is given the same as the builtin globals().
-- A new GLOB scope, otherwise.  The property **GLOB.initial** designates this `globals` dict.  At runtime, the GLOB ns will be initially populated with the contents of `globals`.  If several scopes are created with the same `globals` argument, then their parents should be the same GLOB.
+    Its parent is  
+  - The owner scope of the call, if no `globals` is given, or is given the same as the builtin globals().
+  - A new GLOB scope, otherwise.  The property **GLOB.initial** designates this `globals` dict.  At runtime, the GLOB ns will be initially populated with the contents of `globals`.  If several scopes are created with the same `globals` argument, then their parents should be the same GLOB.
 
     The property **scope.locals** designates the `locals` argument, if provided and is not the same as the builtin `globals()`, or None otherwise. 
 
     At runtime, the call, as with any other call, immediately executes the code in a new ns.  If GLOB.initial exists, it is used to populate GLOB's initial bindings.  If `scope.locals` exists, this will be the initial local bindings, otherwise a copy of GLOB's bindings will be used.
 
-[^FUNC-and-LAMB-arguments]: **FUNC and LAMB arguments**
+[^func-and-lamb-arguments]: **FUNC and LAMB arguments**
 In this table, **scope.args.*various*** means a collection of items, which comprise all the arguments to a function or a lambda.  They include the argument name.  In a function, they also include any annotations or type comments.
 The items are, in this order:
 - scope.args.posonlyargs[:]
@@ -255,15 +255,15 @@ A **variable** is almost any occurrence of a Python identifier in a syntax tree.
 
 Identifiers in the ast tree that are *not* variables are shown here [^non-variables]:
 [^non-variables]: **Identifiers that are not variables**
-- Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
-- Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
+  - Attributes, as in `(expression).attribute`, in an `ast.Attribute` node.
+  - Some identifiers in an import statement.  It is simpler to specify which identifier **is** a variable which is bound according to [the document for Import statement](https://docs.python.org/3.10/reference/simple_stmts.html#the-import-statement)
          ```py
         import module as variable
         import variable(.name)*     # Note, only the top level identifier is bound
         from module import variable
         from module import name as variable
         ```
-- A keyword in a function call, as in `function(keyword=expression)`
+  - A keyword in a function call, as in `function(keyword=expression)`
 
 This document is concerned only with variables.
         
@@ -294,17 +294,17 @@ Important:
     I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for python/cpython on GitHub to provide functionality in the language which computes the mangled name as a classmethod of the mangler class, without exceptional cases.  Please feel free to read this and comment on it.
 
 [^private-name]: **Private Name Mangling**
-A `name` is private to a mangler scope based solely on `name` and `mangler.name`.  The requirements are:
-- `name.startswith("__")`
-- and `not name.endswith("__")`
-- and `mangler.name.lstrip("_") != ""` (i.e., anything other than all '_' characters)
+    A `name` is private to a mangler scope based solely on `name` and `mangler.name`.  The requirements are:
+  - `name.startswith("__")`
+  - and `not name.endswith("__")`
+  - and `mangler.name.lstrip("_") != ""` (i.e., anything other than all '_' characters)
 
 [^private-mangle]:
-The mangled name `name.mangled` is *usually* computed by
-```
-f'_{name.mangler.name.lstrip("_")}{name}'
-```
-For example, the name '\_\_\_x_' in mangler '\_\_C__` is mangled to '\_C_____x_'.
+    The mangled name `name.mangled` is *usually* computed by
+    ```
+    f'_{name.mangler.name.lstrip("_")}{name}'
+    ```
+    For example, the name '\_\_\_x_' in mangler '\_\_C__` is mangled to '\_C_____x_'.
 
     **Exception with very long names** [^very-long-names].
 
@@ -948,18 +948,18 @@ The `Binding` can be bound if
 - for OPEN `ns`, if added to `ns.bindings` without using a binding reference [^extra-bindings].
 
 [^global-binding-algo]:
-`bindings.load_global(var)` will try builtin names as a last resort.  `bindings` will always have the key '\_\_builtins__', possibly added by a call to `evex()`.  
-`bindings['__builtins__']` is a dict object.  It is the dict of the `builtins` module, except possibly if `bindings` comes from an `evex()` call.
-```py
-def load_global(bindings, var: VarName) -> Binding:
-    binding = bindings[var]
-    if binding: return binding
-    builtins = bindings['__builtins__']
-    assert builtins
-    if var in builtins:
-        binding = Binding(builtins[var])
-    return binding
-```
+    `bindings.load_global(var)` will try builtin names as a last resort.  `bindings` will always have the key '\_\_builtins__', possibly added by a call to `evex()`.  
+    `bindings['__builtins__']` is a dict object.  It is the dict of the `builtins` module, except possibly if `bindings` comes from an `evex()` call.
+    ```py
+    def load_global(bindings, var: VarName) -> Binding:
+        binding = bindings[var]
+        if binding: return binding
+        builtins = bindings['__builtins__']
+        assert builtins
+        if var in builtins:
+            binding = Binding(builtins[var])
+        return binding
+    ```
 
 ### Before Executing the Code
 
@@ -988,7 +988,7 @@ However, there are obscure ways [^extra-bindings] that a local binding can be ch
 
 For this reason, name resolution involves looking in ns.bindings, even for a var that is not LOCAL.
 
-[^extra-bindings]: Obscure ways that local bindings can be changed:
+[^extra-bindings]: **Obscure ways that local bindings can be changed:**
 - A CLASS metaclass \_\_prepare__ method provides some initial bindings.
 - A call to `exec()` with an assignment statement and default namespace arguments.  Only in CLOS `ns`.
 - A dict of the current local bindings is obtained, and is at some later time modified.  It is obtained by
@@ -1050,7 +1050,7 @@ After executing a CLASS def body, the final state of its local variables is *cop
 
     Examples [^open-locals-examples].
 [^open-locals-examples]:
-`locals()` in CLASS is same dict as the local variables (but no free variables),
+    `locals()` in CLASS is same dict as the local variables (but no free variables),
 and at the end of the CLASS code, this is copied into the class dict.
 
     ```py
@@ -1106,9 +1106,7 @@ and at the end of the CLASS code, this is copied into the class dict.
 
     Examples [^closed-locals-examples].
 
-[^closed-locals-implementation]:
-
-    CPython behavior in a CLOS ns:
+[^closed-locals-implementation]: **CPython behavior in a CLOS ns**:
   - `locals()` always returns the same dict object, `d`, in the same ns.  Therefore, `d` will always be the same as that returned by the most recent `locals()` call.
   - `d` is updated by each `locals()` call to reflect the bindings of all CELL vars in the ns.  It maps `var` to `(b := ns.binding[var]).value` if `b` is bound. The key `var` is absent if `b` is unbound.  Thus a `var` can be added, or its value changed, or deleted.
   - Any changes to `d` made by the caller (regarding CELL vars) are lost as a result of a subsequent `locals()`.
@@ -1122,7 +1120,7 @@ and at the end of the CLASS code, this is copied into the class dict.
   - Any changes in the ns are not visible in `d`.
 
 [^closed-locals-examples]:
-locals() in a FUNC has all LOCAL and FREE variables that are currently bound.  Changes to it are not copied back to the ns.
+    locals() in a FUNC has all LOCAL and FREE variables that are currently bound.  Changes to it are not copied back to the ns.
     ```py
     x = 0
     y = 0
