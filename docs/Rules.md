@@ -44,6 +44,7 @@ An **item**, or **AST item**, is either a node or a leaf.
 Each item represents a single contiguous section of the parsed text.  Children of a node represent nonoverlapping subsets of that section of text.  Some node classes have attributes [^other-ast-attrs] (which are not child items) showing the location of the text within the root's text.
 
 [^other-ast-attrs]: **Text span attributes of AST node**
+
 Refer to the [`ast` module documentation](https://docs.python.org/library/ast.html#node-classes) for the `lineno`, `end_lineno`, `col_offset` and `end_col_offset` attributes of `ast.expr` and `ast.stmt` subclasses.
 
 ## Inclusion Relationships
@@ -164,7 +165,7 @@ Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]]
 
     At runtime, the call, as with any other call, immediately executes the code in a new ns.  If GLOB.initial exists, it is used to populate GLOB's initial bindings.  If `scope.locals` exists, this will be the initial local bindings, otherwise a copy of GLOB's bindings will be used.
 
-[^func-and-lamb-arguments]: **FUNC and LAMB arguments**
+[^func-and-lamb-arguments]: **FUNC and LAMB arguments**  
     In this table, **scope.args.*various*** means a collection of items, which comprise all the arguments to a function or a lambda.  They include the argument name.  In a function, they also include any annotations or type comments.
     The items are, in this order:
     - scope.args.posonlyargs[:]
@@ -174,7 +175,7 @@ Calling `exec(code, [globals, [locals, ]])` or `eval(code, [globals, [locals, ]]
     - scope.args.kwarg
 
     This comprises all of scope.args except scope.args.defaults and scope.args.kw__defaults.
-[^scope-comp-walrus]: **COMP walrus**
+[^scope-comp-walrus]: **COMP walrus**  
 In this table, **COMP walrus** of `scope` means the target name of an assignment expression in the COMP subtree of `scope.  
 
     Note that *only* the target name, `wal.id`, is the direct item of `scope`.  The assigned value, `wal.value` *is not*.
@@ -293,13 +294,13 @@ Important:
 
     I have created an [enhancement proposal](https://github.com/python/cpython/issues/95621) for python/cpython on GitHub to provide functionality in the language which computes the mangled name as a classmethod of the mangler class, without exceptional cases.  Please feel free to read this and comment on it.
 
-[^private-name]: **Private Name Mangling**
+[^private-name]: **Private Name Mangling**  
     A `name` is private to a mangler scope based solely on `name` and `mangler.name`.  The requirements are:
     - `name.startswith("__")`
     - and `not name.endswith("__")`
     - and `mangler.name.lstrip("_") != ""` (i.e., anything other than all '_' characters)
 
-[^private-mangle]:
+[^private-mangle]: **Computing Mangled Name**  
     The mangled name `name.mangled` is *usually* computed by
     ```
     f'_{name.mangler.name.lstrip("_")}{name}'
@@ -308,7 +309,7 @@ Important:
 
     **Exception with very long names** [^very-long-names].
 
-[^very-long-names]: **Mangling very long names**
+[^very-long-names]: **Mangling very long names**  
     The description of name transformation referenced above is *not entirely correct*, as it says:
 
   >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
@@ -350,28 +351,31 @@ This implies that the variable is Local in the scope.  Refer to the [documentati
     - an assignment statement.
     - an augmented assignment statement.
     - an annotated assignment statement, *except as noted* [^anno-ref].
-[^anno-ref]:  An annotated assignment statement has the form  
+[^anno-ref]:  **Annotated Assign Reference**  
+An annotated assignment statement has the form  
 `target: anno [= value]`  
-- If a value is assigned, the assignment is performed *first*, so this can affect any evaluation of `anno`.  It is treated the same as  
-`target = value`.  
-- If no value is assigned,
-      - If `target` is `expr.attr`, then `expr` is evaluated.
-      - If `target` is `expr[subscr]`, then `expr` and then `subscr` are evaluated.
-- Target is either `name` or `(name)` or other `expr`.
+    - If a value is assigned, the assignment is performed *first*, so this can affect any evaluation of `anno`.  It is treated the same as  
+    `target = value`.  
+    - If no value is assigned,
+          - If `target` is `expr.attr`, then `expr` is evaluated.
+          - If `target` is `expr[subscr]`, then `expr` and then `subscr` are evaluated.
+    - Target is either `name` or `(name)` or other `expr`.
         - If `target` is `(name)`, there is no further effect.  `(name)` **is not a binding reference**
         - If target is other `expr`, there is no further effect.
         - If `target` is `name`, this is a **binding reference**.  Any subsequent global or nonlocal statement is a syntax error.
-  - In a CLOS scope, the `anno` expression *is not evaluated*.
-  - In an OPEN scope, the `anno` expression is evaluated.  (When future annotations import is in effect, `anno` is a literal string).  If target is plain `name`, sets `__annotations__[name] = anno`.  
+      - In a CLOS scope, the `anno` expression *is not evaluated*.
+      - In an OPEN scope, the `anno` expression is evaluated.  (When future annotations import is in effect, `anno` is a literal string).  If target is plain `name`, sets `__annotations__[name] = anno`.  
+
+    This table summarizes the variations and their effects.  
 
     | Statement | Kind | \_\_annotations__ | Bind name | Assign name |
     |:--|:--|:--|:--|:--|
     | name: anno | OPEN | [name] = anno | No | No |
     | name: anno | CLOS | No change | Yes | No |
-    | name: anno = 0 | OPEN | [name] = anno | Yes | Yes |
-    | name: anno = 0 | CLOS | No change | Yes | Yes |
+    | name: anno = expr | OPEN | [name] = anno | Yes | Yes |
+    | name: anno = expr | CLOS | No change | Yes | Yes |
     | (name): anno | (any) | No change | No | No |
-    | (name): anno = 0 | (any) | No change | Yes | Yes |
+    | (name): anno = expr | (any) | No change | Yes | Yes |
 
 - an assignment expression.  Note that the expresion can be contained within an [owned COMP](#owned-comp-of-a-scope-and-comp-owner-scope-of-a-comp).  This is termed a **walrus reference** if the scope itself is a COMP.
 - a 'for' statement target.
@@ -797,7 +801,8 @@ Multiple `ns`s may exist, at the same time and/or at different times, for the sa
 
   If two namespaces have have a parent, or some other ancestor, in common, then it is possible for a variable to be **aliased** in the two namespaces.  It occurs if the variable's binding currently refers to the binding in the common ancestor (that is, the variable has no binding elsewhere in the parent chain which would hide it).  Here's an example [^binding-alias-example].
 
-[^binding-alias-example]: Here the value of variable `x` is 1 when one would expect it to be 0, because `x` refers to the variable in the common parent `foo` which changes value.
+[^binding-alias-example]: **Variable in two namespaces aliased to ancestor**.  
+Here the value of variable `x` is 1 when one would expect it to be 0, because `x` refers to the variable in the common parent `foo` which changes value.
 ```py
     def foo():
         ff = []
@@ -809,7 +814,8 @@ Multiple `ns`s may exist, at the same time and/or at different times, for the sa
     foo()
 ```
 
-[^ns-parent]: `a.func.parent` = `a.f`, even though `a.func()` was called during `b.g()`.
+[^ns-parent]: **Calling function in different namespace from its parent**  
+`a.func.parent` = `a.f`, even though `a.func()` was called during `b.g()`.
 a.func() has access to captured variable `y` in `a.f()`, and global variable `z` in `a`.
 ```py
 a.py:
@@ -894,7 +900,7 @@ The function object itself was created earlier by executing a function definitio
 - An EXEC or EVAL is created immediately when a call is executed to the `exec()`, or `eval()` builtin.   
     Arguments to the this function are *not* execution arguments.  The first argument is compiled and is what is executed by the interpreter.  Any remaining arguments are incorporated into the ns object to affect the evaluation of variable references.
 
-[^comp-first-iterable]:  First iterable in a COMP.  
+[^comp-first-iterable]:  **First iterable in a COMP**.  
 
     When the interpreter executes a [comprehension expression](#scope-kinds), it evaluates its first iterable expression, as `iter` in `... for var in iter [... for var2 in iter2] ...`.  This value is used as a single unnamed argument for executing the comprehension.  
     In the Cpython interpreter, this argument called ".0".  This name cannot be used within the comprehension (it is not a valid identifier), but it can be retrieved as `locals()[".0"]`.  A debugger will also show ".0" as a variable.
@@ -947,7 +953,7 @@ The `Binding` can be bound if
 - `var` is BINDING in ns.scope and currently has a value, or
 - for OPEN `ns`, if added to `ns.bindings` without using a binding reference [^extra-bindings].
 
-[^global-binding-algo]:
+[^global-binding-algo]: **bindings.load_global(var)**  
     `bindings.load_global(var)` will try builtin names as a last resort.  `bindings` will always have the key '\_\_builtins__', possibly added by a call to `evex()`.  
     `bindings['__builtins__']` is a dict object.  It is the dict of the `builtins` module, except possibly if `bindings` comes from an `evex()` call.
     ```py
@@ -1169,19 +1175,19 @@ Helper properties and methods:
 - **ns.load_binding(var)** -> Binding.  The Binding holding the current value, or Binding.unbound.  It varies with the type of the ns and the context of the var.
 The algorithm is here[^binding-algo].
 
-[^binding-algo]: Algorithm for ns.load_binding(var):
-  - if a CLOS ns:
-      - return ns.binder(var)[var].
-  - If a CLASS or EVEX ns, this depends on which context the variable is.
-      - if usage is GLOB_DECL, return ns.global_binding(var).  Note, type can be GLOB without usage being GLOB_DECL.
-      - check ns[var].  If this is bound, return it.  
+[^binding-algo]: **Algorithm for ns.load_binding(var)**:
+    - if a CLOS ns:
+        - return ns.binder(var)[var].
+    - If a CLASS or EVEX ns, this depends on which context the variable is.
+        - if usage is GLOB_DECL, return ns.global_binding(var).  Note, type can be GLOB without usage being GLOB_DECL.
+        - check ns[var].  If this is bound, return it.  
         Note that if var is not LOCAL, it is still possible for var to be bound, in special circumstances [^extra-bindings].
-      - if type is LOCAL or GLOBAL,
+        - if type is LOCAL or GLOBAL,
+          - return ns.global_binding(var).
+        - if type is FREE,
+          - return ns.free_binding(var).
+    - If the GLOB ns:
         - return ns.global_binding(var).
-      - if type is FREE,
-        - return ns.free_binding(var).
-  - If the GLOB ns:
-      - return ns.global_binding(var).
 
 - **ns.global_bindings** -> Bindings.  Used for lookup of  `var` as a global variable.  Same as `ns.glob.bindings` except in an EVEX.
 - **ns.global_binding(var)** -> Binding.  Lookup of `var` as a global variable.  Same as `ns.global_bindings.global_binding(var)`.
