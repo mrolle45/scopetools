@@ -45,7 +45,7 @@ Each item represents a single contiguous section of the parsed text.  Children o
 
 [^other-ast-attrs]: **Text span attributes of AST node**
 
-Refer to the [`ast` module documentation](https://docs.python.org/library/ast.html#node-classes) for the `lineno`, `end_lineno`, `col_offset` and `end_col_offset` attributes of `ast.expr` and `ast.stmt` subclasses.
+    Refer to the [`ast` module documentation](https://docs.python.org/library/ast.html#node-classes) for the `lineno`, `end_lineno`, `col_offset` and `end_col_offset` attributes of `ast.expr` and `ast.stmt` subclasses.
 
 ## Inclusion Relationships
 
@@ -54,7 +54,7 @@ Refer to the [`ast` module documentation](https://docs.python.org/library/ast.ht
 There is a chain `node` [ >> `another node` ]... >> `item`.  
 - **node >= item**, or **item <= node** -- `node` >> `item` or `node` is `item`.  
 
-[^ast-child]: **AST node child items.**
+[^ast-child]: **AST node child items.**  
 The children of an AST node are found by looking at the class attribute `node._fields`, which is a tuple of attribute names.  Some nodes have other attributes that are not fields, and these are ignored.  
     
     The [ast grammar](https://docs.python.org/library/ast.html#abstract-grammar) shows the names and types of fields of each AST node class, in the form `class(field, ...)`.  
@@ -312,7 +312,7 @@ Important:
 [^very-long-names]: **Mangling very long names**  
     The description of name transformation referenced above is *not entirely correct*, as it says:
 
-  >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
+    >  If the transformed name is extremely long (longer than 255 characters), implementation defined truncation may happen.  
 
     This is not a problem for program where `len(class_name) + len(name) <= 254`.  For a general code analysis tool, where arbitrary names might appear, because of this implementation-defined behavior, the only reliable way to transform the name is something like this:
     ``` py
@@ -388,7 +388,7 @@ An annotated assignment statement has the form
 With an except[\*] clause, the name is used *twice*: at the start of the clause, to bind the name, and at the end of clause, to unbind the name.  If the handler unbinds the name, the final unbinding does not raise an exception.
 - In a capture pattern in structural pattern matching.
 
-[^import-reference]:
+[^import-reference]: **Names bound by import**  
     The bound name varies with the syntax of the import statement:  
 
     | Statement | Name | AST Item |
@@ -444,6 +444,60 @@ Or in the GLOB scope, if any other scope in the subtree contains a `global varia
 - **USE**.  The variable appears in a value reference.
 - **UNUSED**.  The variable does not appear at all.
 
+[^comp-walrus]: **Walrus Items in a COMP**  
+Any COMP has a [COMP owner](#scope-tree), or `COMP.comp_owner`.
+Example.  
+    ``` py
+    def f():                # FUNC, COMP owner of x and y
+        [x for x in             # COMP, COMP owner is f
+            { y for y in            # COMP, COMP owner is also f
+                (lambda n:              # LAMB, COMP owner is NOT f
+                    [ z for z in [1] ]      # COMP, COMP owner is NOT f
+                )(2)
+            }
+        ]
+    ```
+    When an assignment expression (or walrus) appears in a COMP scope, the walrus.target.id item is owned by `COMP.comp_owner`.
+    Even though the walrus target is owned by COMP.comp_owner,
+    -  the target.id is defined as a **walrus reference** in this COMP and every scope in the COMP parent chain.  
+    -  the target.id is defined as a **binding reference** in this COMP.  
+
+    A walrus is a SyntaxError in certain situations (see [PEP 572](https://peps.python.org/pep-0572/#scope-of-the-target)):  
+    -  the walrus scope is a CLASS.
+    -  the walrus < an iterable expression in a 'for' clause of *any* ancestor COMP.  This is true for a walrus within a non-COMP scope (i.e. a LAMB expression).
+    -  the target name is also a binding reference (an iteration variable) in this COMP or any COMP between it and the walrus scope.
+    Examples.  
+    ``` py
+    class C():
+        ## [x := y for y in [0]]   # SyntaxError.
+        pass
+    def f():            # FUNC, walrus scope
+        [
+         x := y             # Sets x in f.
+                            # walrus reference here
+                            # binding reference here
+         for y in
+            ## [x := y for y in [0]]   # SyntaxError.
+            [0]
+        ]
+        [y for y in []      # COMP
+                            # x is walrus reference here
+         if x in [
+            [                   # COMP
+             x := y             # Sets x in f.
+                                # walrus reference here
+                                # binding reference here
+             for y in [0]
+            ]
+        [x for x in []      # COMP
+                            # x is binding reference here
+         if x in [
+            [                   # COMP
+             ## x := y              # SyntaxError
+            ]
+        ]
+    ```
+
 These flags may appear with BINDING:
 - **ANNO**.  Has an annotation, other than annotating a parameter.
 - **PARAM**.  Is a function parameter.
@@ -462,59 +516,6 @@ In a COMP, combinations of BINDING and WALRUS are:
 - BINDING.  A binding reference (an iteration variable).
 - WALRUS.  A walrus target in the COMP subtree, but not a binding reference.
 - WALRUS | BINDING. A walrus target in this COMP.  Can also be a walrus target in some descendant in the COMP subtree.
-
-[^comp-walrus]: **Walrus Items in a COMP**  
-Any COMP has a [COMP owner](#scope-tree), or `COMP.comp_owner`.
-Example.  
-``` py
-def f():                # FUNC, COMP owner of x and y
-    [x for x in             # COMP, COMP owner is f
-        { y for y in            # COMP, COMP owner is also f
-            (lambda n:              # LAMB, COMP owner is NOT f
-                [ z for z in [1] ]      # COMP, COMP owner is NOT f
-            )(2)
-        }
-    ]
-```
-When an assignment expression (or walrus) appears in a COMP scope, the walrus.target.id item is owned by `COMP.comp_owner`.
-Even though the walrus target is owned by COMP.comp_owner,
--  the target.id is defined as a **walrus reference** in this COMP and every scope in the COMP parent chain.  
--  the target.id is defined as a **binding reference** in this COMP.  
-A walrus is a SyntaxError in certain situations (see [PEP 572](https://peps.python.org/pep-0572/#scope-of-the-target)):
--  the walrus scope is a CLASS.
--  the walrus < an iterable expression in a 'for' clause of *any* ancestor COMP.  This is true for a walrus within a non-COMP scope (i.e. a LAMB expression).
--  the target name is also a binding reference (an iteration variable) in this COMP or any COMP between it and the walrus scope.
-Examples.  
-``` py
-class C():
-    ## [x := y for y in [0]]   # SyntaxError.
-    pass
-def f():            # FUNC, walrus scope
-    [
-     x := y             # Sets x in f.
-                        # walrus reference here
-                        # binding reference here
-     for y in
-        ## [x := y for y in [0]]   # SyntaxError.
-        [0]
-    ]
-    [y for y in []      # COMP
-                        # x is walrus reference here
-     if x in [
-        [                   # COMP
-         x := y             # Sets x in f.
-                            # walrus reference here
-                            # binding reference here
-         for y in [0]
-        ]
-    [x for x in []      # COMP
-                        # x is binding reference here
-     if x in [
-        [                   # COMP
-         ## x := y              # SyntaxError
-        ]
-    ]
-```
 
 ### Variable Type
 
@@ -674,7 +675,7 @@ In a CLOS `scope`, `name` is CELL if
 
     The algorithm is here[^is-captured-algo].
 
-[^is-captured-algo]: Algorithm for scope.is_captured(name).
+[^is-captured-algo]: **Algorithm for scope.is_captured(name)**.
     ```py
     class Scope:
         def is_captured(self, name) -> bool:
@@ -1054,9 +1055,34 @@ After executing a CLASS def body, the final state of its local variables is *cop
 
     `ns.locals_bindings()` is identical to `ns.bindings`.
 
-    Examples [^open-locals-examples].
-[^open-locals-examples]:
-    `locals()` in CLASS is same dict as the local variables (but no free variables),
+    Examples [^locals-examples].
+
+- CLOS.  The behavior is implementation-dependent with respect to modifications to the dict returned by `locals()`.
+    - Changes to locals() may or may not be visible in the ns.
+    - Changes in the ns may or may not be visible in locals().
+    - locals() may or may not be the identical dict as another locals() in the same ns.
+
+    See discussion of current CPython behavior and possible future standardization of the behavior [^closed-locals-implementation].
+
+    To be safe from implementation dependencies, a Python program should make a copy of any `locals()` dict, and should not try to modify variables using `evex(code)` with no other arguments.  
+
+    Examples [^locals-examples].
+
+[^closed-locals-implementation]: **CPython behavior in a CLOS ns**:
+    - `locals()` always returns the same dict object, `d`, in the same ns.  Therefore, `d` will always be the same as that returned by the most recent `locals()` call.
+    - `d` is updated by each `locals()` call to reflect the bindings of all CELL vars in the ns.  It maps `var` to `(b := ns.binding[var]).value` if `b` is bound. The key `var` is absent if `b` is unbound.  Thus a `var` can be added, or its value changed, or deleted.
+    - Any changes to `d` made by the caller (regarding CELL vars) are lost as a result of a subsequent `locals()`.
+    - Any other keys added to `d` by the caller will remain there after a subsequent `locals()`.
+    - Changes to `d` are not visible in the ns.
+
+    The behavior is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
+    With this convergence, the behavior will (presumably) be that
+    - locals() produces a *copy*, `d` of `ns.locals_bindings()` at the time of the `locals()` call.  This is the sme as current CPython behavior,  except that the contents of `d` are not affected by later `locals()` in the ns.
+    - Any changes to `d` made by the caller not visible in the ns, nor in any other dict returned by `locals()`.
+    - Any changes in the ns are not visible in `d`.
+
+[^locals-examples]: **locals() Examples**  
+     `locals()` in CLASS is same dict as the local variables (but no free variables),
 and at the end of the CLASS code, this is copied into the class dict.
 
     ```py
@@ -1100,33 +1126,7 @@ and at the end of the CLASS code, this is copied into the class dict.
     m.loc['x'] = 43
     assert m.x == 43       # Module attribute changed
     ```
-
-- CLOS.  The behavior is implementation-dependent with respect to modifications to the dict returned by `locals()`.
-    - Changes to locals() may or may not be visible in the ns.
-    - Changes in the ns may or may not be visible in locals().
-    - locals() may or may not be the identical dict as another locals() in the same ns.
-
-    See discussion of current CPython behavior and possible future standardization of the behavior [^closed-locals-implementation].
-
-    To be safe from implementation dependencies, a Python program should make a copy of any `locals()` dict, and should not try to modify variables using `evex(code)` with no other arguments.  
-
-    Examples [^closed-locals-examples].
-
-[^closed-locals-implementation]: **CPython behavior in a CLOS ns**:
-    - `locals()` always returns the same dict object, `d`, in the same ns.  Therefore, `d` will always be the same as that returned by the most recent `locals()` call.
-    - `d` is updated by each `locals()` call to reflect the bindings of all CELL vars in the ns.  It maps `var` to `(b := ns.binding[var]).value` if `b` is bound. The key `var` is absent if `b` is unbound.  Thus a `var` can be added, or its value changed, or deleted.
-    - Any changes to `d` made by the caller (regarding CELL vars) are lost as a result of a subsequent `locals()`.
-    - Any other keys added to `d` by the caller will remain there after a subsequent `locals()`.
-    - Changes to `d` are not visible in the ns.
-
-    The behavior is expected to be standardized in future Python versions.  [PEP 558](https://peps.python.org/pep-0558) and [PEP 667](https://peps.python.org/pep-0667) are converging and expected to be adopted.  
-    With this convergence, the behavior will (presumably) be that
-    - locals() produces a *copy*, `d` of `ns.locals_bindings()` at the time of the `locals()` call.  This is the sme as current CPython behavior,  except that the contents of `d` are not affected by later `locals()` in the ns.
-    - Any changes to `d` made by the caller not visible in the ns, nor in any other dict returned by `locals()`.
-    - Any changes in the ns are not visible in `d`.
-
-[^closed-locals-examples]:
-    locals() in a FUNC has all LOCAL and FREE variables that are currently bound.  Changes to it are not copied back to the ns.
+   locals() in a FUNC has all LOCAL and FREE variables that are currently bound.  Changes to it are not copied back to the ns.
     ```py
     x = 0
     y = 0
