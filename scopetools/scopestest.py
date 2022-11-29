@@ -8,9 +8,11 @@ from io import StringIO
 from typing import NamedTuple, Iterable, Iterator
 
 from enum import *
-import attrs
+import dataclasses
 import argparse
 import functools
+from dis import dis
+import inspect
 
 if __name__ == '__main__':
 	import scopetools.scopestest
@@ -80,7 +82,7 @@ else:
 			if self is self.Unused: return name
 			return f'{name}_{self.value}'
 
-	@attrs.define(frozen=True)
+	@dataclasses.dataclass(frozen=True)
 	class ScopeParams:
 		""" Everything the builder needs to know about building a scope,
 		other than attributes of the scope itself.
@@ -99,7 +101,7 @@ else:
 			nocapt = self.nocapt
 			if mode is mode.NoCap:
 				nocapt = True
-			return attrs.evolve(self,
+			return dataclasses.replace(self,
 					level=self.level + 1,
 					depth=self.depth - 1,
 					mode=mode,
@@ -165,7 +167,7 @@ else:
 			name = self.curr.name
 
 			varname = '__x' if self.do_mangle else 'x'
-			var = VarName(varname, self.curr)
+			var = VarName.make_new(varname, self.curr)
 			nested_params = list(src.nested_params)
 
 			if not nested_params and src.only_child is not None: return
@@ -262,7 +264,7 @@ else:
 						nest_kind = ScopeKind.FUNC; n = f'{name}_setfunc'
 					else:
 						nest_kind = ScopeKind.COMP; n = f'{name}_setcomp'
-					with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n) as nested:
+					with self.nest(nest_kind, dataclasses.replace(src, kind=nest_kind), n) as nested:
 						for var2 in allvars():
 							self.store_nested(var2, rvalue, mode)
 					for var2 in allvars():
@@ -271,7 +273,7 @@ else:
 					# Make unbound using nested scope.
 					nest_kind = ScopeKind.FUNC
 					n = name + '_' + 'delfunc'
-					with self.nest(nest_kind, attrs.evolve(src, kind=nest_kind), n) as f:
+					with self.nest(nest_kind, dataclasses.replace(src, kind=nest_kind), n) as f:
 						for var2 in allvars():
 							self.delete_nested(var2, mode)
 					for var2 in allvars():
@@ -452,8 +454,8 @@ else:
 				return
 
 			# If the target is larger than the class owner, it won't mangle the same way.
-			mangled = VarName(name, target)
-			n = VarName(name, self)
+			mangled = VarName.make_new(name, target)
+			n = VarName.make_new(name, self)
 			if n != mangled:
 				target.mangled_names.add(n)
 				target.use(n)

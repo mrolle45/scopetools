@@ -6,15 +6,19 @@ Classes pertaining to a variable in a Python program.
 from __future__ import annotations
 
 from enum import *
-import attrs
+from dataclasses import dataclass, InitVar
+
 from typing import *
 
 ManglerT: TypeAlias = 'ScopeTree | ScopeTreeProxy'
 MangledT: TypeAlias = 'tuple[str, ClassScope | None]'
 
-@attrs.define(frozen=True)
+@dataclass(frozen=True)
 class VarRef:
-	""" Reference to a variable name in a scope. """
+	""" Reference to a variable name in a scope.
+	Does name mangling.
+	Cached in the scope, using unmangled name.
+	"""
 	name: VarName
 	scope: Scope
 
@@ -25,36 +29,35 @@ class VarRef:
 class VarName(str):
 	""" Name of the variable, with built-in name mangling.
 	Can be used as an ordinary str, but str cannot be used as a VarName.
-	"""
-	mangled: VarMangle = None		# Set only if name was mangled.
 
-	def __new__(cls, name: str, mangler: ManglerT = None):
+	Use VarName.make_new() as a constructor.
+	This creates a VarMangle subclass if the name is mangled.
+	"""
+	# Was the name mangled?  This is True in VarMangle subclass.
+	mangled: ClassVar[bool] = False
+
+	@classmethod
+	def make_new(cls, name: str, mangler: ManglerT = None):
 		if type(name) is cls:
 			return name
 		if mangler:
-			# Mangle the name.
-			private = name
-			name, class_owner = mangler.mangle(name)
-			if class_owner:
-				self = str.__new__(cls, name)
-				self.mangled = VarMangle(private, class_owner)
-				return self
-		return str.__new__(cls, name)
+			# Mangle the name (maybe)
+			mangled = mangle(name, mangler.scope)
+			if mangled: return mangled
+		return super().__new__(cls, name)
+
+	@property
+	def name(self) -> str: return str(self)
 
 	def unmangle(self, mangler: ManglerT = None) -> str:
 		""" Gets the private name of a mangled name.
-		Can test if name was mangled by a given mangler.
+		Can test if name was mangled by a given mangler or an ancestor.
+		Base class returns just own name.
 		"""
-		if self.mangled:
-			if not mangler or _class_owner(mangler) is self.mangled.mangler:
-				return self.mangled.private
-		return self
+		return str(self)
 
 	def __repr__(self) -> str:
-		if self.mangled:
-			return f'{self} ({self.mangled!r})'
-		else:
-			return self
+		return self
 
 class VarCtx(Flag):
 	""" Flag bits indicating how a variable occurs in a scope. """
@@ -137,7 +140,7 @@ class VarCtx(Flag):
 	def __repr__(self) -> str:
 		return str(self).split('.')[1]
 
-@attrs.define
+@dataclass
 class VarUse:
 	""" How the variable is used in the current scope.
 	This is different from how it is resolved (which is in self.binding)
@@ -179,7 +182,7 @@ class VarUse:
 		else:
 			return f'{self.ctx!r} (unresolved)'
 
-@attrs.define(frozen=True)
+@dataclass(frozen=True)
 class Variable:
 	""" A unique variable in the program.
 	Name (mangled, perhaps) and bindings table.
@@ -210,27 +213,50 @@ class VarBindings:
 
 # For mangling private names...
 
-@attrs.define(frozen=True)
-class VarMangle:
-	""" A mangled name.  Gives the original (private) name and the mangler class. """
+@dataclass(frozen=True, eq=False)
+class VarMangle(VarName):
+	""" A mangled name.  Gives the original (private) name and the mangler class.
+	The VarName base class gives the mangled name.
+	The constructor takes the mangled name to use with __new__().
+	"""
+	_name: InitVar[str]
 	private: str
 	mangler: ClassScope
+	mangled: ClassVar[bool] = True
+
+	def __new__(cls, name: str, *args):
+		# Make base class with only the mangled name.
+		# Other args are used by generated __init__.
+		return super().__new__(cls, name)
+
+	def unmangle(self, mangler: ManglerT = None) -> str:
+		""" Gets the private name of a mangled name.
+		Can test if name was mangled by a given mangler or an ancestor.
+		"""
+		if self.mangled:
+			if not mangler or mangler in self.mangler:
+				return self.private
+		return str(self)
 
 	def __repr__(self) -> str:
-		return f'{self.mangler.name}.{self.private}'
+		return f'{str(self)} ({self.mangler.name}.{self.private})'
 
-def mangle(var: str, scope: ScopeTree) -> MangledT:
+
+def mangle(var: str, mangler: ScopeTree) -> VarMangle | None:
 	""" Return the mangled version of a variable name in this scope.
 	Mostly returns same name.
 	"""
 	# Most common case: the name is not private.
 	if not var.startswith('__') or var.endswith('__'):
-		pass
-	else:
-		class_owner = _class_owner(scope)
-		if class_owner:
-			return _mangle(var, class_owner.name), class_owner.scope
-	return var, None
+		return None
+	while mangler:
+		if mangler.isCLASS():
+			mangled = _mangle(var, mangler.name)
+			if mangled != var:
+				return VarMangle(mangled, var, mangler)
+			break
+		mangler = mangler.parent
+	return None
 
 def _mangle_args(args: tuple, pos: int = 1) -> list:
 	""" Mangles one of the given args, using args[0] as the mangler.
@@ -241,7 +267,7 @@ def _mangle_args(args: tuple, pos: int = 1) -> list:
 	except IndexError: return list(args)
 	if type(name) is VarName: return list(args)
 	newargs = list(args)
-	newargs[pos] = VarName(name, newargs[0])
+	newargs[pos] = VarName.make_new(name, newargs[0])
 	return newargs
 
 def var_mangle(func: FuncT = None, *, var: str | int = 'name') -> FuncT:
@@ -275,14 +301,6 @@ def var_mangle(func: FuncT = None, *, var: str | int = 'name') -> FuncT:
 	if func:
 		return actual_decorator(func)
 	return actual_decorator
-
-def _class_owner(scope: Scope) -> ClassScope | None:
-	class_owner = scope
-	while class_owner:
-		if class_owner.isCLASS():
-			return class_owner
-		class_owner = class_owner.parent
-	return None
 
 def _mangle(var: str, clsname: str) -> str:
 	""" Return the mangled version of a variable name in a CLASS owner scope.

@@ -7,7 +7,7 @@ from abc import *
 from enum import *
 from typing import Generic, TypeVar, Iterator
 
-import attrs
+import dataclasses
 
 from .variables import *
 
@@ -338,15 +338,6 @@ class ScopeTree(_NestMixin[TreeT], metaclass=ScopeMeta, _root = True):
 			self = self.parent
 		return depth
 	
-	def mangle(self, name: str) -> MangledT:
-		""" Return the mangled version of a variable name in this scope.
-		Mostly returns same name.
-		"""
-		# Most common case: the name is not private.
-		if name.startswith('__') and not name.endswith('__'):
-			return mangle(name, self)
-		return name, None
-
 	def __repr__(self) -> str:
 		return f"{self.__class__.__qualname__}({self.name!r})"
 
@@ -397,15 +388,6 @@ class ScopeTreeProxy(_NestMixin, metaclass=ProxyMeta):
 		except AttributeError: pass
 		return attr
 
-	def mangle(self, name: str) -> MangledT:
-		""" Return the mangled version of a variable name in this scope.
-		Mostly returns same name.
-		"""
-		# Most common case: the name is not private.
-		if name.startswith('__') and not name.endswith('__'):
-			return mangle(name, self.curr.scope)
-		return name, None
-
 	@contextmanager
 	def nest(self, kind: _Kind, src: SrcT, name: str, *args, scope: ScopeT = None, **kwds) -> Iterable[TreeT]:
 		""" Create a nested tree and point to it during the context.
@@ -413,7 +395,7 @@ class ScopeTreeProxy(_NestMixin, metaclass=ProxyMeta):
 		"""
 		oldstate = self.state
 		oldtree = self.curr
-		mangled = VarName(name, oldtree)
+		mangled = VarName.make_new(name, oldtree)
 		with oldtree.nest(kind, src, mangled, *args, scope=scope, index=oldstate.nest_count, **kwds) as newtree:
 			self.curr = newtree
 			self.state = self.State(newtree)
@@ -429,7 +411,7 @@ class ScopeTreeProxy(_NestMixin, metaclass=ProxyMeta):
 		yield
 		self.curr = save
 
-	@attrs.define
+	@dataclasses.dataclass
 	class State:
 		curr: TreeT
 		nest_count: int = 0
